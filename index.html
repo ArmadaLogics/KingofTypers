@@ -3908,6 +3908,14 @@ function supplyOffer(kind){
              healFx:-1, growFx:0, saved:0, chill:0, sparkFx:0, life:SUP_LIFE});
   if(arrow){ S.arrT = ARR_CD; S.offerAt = S.spent|0; }
   else S.supT = SUP_CD;
+  /* THE FIRST WARD COURIER EXPLAINS ITSELF. Raised here, after the mob exists, so the
+     gold name is already on the field behind the card when the player reads what it is.
+     The card freezes update() like every card, so SUP_LIFE does not start draining until
+     it is closed - the five seconds the card promises are five seconds of play. Once
+     ever (the stage cards' own S.taught key, so a save that saw it on I-IV is done) and
+     never in endless, by the same two flags raiseCards() checks. */
+  if(!arrow && !S.endless && !S.eEnter && !S.card && !S.taught["card:"+SUPPLY_CARD.name])
+    showCard(SUPPLY_CARD);
   S.supLast = kind;                 /* so the two kinds can alternate - see the tick */
   /* 118 characters is the banner's budget - teachtest.mjs owns that number and caught this
      line at 127, which would have wrapped onto the fight it is explaining. */
@@ -7248,7 +7256,10 @@ function cardRim(name){
     const d=MOBDEF[k];
     if(d.label!==name) continue;
     if(d.armour) return CARD_RIM_ARMOUR;
-    if(d.strict) return CARD_RIM_STRICT;
+    /* NOT THE MINOTAUR'S. Its card read as a red box round a boss, and nothing on it
+       needed the colour to say "no mistakes" - its first line says it in words. The
+       Marshal, the other strict unit with a card, keeps its rim. */
+    if(d.strict && k!=="MN") return CARD_RIM_STRICT;
     return null;
   }
   return null;
@@ -7280,18 +7291,6 @@ const CARDS={
   /* I-4 IS THE ONE QUIET STAGE IN CHAPTER I. The Sprint left it for I-1, and the four
      remaining rule cards have five free slots between the unit debuts - so rather than
      shuffle three of them to close a gap, the gap sits where it costs least. */
-  /* THE SUPPLY - the OTHER courier, and the only thing in the game that gives a Ward
-     back. It is drawn from supRun, it is offered only while S.ward < S.maxWard, and it
-     had no card, so the first time a hurt player saw a gold name they had to guess what
-     it was for.
-     I-IV because it is the one stage in Chapter I without a card, and because being hit
-     comes before running dry - so the ward courier lands ahead of the arrow courier at
-     I-VII, which is the order most players meet them in. Nothing gates either courier on
-     a chapter, so unlike the Healer's stage no wave table can settle this; it is a
-     judgement and it is one number. */
-  3:[{sheet:"supRun", name:"The Supply",
-      lines:["A GOLD NAME WHEN YOU ARE HURT. Type it and a pawn runs a WARD out to you \u2014 it cannot be killed, so read it and keep moving.",
-             "It stands for five seconds and then leaves. The bar under the name is the time you have left."]}],
   4:[{sheet:"vtRun", name:"Veteran",
       lines:["It takes two arrows, and gets a new name after the first.",
              "Its plaque counts the arrows left."]}],
@@ -7453,6 +7452,14 @@ const CARDS={
 /* ONCE EVER. S.taught is the teaching lines' own store: saved, cleared by an erase, and
    already clamped on load - so a card costs the save format nothing and a fresh save
    teaches again. The `card:` prefix keeps the two namespaces apart. */
+/* THE SUPPLY'S CARD - the one card that is not on a stage, because the thing it explains
+   is not on one either. The Ward courier is offered only while S.ward < S.maxWard, so it
+   first appears whenever the player is first HURT, and that is the moment the card is for.
+   supplyOffer() raises it. Same shape as every CARDS entry so showCard() and the portrait
+   code need nothing new. */
+const SUPPLY_CARD = {sheet:"supRun", name:"The Supply",
+  lines:["A GOLD NAME WHEN YOU ARE HURT. Type it and a pawn runs a WARD out to you \u2014 it cannot be killed, so read it and keep moving.",
+         "It stands for five seconds and then leaves. The bar under the name is the time you have left."]};
 function raiseCard(st){ return raiseCards(S.chapter, st); }
 function raiseCards(ci, st){
   /* BOTH FLAGS. enterEndless sets S.endless AND S.eEnter before calling enterStage, and
