@@ -1174,7 +1174,7 @@ const CHDEF=[
    {n:"X  THE MINOTAUR", waves:[{T3:5,T4:1,T2:2},{T3:4,T4:2,T2:3},{MN:1,T4:1,T2:4,HL:1}], boss:true},
  ]},
  {key:"II", name:"The Ashen Reach", sub:"Chapter II — The Ashen Reach",
-  elems:["strike","ember"], reqWPM:48,
+  elems:["strike"], reqWPM:48,
   stages:[
    /* XI teaches Ember on things that cannot punish a mistake, and the first
       Warden arrives one stage later, once you have used it at least once. */
@@ -1214,7 +1214,7 @@ const CHDEF=[
     that are Chapter I's shapes recoloured, and the blighted floor that is supposed
     to define the chapter does not exist yet. Re-measure when it lands. */
  {key:"III", name:"The Blighted Span", sub:"Chapter III — The Blighted Span",
-  elems:["strike","frost"], reqWPM:61,
+  elems:["strike"], reqWPM:61,
   stages:[
    /* T4 IS THE MONK AND T5 IS THE ARCHIVIST - they are MOBDEF keys, not difficulty
       tiers, and the first draft of these twenty waves read them as tiers. That put
@@ -1243,7 +1243,7 @@ const CHDEF=[
     TERRAIN IS A PLACEHOLDER, and the lightning that is supposed to define this
     chapter does not exist yet either. */
  {key:"IV", name:"The Stormward", sub:"Chapter IV — The Stormward",
-  elems:["strike","spark"], reqWPM:72,
+  elems:["strike"], reqWPM:72,
   stages:[
    {n:"XXXI  the first bell", waves:[{T5:4},{T5:3,HD:1}]},
    {n:"XXXII  the gathering", waves:[{T5:4,HD:1},{T3:2,T5:3,HD:1}]},
@@ -1286,7 +1286,7 @@ const CHDEF=[
     The one Warden, in XLIX, is deliberate and late: a false name you can only read half
     the time is the hardest single plaque in the game, and it is worth exactly one wave. */
  {key:"V", name:"The Lamplit Vaults", sub:"Chapter V — The Lamplit Vaults",
-  elems:["strike","ember"], reqWPM:82,
+  elems:["strike"], reqWPM:82,
   stages:[
    /* T4 IS THE MONK. The first draft of these twenty waves read T4 as a difficulty tier and
       put FIVE OF THEM in stage XLI - which is the exact mistake Chapter III's stage list
@@ -1371,7 +1371,7 @@ const CHDEF=[
     inconveniencing you, or let it spend itself on ground you were going to lose the light on
     regardless. */
  {key:"VI", name:"The Guttered Vaults", sub:"Chapter VI — The Guttered Vaults",
-  elems:["strike","ember"], reqWPM:85,
+  elems:["strike"], reqWPM:85,
   stages:[
    {n:"LI  the first snuffed",  waves:[{T5:4},{T5:3,SN:1}]},
    {n:"LII  two lamps",         waves:[{T5:2,T4:2,SN:1},{T5:2,T4:1,SN:2}]},
@@ -1403,7 +1403,7 @@ const CHDEF=[
                                        {T5:1,T4:1,SN:2,SC:1,HX:1,HL:1,LZ:1}], boss:true},
  ]},
  {key:"VII", name:"The Hundred Doors", sub:"Chapter VII — The Hundred Doors",
-  elems:["strike","frost"], reqWPM:88,
+  elems:["strike"], reqWPM:88,
   stages:[
    /* SOURCED — The Second Campaign sheet 1, quoted verbatim.
       LXI HAS ONE DOOR AND IT STANDS OPEN. The lesson is shutting, not opening: shut the
@@ -1452,7 +1452,7 @@ const CHDEF=[
                                        {T3:2,T5:2,SP:3,HL:1,HX:1,LC:1}], boss:true},
  ]},
 {key:"VIII", name:"The Marshal's Muster", sub:"Chapter VIII — The Marshal's Muster",
-  elems:["strike","spark"], reqWPM:92,
+  elems:["strike"], reqWPM:92,
   stages:[
    /* LXXI: one Marshal, alone in wave 2, at the slowest drum in the chapter. */
    {n:"LXXI  the drumfield",      waves:[{T3:4,LV:1},{T3:4,MS:1}]},
@@ -1539,6 +1539,687 @@ function wof(m){
   return (m.lit>0 && w.length>3) ? w.slice(0,Math.max(3,w.length-2)) : w;
 }
 function light(m,secs){ m.lit=Math.max(m.lit||0,secs*nodeElem()); m.litFx=1; m.shield=0; }
+/* NOCKED SKILLS - v72-test-V2. One skill per chapter, on key 1, on the bottom bar.
+   Press 1 to NOCK it; it looses on the next word you finish, on that enemy - the word you are
+   halfway through counts. Press 1 again to take it back: nothing is spent. The cooldown starts
+   when it looses. Every skill takes FLAT half hearts, and a burnt / struck half goes with the
+   next arrow (HP_FIN), so a one-heart enemy is finished by an arrow, never by the skill alone. */
+let HP_FIN=1.5;          /* an arrow kills anything at or below this many hearts */
+const SK_DMG=0.5;
+const SK_OF={1:"burn",4:"burn",5:"burn",2:"freeze",6:"freeze",3:"thunder",7:"thunder"};
+const SKDEF={
+  burn   :{name:"BURN",    col:"#e08a3c", lite:"#f2b27a", glyph:"ember", cd:10},
+  freeze :{name:"FREEZE",  col:"#8fd3e8", lite:"#c4ecf7", glyph:"frost", cd:12},
+  thunder:{name:"THUNDER", col:"#f2d857", lite:"#f7e89a", glyph:"spark", cd:12},
+};
+const FRZ_HOLD=1.5;      /* frozen solid, then nodeFrzT() of half speed */
+const THU_JUMP=192;      /* three tiles from one body to the next */
+/* v75: ALL THREE AT ONCE. The powers live in the skill tree (Adept, one heading each column)
+   and are UNLOCKED FOR NOW: every campaign chapter carries all three, each on its own key and
+   its own cooldown. One is nocked at a time - S.nock holds WHICH (a SKDEF key) or false - and
+   pressing another power's key swaps it, at no cost. SK_OF stays as the chapter's own power,
+   which the skill screen's new-power card and the boot validator still read. Endless keeps
+   its elements: skOn() is false there, exactly as before. POWERS_UNLOCKED is the one switch
+   for the day the tree gates them; skHas() is the one place that would read a rank. */
+const POWERS_UNLOCKED=true;
+const SK_ORDER=["burn","freeze","thunder"];
+const SK_KEY={burn:"1", freeze:"3", thunder:"4"};
+const KEY_SK={"1":"burn", "3":"freeze", "4":"thunder"};
+const skHas=k=>POWERS_UNLOCKED && !!SKDEF[k];
+const skOn=()=>(S.scene==="stage" && !S.endless) && SK_ORDER.some(skHas);
+const skNow=()=>skOn() ? (S.nock||null) : null;      /* the NOCKED power, if any */
+const skAtOf=k=>(S.skAt && typeof S.skAt==="object" && S.skAt[k]) || 0;
+const skReady=k=>skAtOf(k)<=S.t;
+const skCD=k=>(SKDEF[k]||SKDEF.burn).cd;
+function skSpend(k){ if(!S.skAt || typeof S.skAt!=="object") S.skAt={}; S.skAt[k]=S.t+skCD(k); }
+const burnOn=()=>skOn() && skHas("burn");
+const burnReady=()=>skReady("burn");
+let BURN_CD=10;          /* kept for the harness */
+function skNock(k){
+  if(!skOn() || !skHas(k)) return false;
+  const d=SKDEF[k];
+  if(S.nock===k){ S.nock=false; blip(300,.06,"triangle",.05,200); return false; }
+  if(!skReady(k)){ blip(200,.05,"square",.04); return false; }
+  S.nock=k; blip(520,.07,"triangle",.06,780); blip(780,.06,"sine",.04,1040);
+  teach("nock", d.name+" IS NOCKED - it goes off on the next name you finish, on that enemy. "
+               +"Press "+SK_KEY[k]+" again to take it back, or another power's key to swap.");
+  return true;
+}
+/* a skill never hurts these: not units, the forbidden name, and the Sodden (wet hide) */
+const skImmune=m=>!m || m.dead || m.sheep || m.supply || m.door || m.taboo || m.drowned || !MOBDEF[m.tier];
+function skHurt(m,d,hot){
+  const b=(m.hp==null?1:m.hp); m.hp=Math.max(0,b-d);
+  m.shake=Math.max(m.shake||0,.25); if(!hot) fx.push({k:"dust",x:m.x,y:m.y-20,f:0});
+  if(m.hp<=1e-6){ m.dead=true; S.kills++; if(m.muster) decree(m); if(S.lock===m){ S.lock=null; S.typed=0; } }
+}
+function skLoose(src){
+  if(!S.nock || !skOn()) return;
+  if(skImmune(src)) return;                       /* stays nocked for a real target */
+  if(src.twoWords && !src.stripped) return;       /* not on a false name: save it for the true one */
+  /* v72-test-V4: NOT YET. The word only loads the skill; loose() puts it on the arrow it fires,
+     and the arrow sets it off where it lands. If no arrow flies (an empty quiver) nothing is
+     spent and the skill stays nocked. */
+  S.skPend=src;
+}
+function skFire(k,src){
+  const d=SKDEF[k]; if(!d||!src) return;
+  if(!S.skFx) S.skFx=[];
+  if(k==="burn"){
+    const R=nodeEmbR();
+    light(src,nodeEmbT());                        /* BEFORE the arrow: armour and wards open */
+    /* v72-test-V9: THE FIRE TAKES ITS HALF HEART SLOWLY - see burnTick() */
+    if(!skImmune(src)) setAblaze(src);
+    for(const m of live()) if(m!==src && !skImmune(m) && Math.hypot(m.x-src.x,m.y-src.y)<=R){
+      light(m,nodeEmbT()); setAblaze(m); fireBurst(m.x,m.y,22); }
+    fireWave(src.x,src.y,R); fireBurst(src.x,src.y,34);
+    S.skFx.push({k:"ring",x:src.x,y:src.y,r:R,col:"255,150,70",t:.30,T:.30});
+    blip(150,.18,"sawtooth",.08,90); blip(90,.3,"sine",.07,60);
+    teach("burnLoose","BURN - everything near that enemy is on fire and burns away half a heart over "
+                     +"three seconds. A burning name is two letters shorter; a burnt half goes with your next arrow.");
+  } else if(k==="freeze"){
+    const R=nodeFrzR();
+    for(const m of live()) if(!skImmune(m) && Math.hypot(m.x-src.x,m.y-src.y)<=R){
+      m.stagger=Math.max(m.stagger||0,FRZ_HOLD);
+      m.chill=Math.max(m.chill||0,FRZ_HOLD+nodeFrzT());
+      if(!(m.frzT>0)) m.frzPose=m.icePose?{...m.icePose}:
+        {key:m.sheet,frame:m.f,dx:0,dy:0,flip:m.x>P.x};
+      m.frzT=FRZ_HOLD; iceBurst(m.x,m.y,12,false,m.big?1.45:1); }
+    iceBurst(src.x,src.y,26);
+    S.skFx.push({k:"frost",x:src.x,y:src.y,r:R,t:.9,T:.9,ang:Math.atan2(src.y-P.y,src.x-P.x)});
+    blip(880,.14,"sine",.06,1320); blip(1320,.10,"sine",.04,1760);
+    teach("freezeLoose","FREEZE - everything near that enemy is frozen for a moment, then slow. "
+                       +"It buys ground, not hearts.");
+  } else if(k==="thunder"){
+    src.stun=Math.max(src.stun||0,.5);
+    const hit=[src], pts=[[src.x,src.y-28]]; let cur=src;
+    const hops=nodeArc()?3:2;
+    for(let i=0;i<hops;i++){
+      let best=null, bd=1e9;
+      for(const m of live()){ if(hit.includes(m)||skImmune(m)) continue;
+        const dd=Math.hypot(m.x-cur.x,m.y-cur.y); if(dd<=THU_JUMP && dd<bd){ bd=dd; best=m; } }
+      if(!best) break;
+      hit.push(best); pts.push([best.x,best.y-28]);
+      best.stun=Math.max(best.stun||0,.5); best.stagger=Math.max(best.stagger||0,.5);
+      if(nodeStatic()>0) best.chill=Math.max(best.chill||0,nodeStatic());
+      best.sparkFx=1;
+      if(!(best.armour && !(best.lit>0))) skHurt(best,SK_DMG);
+      cur=best;
+    }
+    S.skFx.push({k:"strike",x:src.x,y:src.y,t:.30,T:.30,seed:(Math.random()*1e6)|0});
+    S.skFx.push({k:"bolt",pts,t:.45,T:.45,seed:(Math.random()*1e6)|0});
+    for(const [px,py] of pts) zapBurst(px,py+28,12);
+    S.flash=Math.max(S.flash||0,.10);
+    blip(1600,.05,"square",.06,400); blip(220,.22,"sawtooth",.07,80);
+    teach("thunderLoose","THUNDER - the bolt jumped from that enemy to the ones nearest it, half a heart each. "
+                        +"A struck half goes with your next arrow.");
+  }
+  S.shake=Math.max(S.shake,3);
+}
+/* FIRE - v72-test-V3. One small particle system, drawn in world space in 2px squares so it reads
+   as pixel art next to the sprites. A particle's COLOUR IS ITS AGE: born white-hot, it cools to
+   yellow, orange, red, and ends as a wisp of smoke - which is what makes it look like fire rather
+   than orange confetti. Flames are added with 'lighter', so where they overlap the core goes
+   brighter, the way real flame does; smoke is drawn normally, so it darkens. */
+const FIRE_MAX=1400;
+let FIRE=[];
+const FIRE_RAMP=[[0,"255,244,190"],[.12,"255,214,90"],[.32,"252,150,44"],[.56,"226,80,30"],[.76,"150,42,28"]];
+function fireAdd(x,y,vx,vy,life,size,kind){
+  if(FIRE.length>=FIRE_MAX) FIRE.shift();
+  FIRE.push({x,y,vx,vy,t:0,T:life,s:size,k:kind||"f",ph:Math.random()*6.28});
+}
+/* a burning body: flames licking up it, the odd spark, smoke off the top */
+function fireBody(m,dt){
+  const big=m.big?1.5:1, rate=(m.lit>1?44:26)*big;
+  let n=rate*dt; while(n>0){ if(Math.random()<n){
+    const h=Math.pow(Math.random(),1.6);                  /* most flame low on the body */
+    fireAdd(m.x+(Math.random()-.5)*26*big, m.y-2-h*30*big,
+            (Math.random()-.5)*14, -38-Math.random()*52, .45+Math.random()*.4, 5+Math.random()*4*big, "f"); }
+    n-=1; }
+  if(Math.random()<dt*5*big) fireAdd(m.x+(Math.random()-.5)*20, m.y-34*big, (Math.random()-.5)*30, -90-Math.random()*60, .9+Math.random()*.8, 2, "e");
+  if(Math.random()<dt*6*big) fireAdd(m.x+(Math.random()-.5)*14, m.y-44*big, (Math.random()-.5)*10, -30-Math.random()*20, 1.1+Math.random()*.6, 7+Math.random()*4, "s");
+}
+/* the Burn going off: a burst on each body it catches, a wave out along the ground, embers */
+function fireBurst(x,y,k){
+  for(let i=0;i<(k||26);i++){ const a=Math.random()*6.28, sp=30+Math.random()*90;
+    fireAdd(x+Math.cos(a)*8, y-6-Math.random()*20, Math.cos(a)*sp, Math.sin(a)*sp*.4-60-Math.random()*70,
+            .35+Math.random()*.45, 6+Math.random()*6, "f"); }
+  for(let i=0;i<10;i++){ const a=Math.random()*6.28;
+    fireAdd(x, y-20, Math.cos(a)*(60+Math.random()*120), -120-Math.random()*140, .8+Math.random()*.9, 2, "e"); }
+}
+function fireWave(x,y,R){
+  const N=Math.round(R*0.9);
+  for(let i=0;i<N;i++){ const a=i/N*6.28+Math.random()*.1, rr=R*(.25+Math.random()*.75);
+    const ux=Math.cos(a), uy=Math.sin(a)*.5;
+    fireAdd(x+ux*rr*.35, y+uy*rr*.35, ux*rr*2.1, uy*rr*2.1-30-Math.random()*40, .30+Math.random()*.25, 6+Math.random()*5, "f"); }
+}
+/* All flame rows sit on a 2px grid. A bent tip and nested hot core create one silhouette. */
+function fireTongue(x,y,w,h,phase,heat=1){
+  if(h<3||w<2)return;
+  const X=Math.round(x/2)*2,Y=Math.floor(y/2)*2;
+  for(let j=0;j<h;j+=2){
+    const u=j/h, bend=Math.sin(phase+u*3.8)*w*.28*u;
+    const width=Math.max(2,Math.round(w*Math.pow(1-u,.72)/2)*2);
+    const left=Math.round((X+bend-width/2)/2)*2;
+    g.fillStyle=u>.8?"#df4c23":"#b93821";g.fillRect(left,Y-j-2,width,2);
+    if(width>4){g.fillStyle=u>.65?"#ff8c27":"#ffad32";g.fillRect(left+2,Y-j-2,width-4,2);}
+    if(u<.65&&width>6){
+      const core=Math.max(2,Math.round(width*(.57-u*.38)/2)*2);
+      g.fillStyle=u<.26&&heat>.5?"#fff5c4":"#ffdd69";
+      g.fillRect(Math.round((X+bend-core/2)/2)*2,Y-j-2,core,2);
+    }
+  }
+}
+function fireTick(dt){
+  for(const p of FIRE){
+    p.t+=dt;
+    const f=p.t/p.T;
+    if(p.k==="f"){ p.vx*=Math.pow(.10,dt); p.vy=p.vy*Math.pow(.35,dt)-40*dt;       /* burst slows, heat keeps rising */
+                   p.x+=(p.vx+Math.sin(p.ph+p.t*13)*18)*dt; p.y+=p.vy*dt; p.s=Math.max(1.5,p.s*(1-dt*1.6)); }
+    else if(p.k==="e"){ p.vx*=Math.pow(.4,dt); p.vy+=60*dt; p.x+=(p.vx+Math.sin(p.ph+p.t*7)*25)*dt; p.y+=p.vy*dt; }
+    else if(p.k==="sh"){ p.vx*=Math.pow(.5,dt); p.vy+=420*dt; p.x+=p.vx*dt; p.y+=p.vy*dt;
+      if(p.floor!=null && p.y>p.floor){ p.y=p.floor; p.vy=0; p.vx*=Math.pow(.01,dt); } }
+    else if(p.k==="mi"){ p.x+=(p.vx+Math.sin(p.ph+p.t*2)*5)*dt; p.y+=p.vy*dt; p.s+=dt*6; }
+    else if(p.k==="i"||p.k==="z"){ p.vx*=Math.pow(.2,dt); p.vy=p.vy*Math.pow(.2,dt)+(p.k==="i"?14:0)*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; }
+    else { p.x+=(p.vx+Math.sin(p.ph+p.t*3)*8)*dt; p.y+=p.vy*dt; p.s+=dt*9; }
+  }
+  FIRE=FIRE.filter(p=>p.t<p.T);
+}
+function fireDraw(cam){
+  if(!FIRE.length && !live().some(m=>m.lit>0)) return;
+  g.save();
+  /* the ground glow under every burning body, flickering - the only additive layer, and faint,
+     because 'lighter' on a pale meadow bleaches everything to white */
+  g.globalCompositeOperation="lighter";
+  for(const m of live()) if(m.lit>0){
+    const fl=.75+.25*Math.sin(S.t*17+m.x)*Math.sin(S.t*23+m.y), r=(m.big?50:38);
+    const gx=m.x-cam.x, gy=m.y-cam.y-4;
+    const gr=g.createRadialGradient(gx,gy,2,gx,gy,r);
+    gr.addColorStop(0,"rgba(255,120,30,"+(.22*fl)+")"); gr.addColorStop(1,"rgba(255,80,20,0)");
+    g.fillStyle=gr; g.save(); g.translate(gx,gy); g.scale(1,.55); g.translate(-gx,-gy);
+    g.beginPath(); g.arc(gx,gy,r,0,6.28); g.fill(); g.restore();
+  }
+  g.globalCompositeOperation="source-over";
+  /* oldest first, so the cooler red and smoke sit BEHIND the young white-yellow core */
+  const L=FIRE.slice().sort((a,b)=>(b.t/b.T)-(a.t/a.T));
+  for(const p of L){
+    const f=p.t/p.T, X=Math.round((p.x-cam.x)/2)*2, Y=Math.round((p.y-cam.y)/2)*2;
+    if(p.k==="s"){ const a=.30*(1-f)*Math.min(1,f*4), sz=Math.round(p.s/2)*2;
+      g.fillStyle="rgba(52,40,38,"+a+")"; g.fillRect(X-sz/2,Y-sz/2,sz,sz); continue; }
+    if(p.k==="sh"){ iceShardDraw(p,X,Y,Math.max(0,1-f*f)); continue; }
+    if(p.k==="mi"){ const a=.28*(1-f)*Math.min(1,f*5),sz=Math.round(p.s/2)*2;
+      g.fillStyle="rgba(221,246,253,"+(a*.48)+")";
+      for(let j=0;j<3;j++){g.beginPath();g.ellipse(X+(j-1)*sz*.16,Y-j*2,sz*(.50-j*.06),sz*.18,0,0,Math.PI*2);g.fill();}
+      continue; }
+    if(p.k==="i"||p.k==="z"){ const a=Math.max(0,1-f), sz=Math.max(2,Math.round(p.s*(1-f*.5)/2)*2);
+      g.fillStyle = p.k==="i" ? (f<.4?"rgba(235,250,255,"+a+")":"rgba(143,211,232,"+a+")")
+                              : (f<.4?"rgba(255,250,210,"+a+")":"rgba(242,216,87,"+a+")");
+      g.fillRect(X-sz/2,Y-sz/2,sz,sz); continue; }
+    if(p.k==="e"){ const a=(1-f)*(.65+.35*Math.sin(p.ph+p.t*30));
+      g.fillStyle="rgba(255,"+(200-(f*90|0))+",90,"+Math.max(0,a)+")"; g.fillRect(X-1,Y-1,2,2); continue; }
+    let col=FIRE_RAMP[0][1]; for(const [at,c] of FIRE_RAMP) if(f>=at) col=c;
+    const a=f>.78 ? Math.max(0,(1-f)/.22) : 1, sz=Math.max(2,Math.round(p.s/2)*2);
+    g.fillStyle="rgba("+col+","+a+")"; g.fillRect(X-sz/2,Y-sz/2,sz,sz);
+  }
+  g.restore();
+}
+/* A BURNING NAME. The plate sits over most of the body it names, so the body's flames are
+   half hidden by the very thing the player is reading. The plate itself catches: short pixel
+   tongues along its top edge - drawn before the rule tag, whose dark box stays on top of them,
+   and never inside the plate, so no letter is covered. */
+function plateFire(x,y,w,m){
+  const k=Math.min(1,m.lit/0.6), t=S.t, top=Math.round(y)-1;
+  const n=Math.max(3,Math.round((w-16)/18));            /* a flame every ~18px of plate */
+  g.save();
+  for(let i=0;i<n;i++){
+    const seed=i*12.9898+m.x*.013;
+    const cx=Math.round(x+10+(w-20)*(i+.5)/n + Math.sin(seed)*4);
+    /* each tongue breathes on its own clock; two sines so it never looks like a metronome */
+    const h=Math.round(((15+9*Math.sin(t*7.3+seed*3)+4*Math.sin(t*17+seed))*k)/2)*2;
+    if(h<4) continue;
+    const wb=12+((i*5)%3)*2;
+    for(let j=0;j<h;j+=2){
+      const fr=j/h, sway=Math.round(Math.sin(t*6+seed+fr*2)*2.2*fr);
+      const ww=Math.max(2,Math.round(wb*(1-Math.pow(fr,.85))/2)*2);
+      g.fillStyle = fr>.78 ? "#a8321c" : fr>.5 ? "#e25a1e" : "#ff9a2e";
+      g.fillRect(cx-ww/2+sway, top-2-j, ww, 2);
+      const iw=Math.max(0,Math.round(ww*.5/2)*2);
+      if(iw>0 && fr<.55){ g.fillStyle = fr<.22 ? "#fff1b8" : "#ffd65a"; g.fillRect(cx-iw/2+sway, top-2-j, iw, 2); }
+    }
+    /* a lick of flame breaking off the tip and rising */
+    const ph=((t*1.6+seed)%1+1)%1;
+    if(ph<.6){ g.globalAlpha=1-ph/.6; g.fillStyle=ph<.25?"#ff9a2e":"#c9401c";
+      g.fillRect(cx-1+Math.round(Math.sin(t*5+seed)*3), top-2-h-2-Math.round(ph*22), 2, 2); g.globalAlpha=1; }
+  }
+  g.restore();
+}
+/* ICE AND THUNDER - v72-test-V5. Same 2px particle pool as the fire (FIRE), more kinds:
+   "sh" an ice shard (falls), "mi" cold mist (hangs, drifts), "z" a spark (already the Thunder trail). */
+/* V7: a narrow white edge, a blue face and a dark side make ice read as a solid.
+   All vertices/edge marks land on the same 2px grid as the existing particle renderer. */
+function icePoly(pts,col){
+  g.fillStyle=col; g.beginPath();
+  pts.forEach(([x,y],i)=>{ x=Math.round(x/2)*2; y=Math.round(y/2)*2;
+    i?g.lineTo(x,y):g.moveTo(x,y); });
+  g.closePath(); g.fill();
+}
+function iceLine(pts,col,w=2){
+  g.fillStyle=col;
+  for(let i=1;i<pts.length;i++){
+    const [x,y]=pts[i-1], dx=pts[i][0]-x, dy=pts[i][1]-y;
+    const n=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/2));
+    for(let j=0;j<=n;j++) g.fillRect(Math.round((x+dx*j/n)/2)*2,
+                                   Math.round((y+dy*j/n)/2)*2,w,w);
+  }
+}
+function iceShardDraw(p,X,Y,a){
+  const sz=p.s*(1-.12*p.t/p.T), ang=p.ph+p.t*(p.spin||.4);
+  const c=Math.cos(ang),sn=Math.sin(ang),pt=(x,y)=>[X+x*c-y*sn,Y+x*sn+y*c];
+  const A=pt(-sz*.13,-sz),B=pt(sz*.62,-sz*.38),C=pt(sz*.43,sz*.72),
+        D=pt(-sz*.35,sz*.64),E=pt(-sz*.64,-sz*.28),F=pt(sz*.04,-sz*.04);
+  icePoly([A,B,C,D,E],`rgba(96,195,230,${a*.96})`);
+  icePoly([A,E,D,F],`rgba(174,233,251,${a*.92})`);
+  icePoly([A,B,F],`rgba(218,250,255,${a*.94})`);
+  icePoly([B,C,F],`rgba(69,152,197,${a*.85})`);
+  iceLine([A,B,C,D,E,A],`rgba(65,144,173,${a*.65})`,4);
+  iceLine([D,E,A,B],`rgba(245,255,255,${a})`);
+  iceLine([B,C,D],`rgba(188,241,254,${a})`);
+  if(sz>7) iceLine([A,F,D],`rgba(233,253,255,${a*.8})`);
+}
+function icePlateRise(m){
+  if(!(m.frzPose || m.frzT>0)) return 0;
+  const k=m.frzT>0?1:Math.min(1,Math.max(0,m.chill||0)/1.2);
+  return (108*(m.big?1.45:1)+14-70)*k;
+}
+function iceBurst(x,y,k,shatter=false,big=1){
+  const n=Math.min(shatter?14:22,k||18);
+  for(let i=0;i<n;i++){
+    const a=i/n*Math.PI*2+(Math.random()-.5)*.22;
+    const sp=shatter?90+Math.random()*95:90+Math.random()*100;
+    const large=shatter && i<8;
+    fireAdd(x+(Math.random()-.5)*(shatter?56:8)*big,
+      y-(shatter?16+Math.random()*70:34+Math.random()*10)*big,
+      Math.cos(a)*sp,shatter?-85-Math.random()*80:Math.sin(a)*sp*.4-95,
+      shatter?.75+Math.random()*.2:.45+Math.random()*.25,
+      (large?11+Math.random()*7:3+Math.random()*5)*big,"sh");
+    const p=FIRE[FIRE.length-1];p.spin=(Math.random()-.5)*(large?1.4:4);p.floor=y+10;
+    if(large) p.ph=(i%4)*.5+(Math.random()-.5)*.15;
+  }
+  for(let i=0;i<5;i++)fireAdd(x+(Math.random()-.5)*60*big,y-5-Math.random()*8,
+    (Math.random()-.5)*26,-2-Math.random()*5,.9+Math.random()*.3,14+Math.random()*12,"mi");
+}
+function zapBurst(x,y,k){
+  for(let i=0;i<(k||14);i++){ const a=Math.random()*6.28, sp=80+Math.random()*180;
+    fireAdd(x, y-26, Math.cos(a)*sp, Math.sin(a)*sp, .18+Math.random()*.25, 2, "z"); }
+}
+/* a seeded RNG, so a bolt holds its shape for one flicker and re-forks on the next */
+function rng(seed){ let t=seed>>>0; return ()=>{ t+=0x6D2B79F5; let r=Math.imul(t^t>>>15,1|t);
+  r^=r+Math.imul(r^r>>>7,61|r); return ((r^r>>>14)>>>0)/4294967296; }; }
+/* v72-test-V5b: FEWER, STRAIGHTER STEPS. Five rounds of subdivision with round joins drew a
+   wriggling rope ("the curving shapes of the thunder is too much"). Three rounds and mitred
+   joins give the sharp zigzag lightning actually has: a few long straight runs, hard corners. */
+function boltPath(x0,y0,x1,y1,R,disp,iters){
+  let pts=[[x0,y0],[x1,y1]];
+  for(let it=0;it<(iters||3);it++){ const np=[pts[0]];
+    for(let i=0;i<pts.length-1;i++){ const [ax,ay]=pts[i],[bx,by]=pts[i+1];
+      const mx=(ax+bx)/2, my=(ay+by)/2, len=Math.hypot(bx-ax,by-ay)||1;
+      const off=(R()-.5)*disp*len/ (1+it*.15);
+      np.push([mx+(-(by-ay)/len)*off, my+((bx-ax)/len)*off],[bx,by]); }
+    pts=np; disp*=.55; }
+  return pts;
+}
+function strokeBolt(pts,cam,a,wide){
+  /* a dark halo first: a pale bolt on a bright meadow disappears, so it is drawn the way pixel
+     art draws anything bright on bright - outlined */
+  for(const [w,c] of [[wide?13:9,"rgba(40,28,8,"+(.32*a)+")"],[wide?8:6,"rgba(255,206,60,"+(.9*a)+")"],[wide?4:3,"rgba(255,255,245,"+a+")"]]){
+    g.strokeStyle=c; g.lineWidth=w; g.beginPath();
+    pts.forEach(([x,y],i)=>{ const X=Math.round(x-cam.x), Y=Math.round(y-cam.y); i?g.lineTo(X,Y):g.moveTo(X,Y); });
+    g.stroke(); }
+}
+function drawStrike(p,cam,a){
+  const R=rng((p.seed|0)+((S.t*24)|0));
+  const top=p.y-480, sx=p.x+(R()-.5)*90;
+  const main=boltPath(sx,top,p.x,p.y-30,R,.5,4);
+  g.fillStyle="rgba(8,10,30,"+(.30*a)+")"; g.fillRect(-4000,-4000,9000,9000);   /* the sky goes dark for the strike */
+  g.save(); g.lineCap="square"; g.lineJoin="miter"; g.miterLimit=6;
+  strokeBolt(main,cam,a,true);
+  for(let b=0;b<3;b++){ const k=2+((R()*(main.length-6))|0), [bx,by]=main[k];
+    const ex=bx+(R()-.5)*120, ey=by+40+R()*80;
+    strokeBolt(boltPath(bx,by,ex,ey,R,.45,2),cam,a*.7,false); }
+  /* where it lands: a white-gold flash on the ground */
+  const gx=p.x-cam.x, gy=p.y-cam.y;
+  const gr=g.createRadialGradient(gx,gy,2,gx,gy,46); gr.addColorStop(0,"rgba(255,250,215,"+(.75*a)+")"); gr.addColorStop(1,"rgba(255,230,120,0)");
+  g.fillStyle=gr; g.save(); g.translate(gx,gy); g.scale(1,.5); g.translate(-gx,-gy); g.beginPath(); g.arc(gx,gy,46,0,6.28); g.fill(); g.restore();
+  g.restore();
+}
+function drawChain(p,cam,a){
+  const R=rng((p.seed|0)+((S.t*30)|0));
+  g.save(); g.lineCap="square"; g.lineJoin="miter"; g.miterLimit=6;
+  for(let i=0;i<p.pts.length-1;i++){ const [x0,y0]=p.pts[i],[x1,y1]=p.pts[i+1];
+    strokeBolt(boltPath(x0,y0,x1,y1,R,.4,3),cam,a,false);
+    if(R()<.4){ const path=boltPath(x0,y0,x1,y1,R,.5,2); strokeBolt(path,cam,a*.45,false); } }
+  g.restore();
+}
+/* the frost racing out along the ground: a ring of ice crystals, then a pale sheet */
+/* Ground-only wave: broken contour and branches, with no screen wash. */
+function drawFrost(p,cam,a){
+  const life=1-a, grow=1-Math.pow(1-Math.min(1,life/.38),3), rr=p.r*grow;
+  const X=p.x-cam.x,Y=p.y-cam.y, seed=(p.x*13+p.y*7)|0;
+  const R=rng(seed), N=28, rim=[];
+  for(let i=0;i<N;i++){
+    const ang=i/N*Math.PI*2, r=rr*(.91+R()*.09);
+    rim.push([X+Math.cos(ang)*r,Y+Math.sin(ang)*r*.5]);
+  }
+  g.save();
+  icePoly(rim,`rgba(166,226,241,${a*.08})`);
+  for(let i=0;i<N;i++){
+    if(i%5===2) continue;
+    const A=rim[i],B=rim[(i+1)%N];
+    iceLine([A,B],`rgba(37,101,126,${a*.38})`,4);
+    iceLine([A,B],`rgba(214,247,255,${a*.85})`);
+    if(i%4===0 && rr>24){
+      const h=(5+R()*7)*a;
+      icePoly([[A[0]-4,A[1]+2],[A[0]+2,A[1]-h],[A[0]+5,A[1]+2]],`rgba(142,215,239,${a})`);
+      iceLine([[A[0]-4,A[1]],[A[0]+2,A[1]-h]],`rgba(246,255,255,${a})`);
+    }
+  }
+  for(let i=0;i<9;i++){
+    const ang=i/9*Math.PI*2+R()*.2, len=rr*(.42+R()*.34);
+    const A=[X+Math.cos(ang)*8,Y+Math.sin(ang)*4];
+    const B=[X+Math.cos(ang+.14)*len*.5,Y+Math.sin(ang+.14)*len*.25];
+    const C=[X+Math.cos(ang)*len,Y+Math.sin(ang)*len*.5];
+    iceLine([A,B,C],`rgba(184,237,249,${a*.42})`);
+  }
+  g.restore();
+}
+function iceGround(m,cam){
+  const a=m.frzT>0?.95:Math.min(1,(m.chill||0)/1.2)*.42;
+  if(a<=0)return;
+  const X=m.x-cam.x,Y=m.y-cam.y,b=m.big?1.45:1,R=rng((m.uid||0)*1109+731);
+  g.save();
+  const rim=[];
+  for(let i=0;i<22;i++){
+    const ang=i/22*Math.PI*2,len=(40+R()*7)*b;
+    rim.push([X+Math.cos(ang)*len,Y+Math.sin(ang)*len*.39]);
+  }
+  icePoly(rim,`rgba(155,227,249,${a*.10})`);
+  for(let i=0;i<22;i++)if(i%4!==2)iceLine([rim[i],rim[(i+1)%22]],`rgba(221,251,255,${a*.70})`);
+  for(let i=0;i<9;i++){
+    const ang=i/9*Math.PI*2,len=(35+R()*25)*b;
+    const B=[X+Math.cos(ang+.14)*len*.5,Y+Math.sin(ang+.14)*len*.22];
+    const C=[X+Math.cos(ang)*len,Y+Math.sin(ang)*len*.44];
+    iceLine([[X,Y],B,C],`rgba(41,123,158,${a*.44})`,4);
+    iceLine([[X,Y],B,C],`rgba(226,253,255,${a*.94})`);
+    iceLine([B,[B[0]+Math.cos(ang+.85)*len*.36,B[1]+Math.sin(ang+.85)*len*.17]],
+      `rgba(179,237,253,${a*.86})`);
+  }
+  g.restore();
+}
+/* One ground contact per arriving player arrow. Cosmetic only, including blocked hits. */
+function arrowGroundImpact(a,m){
+  if(!a||!m||a.groundFx)return;
+  a.groundFx=true;
+  if(!S.skFx)S.skFx=[];
+  /* Own the point: the mark must not follow its victim or vanish with a kill. */
+  S.skFx.push({k:"arrowGround",x:m.x,y:m.y,element:a.sk||"normal",ang:a.ang||0,
+    big:!!m.big,seed:((m.x*31+m.y*17+S.t*1000)|0),t:.8,T:.8});
+  const marks=S.skFx.filter(p=>p.k==="arrowGround");
+  if(marks.length>48){const drop=new Set(marks.slice(0,marks.length-48));S.skFx=S.skFx.filter(p=>!drop.has(p));}
+}
+/* Seeded fractures grow once, then remain fixed in world space until they fade. */
+function drawImpactCracks(p,cam,a){
+  const age=(1-a)*p.T,grow=.35+.65*Math.min(1,age/.12),b=p.big?1.35:1;
+  const X=p.x-cam.x,Y=p.y-cam.y+2,R=rng(p.seed+713),fade=Math.min(1,a*3);
+  const edge=p.element==="freeze"?"rgba(179,238,250,.65)":p.element==="thunder"?"rgba(239,222,156,.58)":"rgba(185,165,116,.68)";
+  g.save();g.globalAlpha*=fade;
+  const centre=[[X-11*b,Y-2*b],[X-4*b,Y-6*b],[X+9*b,Y-4*b],[X+14*b,Y+2*b],[X+1*b,Y+6*b],[X-9*b,Y+4*b]];
+  icePoly(centre,"rgba(33,31,22,.36)");
+  for(let i=0;i<7;i++){
+    const ang=i/7*Math.PI*2+(R()-.5)*.34,len=(46+R()*24)*b*grow,bend=(R()-.5)*.40;
+    const at=(t,k)=>[X+Math.cos(ang+t)*len*k,Y+Math.sin(ang+t)*len*k*.40];
+    const pts=[at(0,.12),at(bend,.38),at(-bend*.6,.64),at(bend*.4,.83),at(0,1)];
+    iceLine(pts.slice(0,3),"rgba(25,27,19,.84)",6);
+    iceLine(pts.slice(2),"rgba(25,27,19,.78)",4);
+    iceLine(pts.map(([x,y])=>[x,y-2]),edge,2);
+    const A=pts[2],side=ang+(i%2?-.85:.85),reach=len*(.24+R()*.12);
+    const branch=[A,[A[0]+Math.cos(side+.16)*reach*.55,A[1]+Math.sin(side+.16)*reach*.22],
+      [A[0]+Math.cos(side)*reach,A[1]+Math.sin(side)*reach*.40]];
+    iceLine(branch,"rgba(30,31,21,.70)",4);iceLine(branch.map(([x,y])=>[x,y-2]),edge,2);
+    if(i%2===0){
+      const [x,y]=pts[3];
+      icePoly([[x+3,y+2],[x+7,y],[x+10,y+3],[x+5,y+5]],"rgba(40,38,27,.50)");
+      iceLine([[x+3,y+2],[x+7,y],[x+10,y+3]],"rgba(194,176,128,.62)",2);
+    }
+  }
+  g.restore();
+}
+function drawArrowGround(p,cam,a){
+  const age=(1-a)*p.T,b=(p.big?1.35:1)*1.8,X=p.x-cam.x,Y=p.y-cam.y+2;
+  const R=rng(p.seed),elem=p.element,early=Math.max(0,1-age/.38),fade=Math.min(1,a*2.5);
+  g.save();g.globalAlpha*=fade;
+  drawImpactCracks(p,cam,a);
+  if(elem==="burn"){g.restore();return;}  /* cracks only: original fire supplies its own glow, burst and wave */
+  /* Dark contact gives the pale dust/cracks contrast on grass and sand. */
+  g.fillStyle=elem==="burn"?"rgba(58,29,17,.32)":"rgba(28,34,27,.23)";
+  g.beginPath();g.ellipse(X,Y,17*b,6*b,0,0,Math.PI*2);g.fill();
+  if(elem==="normal"){
+    const nx=Math.cos(p.ang),ny=Math.sin(p.ang)*.35;
+    iceLine([[X-nx*13*b,Y-ny*13*b],[X+nx*7*b,Y+ny*7*b]],"rgba(35,30,22,.78)",4);
+    iceLine([[X-nx*12*b,Y-ny*12*b],[X+nx*6*b,Y+ny*6*b]],"#c4ab73",2);
+    iceLine([[X-nx*10*b-ny*4,Y-ny*10*b+nx*3],[X-nx*6*b,Y-ny*6*b]],"#e4ddbd",2);
+  }else{
+    const color=elem==="freeze"?"#c9f8ff":elem==="thunder"?"#fff1a6":"#ffbc52";
+    const dark=elem==="freeze"?"rgba(47,119,147,.65)":elem==="thunder"?"rgba(105,73,32,.65)":"rgba(119,43,18,.65)";
+    for(let i=0;i<5;i++){
+      const t=i/5*Math.PI*2+R()*.35,len=(17+R()*16)*b;
+      const pts=[[X,Y],[X+Math.cos(t+.20)*len*.45,Y+Math.sin(t+.20)*len*.20],
+        [X+Math.cos(t-.15)*len*.72,Y+Math.sin(t-.15)*len*.31],[X+Math.cos(t)*len,Y+Math.sin(t)*len*.43]];
+      iceLine(pts,dark,4);iceLine(pts,color,2);
+      if(elem==="freeze"){
+        const [cx,cy]=pts[3];icePoly([[cx-3,cy],[cx+1,cy-6-early*5],[cx+5,cy+2]],"rgba(127,218,242,.8)");
+        iceLine([[cx-3,cy],[cx+1,cy-6-early*5]],color,2);
+      }else if(elem==="burn"){
+        const [cx,cy]=pts[2];g.save();g.globalAlpha*=early;
+        fireTongue(cx,cy,6*b,(7+R()*8)*b,p.seed+i+age*10);g.restore();
+      }
+    }
+  }
+  if(early>0){
+    const rr=(10+25*(1-early))*b,pts=[];
+    for(let i=0;i<=28;i++){const t=i/28*Math.PI*2;pts.push([X+Math.cos(t)*rr,Y+Math.sin(t)*rr*.4]);}
+    g.save();g.globalAlpha*=early;
+    iceLine(pts,"rgba(37,35,27,.45)",6);
+    iceLine(pts,elem==="freeze"?"#defaff":elem==="thunder"?"#fff6bd":elem==="burn"?"#ffc45d":"#d8caa0",2);
+    g.restore();
+  }
+  /* Short dust lobes travel out from the contact, never into the word plaque. */
+  for(let i=0;i<6;i++){
+    const t=i/6*Math.PI*2+R()*.3,speed=15+R()*16,life=.32+R()*.14,particleSize=4+R()*3;
+    const f=age/life;if(f>=1)continue;
+    const cx=X+Math.cos(t)*(6+f*speed)*b,cy=Y+Math.sin(t)*(3+f*speed*.4)*b-Math.sin(f*Math.PI)*8;
+    const sz=Math.max(2,Math.round(particleSize*b*(1-f*.35)/2)*2);
+    g.fillStyle=`rgba(221,204,156,${(1-f)*.65})`;
+    g.fillRect(Math.round(cx/2)*2-sz/2,Math.round(cy/2)*2-sz/2,sz,sz);
+  }
+  g.restore();
+}
+function skFxGround(cam){
+  for(const p of S.skFx||[]){
+    const a=Math.max(0,p.t/p.T);
+    if(p.k==="arrowGround")drawArrowGround(p,cam,a);
+    else if(p.k==="frost")drawFrost(p,cam,a);
+  }
+  for(const m of live()) if(m.chill>0){
+    g.save(); if(!mobLit(m)) g.globalAlpha=MOB_FADE;
+    iceGround(m,cam); g.restore();
+  }
+}
+function iceImpact(p,cam,a){
+  const age=(1-a)*p.T,fade=Math.max(0,1-age/.32);
+  if(fade<=0)return;
+  const ang=p.ang||0,nx=Math.cos(ang),ny=Math.sin(ang);
+  const X=p.x-cam.x-nx*14,Y=p.y-cam.y-40-ny*14,R=rng((p.x*19+p.y*3)|0),pts=[];
+  for(let i=0;i<16;i++){
+    const ang=i/16*Math.PI*2-Math.PI*.5;
+    const len=i%2===0?(i%4===0?38:27)+R()*7:8+R()*5;
+    pts.push([X+Math.cos(ang)*len,Y+Math.sin(ang)*len]);
+  }
+  g.save();
+  iceLine([[X-nx*86,Y-ny*86],[X-nx*10,Y-ny*10]],`rgba(93,213,251,${fade*.85})`,4);
+  iceLine([[X-nx*72,Y-ny*72],[X-nx*10,Y-ny*10]],`rgba(242,255,255,${fade})`);
+  iceLine([...pts,pts[0]],`rgba(71,173,213,${fade*.8})`,5);
+  icePoly(pts,`rgba(225,253,255,${fade*.96})`);
+  icePoly([[X,Y-24],[X+5,Y-5],[X+25,Y],[X+6,Y+5],[X,Y+25],[X-5,Y+6],[X-27,Y],[X-6,Y-5]],
+    `rgba(255,255,255,${fade})`);
+  for(let i=0;i<5;i++){
+    const ang=i/5*Math.PI*2,len=38+R()*15,cx=X+Math.cos(ang)*len,cy=Y+Math.sin(ang)*len*.7;
+    icePoly([[cx,cy-4],[cx+3,cy],[cx,cy+4],[cx-3,cy]],`rgba(201,248,255,${fade})`);
+  }
+  g.restore();
+}
+/* A FROZEN BODY: a block of ice over the sprite for the hold, frost under it, sparkles; the last
+   fifth of the hold it cracks; when it ends it shatters (see iceTick) */
+function iceShell(m,cam){
+  const left=Math.max(0,m.frzT),age=FRZ_HOLD-left,b=m.big?1.45:1;
+  const form=Math.min(1,Math.max(0,(age-.10)/.14));
+  if(form<=0)return;
+  const w=82*b,h=108*(.65+.35*form)*b,X=m.x-cam.x,Y=m.y-cam.y+3;
+  const pt=(x,y)=>[X+x*w,Y+y*h];
+  const A=pt(.05,-1),B=pt(.39,-.82),C=pt(.51,-.28),D=pt(.32,-.02),
+        E=pt(-.30,0),F=pt(-.51,-.20),G=pt(-.43,-.79),H=pt(-.06,-.58),I=pt(.23,-.36);
+  g.save();
+  g.globalAlpha*=form;
+  icePoly([A,B,C,D,E,F,G],"rgba(112,207,239,.34)");
+  icePoly([A,G,F,E,H],"rgba(170,234,253,.32)");
+  icePoly([A,B,H],"rgba(226,253,255,.40)");
+  icePoly([B,C,D,I,H],"rgba(68,161,211,.31)");
+  icePoly([E,F,H,I,D],"rgba(133,220,246,.22)");
+  /* Thick cyan bevel beneath the white cut edge, matching the reference's solid crystal. */
+  const rim=[A,B,C,D,E,F,G,A];
+  iceLine(rim,"rgba(47,128,163,.52)",6);
+  iceLine(rim,"rgba(117,220,251,.97)",4);
+  iceLine([E,F,G,A,B],"rgba(247,255,255,1)");
+  iceLine([B,C,D,E],"rgba(220,250,255,.98)");
+  iceLine([A,H,E],"rgba(239,254,255,.85)");
+  iceLine([G,H,I,C],"rgba(218,248,255,.78)");
+  iceLine([H,B],"rgba(231,253,255,.72)");
+  iceLine([I,D],"rgba(205,242,255,.64)");
+  for(const side of [-1,1]){
+    const a=pt(side*.29,-.02),b=pt(side*.68,-.34),c=pt(side*.61,.02),d=pt(side*.46,-.15);
+    icePoly([a,b,c],"rgba(108,211,244,.91)");
+    icePoly([a,b,d],"rgba(201,247,255,.75)");
+    iceLine([a,b,c],"rgba(240,254,255,.98)");
+    iceLine([b,d,c],"rgba(141,223,252,.87)");
+  }
+  if(left<.4){
+    const a=Math.min(1,(.4-left)/.16);
+    const p=[pt(.01,-.88),pt(.17,-.7),pt(-.04,-.52),pt(.2,-.35),pt(.04,-.08)];
+    iceLine(p,`rgba(47,119,164,${a*.8})`,4);iceLine(p,`rgba(250,255,255,${a})`);
+    iceLine([p[2],pt(-.27,-.42),pt(-.46,-.47)],`rgba(242,254,255,${a})`);
+  }
+  for(let i=0;i<3;i++){
+    const phase=(S.t*1.25+i*.41+(m.uid||0)*.17)%1;
+    if(phase>.33)continue;
+    const p=pt(i===0?-.58:i===1?.57:.17,i===0?-.64:i===1?-.40:-1.05),a=1-phase/.33;
+    icePoly([[p[0],p[1]-5],[p[0]+4,p[1]],[p[0],p[1]+5],[p[0]-4,p[1]]],`rgba(232,254,255,${a})`);
+  }
+  g.restore();
+}
+function iceTick(dt){
+  for(const m of live()){
+    if(m.frzT>0){
+      if(Math.random()<dt*7){const side=Math.random()<.5?-1:1;
+        fireAdd(m.x+side*(25+Math.random()*20)*(m.big?1.45:1),m.y-4-Math.random()*5,
+          side*(3+Math.random()*7),-2,.8+Math.random()*.3,18+Math.random()*10,"mi");}
+      m.frzT-=dt; if(m.frzT<=0){m.frzT=0;iceBurst(m.x,m.y,14,true,m.big?1.45:1);blip(1800,.05,"triangle",.04,900);}
+    } else if(m.chill>0 && Math.random()<dt*5)fireAdd(m.x+(Math.random()-.5)*65,m.y-4-Math.random()*7,
+      (Math.random()-.5)*12,-2-Math.random()*3,.8+Math.random()*.4,14+Math.random()*8,"mi");
+  }
+}
+/* ICICLES on a frozen or chilled name: hung from the plate's foot, the lock pointer's gap left clear */
+function plateIce(x,y,w,h,m){
+  const k=m.frzT>0?1:Math.min(1,(m.chill||0)/1.2)*.65;
+  if(k<=0)return;
+  g.save();g.globalAlpha*=k;
+  const rim=[[x-2,y-2],[x+w,y-2],[x+w,y+h-2],[x-2,y+h-2],[x-2,y-2]];
+  iceLine(rim,"rgba(100,208,242,.74)",4);
+  iceLine(rim,"rgba(227,253,255,.95)");
+  /* Small frost peaks sit above the plate, away from letters and the tag centre. */
+  for(const t of [.05,.22,.79,.94]){
+    const cx=x+w*t;
+    icePoly([[cx-5,y-2],[cx-1,y-7],[cx+3,y-2]],"rgba(205,248,255,.91)");
+  }
+  for(const t of [.06,.20,.80,.94]){
+    const cx=x+w*t;if(Math.abs(cx-(x+w/2))<14)continue;
+    const L=(t===.06||t===.94?15:8)*k,base=y+h+2;
+    icePoly([[cx-4,base],[cx+4,base],[cx-1,base+L]],"rgba(102,200,236,.95)");
+    iceLine([[cx-4,base],[cx-1,base+L]],"rgba(245,255,255,.98)");
+  }
+  g.restore();
+}
+/* a STUNNED name crackles: two short arcs that jump to a new place on the rim every few frames */
+function plateZap(x,y,w,h,m){
+  const R=rng(((m.x|0)*31)+((S.t*18)|0));
+  g.save(); g.lineCap="square"; g.lineJoin="miter";
+  for(let i=0;i<2;i++){
+    const side=(R()*4)|0, t0=R();
+    let x0,y0,x1,y1; const L=18+R()*16;
+    if(side===0){ x0=x+t0*w; y0=y; x1=x0+L; y1=y; } else if(side===1){ x0=x+t0*w; y0=y+h; x1=x0+L; y1=y+h; }
+    else if(side===2){ x0=x; y0=y+t0*h; x1=x; y1=y0+L*.6; } else { x0=x+w; y0=y+t0*h; x1=x+w; y1=y0+L*.6; }
+    const pts=boltPath(x0,y0,x1,y1,R,.6,2);
+    for(const [lw,c] of [[4,"rgba(255,232,120,.35)"],[2,"rgba(255,255,235,.95)"]]){ g.strokeStyle=c; g.lineWidth=lw; g.beginPath();
+      pts.forEach(([px,py],j)=>j?g.lineTo(Math.round(px),Math.round(py)):g.moveTo(Math.round(px),Math.round(py))); g.stroke(); }
+  }
+  g.restore();
+}
+/* v72-test-V9: A BODY ABLAZE loses SK_DMG (half a heart) evenly over BURN_T seconds. A fresh
+   Burn refreshes what is left to the full half heart; it never stacks to a whole one. */
+const BURN_T=()=>nodeEmbT();
+function setAblaze(m){ m.burnLeft=SK_DMG; m.burnRate=SK_DMG/Math.max(.5,BURN_T()); }
+function burnTick(dt){
+  for(const m of live()){
+    if(!(m.burnLeft>0)) continue;
+    const d=Math.min(m.burnLeft, m.burnRate*dt);
+    m.burnLeft-=d;
+    const b=(m.hp==null?1:m.hp); m.hp=Math.max(0,b-d);
+    if(m.hp<=1e-4){ m.hp=0; m.burnLeft=0; m.dead=true; S.kills++; if(m.muster) decree(m);
+      if(S.lock===m){ S.lock=null; S.typed=0; } fireBurst(m.x,m.y,18); }
+  }
+}
+function skFxTick(dt){ burnTick(dt); if(S.hpPops) S.hpPops=S.hpPops.filter(q=>(q.t-=dt)>0); if(S.skFx) S.skFx=S.skFx.filter(p=>(p.t-=dt)>0); fireTick(dt); iceTick(dt); }
+function skFxDraw(cam){
+  if(S.hpPops) for(const q of S.hpPops){ const e=1-q.t;
+    g.save(); g.globalAlpha=Math.min(1,q.t*2.5); g.font='bold '+(q.v>=28?18:15)+'px system-ui'; g.textAlign="center";
+    g.fillStyle=q.v>=28?"#ff5040":"#ff8a70"; g.fillText("-"+q.v, Math.round(P.x-cam.x), Math.round(P.y-cam.y-78-e*26)); g.restore(); }
+  fireDraw(cam);
+  /* v76: the ice block is drawn with its body (see iceShell in the mob loop), not over the scene */
+  if(!S.skFx) return;
+  for(const p of S.skFx){
+    const a=Math.max(0,p.t/p.T);
+    if(p.k==="ring"){
+      const rr=p.r*(1.05-.35*a);
+      g.save(); g.translate(p.x-cam.x,p.y-cam.y); g.scale(1,.5);
+      g.fillStyle="rgba("+p.col+","+(.18*a)+")"; g.beginPath(); g.arc(0,0,rr,0,Math.PI*2); g.fill();
+      g.strokeStyle="rgba("+p.col+","+(.9*a)+")"; g.lineWidth=4;
+      g.beginPath(); g.arc(0,0,rr,0,Math.PI*2); g.stroke(); g.restore();
+    } else if(p.k==="strike"){ drawStrike(p,cam,a);
+    } else if(p.k==="frost"){ iceImpact(p,cam,a);
+    } else if(p.k==="bolt" && p.seed!=null){ drawChain(p,cam,a);
+    } else if(p.k==="bolt"){
+      g.save(); g.lineCap="round"; g.lineJoin="round";
+      for(const [w,c] of [[6,"rgba(242,216,87,"+(.35*a)+")"],[2.5,"rgba(255,250,210,"+a+")"]]){
+        g.strokeStyle=c; g.lineWidth=w; g.beginPath();
+        for(let i=0;i<p.pts.length-1;i++){
+          const [x0,y0]=p.pts[i], [x1,y1]=p.pts[i+1];
+          if(i===0) g.moveTo(x0-cam.x,y0-cam.y);
+          for(let s2=1;s2<=5;s2++){ const f=s2/5, j=(s2<5)?((((i*7+s2*13)%9)-4)*3):0;
+            g.lineTo(x0+(x1-x0)*f-cam.x+j, y0+(y1-y0)*f-cam.y-j*.6); }
+        }
+        g.stroke();
+      }
+      g.restore();
+    }
+  }
+}
 /* ARE YOU STANDING IN FRONT OF ITS SHIELD? One function, because three things have to agree
    about the answer or the unit is unfair: the plaque tag that tells you now, the ground wedge
    that shows you where, and the hit resolver that acts on it. If the tag ever said OPEN while
@@ -1585,7 +2266,7 @@ function shieldBlocks(m){
    and one place a new element has to touch. Named burn() when Ember was the only one;
    kept as burn() so the twenty call sites and every test that references it do not
    churn, with resolve() as the honest name. */
-function resolve(src){ burn(src); chill(src); }
+function resolve(src){ burn(src); chill(src); skLoose(src); }
 function chill(src){
   if(elemNow()!=="frost") return;
   /* the source chills too, exactly as Ember lights its own source - a lone fast enemy
@@ -1694,7 +2375,29 @@ const CHMAP =()=>MAPS.chapters[S.chapter];      /* this chapter's terrain */
   }
 })();
 
+/* v70: NO CHAPTER BORROWS ANOTHER'S GROUND. In v69 the world map of III was I's, IV was II's, VI
+   was V's and VIII was VII's, character for character, and VI's ten arenas were V's floors. Each
+   now has its own: III four islets on a blighted span, IV a storm-ridged headland, VI a sunken
+   block of crypts split by a gutter, VIII the Marshal's camp (v71: a smaller camp with every quarter used); VI's arenas are guttered floors
+   (channels that cut the room into lanes) under VI's own lamps, lanes and start. Applied here,
+   before the load-time validators below, so every rule they police is checked against it.
+   Source: islands/designs.py + islands/arenas.py - roads are the walking rules between markers. */
+(function redrawnChapters(){
+  const REDRAWN = {"III":{"over":{"name":"the-blighted-span","t":["~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~...~~~~~~~~~~~~~.~~~~~~~~","~~~~~~~~~~~~~~......~~~~~~~~~..#####..~~","~~~~~~~~~~~~.........~~~~~~~~..#####...~","~~~~~~~~~~~.........~~~~~~~~~...%/.....~","~~~~####~~~~........~~~~~~~~.%%%%%%....~","~~~~####...........%%~~~~~~~.%%%%%%%%%.~","~~~../........~~~..%%%.....~%.%%%%%%%%.~","~~~.........~~~~~~.%%%.....~..%%%%%%%%~~","~~~.........~~~~~~~~..%%..%..~.%%..%.~~~","~~~.........~~~~~~~~.%%%%%%...~%%%%.~~~~","~~~~.......~~~~~~~~~.%%%%%%...~...%~~~~~","~~~~~.....~~~~~~~~~~..%%%%%%~~~~.~~~~~~~","~~~~~~...~~~~~~~~~~~~~....~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"],"d":["                                        ","                                        ","                                        "," w                 w                    ","                          w             ","              TT TTT             C      ","                    T        br  b  br  ","                             b          ","     S                      r        r  ","    Tb  b       T            r b        ","                        rb            r ","   TT                                   ","                 w                      ","          T                   wr        ","     H                      r           ","                                        ","      H               r                 ","                                        ","           w                            ","                                        ","       ww                               ","                                        "],"lo":5,"hi":5,"sea":"#3a5a52","road":[[4,13],[5,13],[6,13],[7,13],[8,13],[8,14],[8,15],[6,12],[6,11],[7,11],[8,11],[9,11],[10,11],[10,10],[11,10],[12,10],[12,9],[12,8],[12,7],[12,6],[13,7],[14,7],[15,7],[16,7],[17,7],[18,7],[18,8],[18,9],[18,10],[19,10],[20,10],[20,11],[20,12],[21,12],[22,12],[23,12],[24,12],[25,12],[26,12],[26,13],[26,14],[26,15],[27,12],[28,12],[28,11],[29,11],[30,11],[31,11],[32,11],[33,11],[34,11],[35,11],[36,11],[33,10],[33,9],[33,8]]},"nodes":[[4,13],[8,15],[6,11],[12,6],[18,7],[22,12],[26,15],[30,11],[36,11],[33,8]]},"IV":{"over":{"name":"the-stormward","t":["~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~..########~~~~~~~~~~~~~","~~~~~~##########...########.~~~~~~~~~~~~","~~~~~~##########...../.../....~~.~~~~~~~","~~~~~~~./..../.....................~~~~~","~~~~...........................#####~~~~","~~~............................#####~~~~","~~~............................../..~~~~","~~~.................................~~~~","~~~~...............................~~~~~","~~~~~..............................~~~~~","~~~~~~.............................~~~~~","~~~~~~~.........~~~~..............~~~~~~","~~~~~~~~~.....~~~~~~~~~~..........~~~~~~","~~~~~~~~~~~~.~~~~~~~~~~~~~~.....~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~..~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"],"d":["                                        ","                                        ","                                        ","           w w      w           w       ","                   S          w         ","               S                        ","      r                    r            ","   w                           r        ","          r                r     Cr     ","                                    w   ","             T                          ","              T b                  S    ","           r  b    r  r            w    ","           r                            ","           r        b                   "," w     H     T                          ","         HT b        w    rr         w  ","  w         r                r r        ","                                        ","                         w              ","                 w                      ","                                        "],"lo":2,"hi":3,"sea":"#27384f","road":[[7,14],[7,13],[7,12],[7,11],[7,10],[6,10],[5,10],[4,10],[8,10],[8,9],[8,8],[8,7],[8,6],[8,5],[9,5],[10,5],[11,5],[12,5],[13,5],[13,6],[13,7],[13,8],[14,8],[15,8],[16,8],[17,8],[18,8],[19,8],[20,8],[21,8],[21,7],[21,6],[21,5],[21,4],[22,4],[23,4],[24,4],[25,4],[25,5],[25,6],[25,7],[25,8],[25,9],[25,10],[25,11],[26,11],[27,11],[28,11],[29,11],[29,12],[29,13],[29,14],[30,14],[31,14],[32,14],[33,14],[33,13],[33,12],[33,11],[33,10]]},"nodes":[[7,14],[4,10],[8,8],[10,5],[15,8],[22,4],[25,7],[29,11],[33,14],[33,10]]},"VI":{"over":{"name":"the-guttered-vaults","t":["~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~.......~~~~~~~~~~~~~~~~~~~","~~~~..............~~~~..............~~~~","~~~~..####..####..~~~~..####..####..~~~~","~~~~..####..####..~~~~..####..####..~~~~","~~~~.../...../....~~~~..../...../....~~~","~~~~..............~~~~...............~~~","~~~~...............~~.................~~","~~~~...............~~.................~~","~~~~..................................~~","~~~~..####....................####...~~~","~~~~..####..####.........####.####...~~~","~~~~..../...####..~~~~...####../....~~~~","~~~~........./....~~~~..../.........~~~~","~~~~..............~~~~..............~~~~","~~~~..............~~~~..............~~~~","~~~~~~~~~~..................~~~~~~~~~~~~","~~~~~~~~~~~~~..........~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"],"d":["                                        ","                w                       "," w      w                               ","        w w                     w       ","      r  r                              ","        Sr                S             ","                     w               w  ","     b          r  w  r                 ","                                   r    ","                                        ","                      r                 ","       b                                "," w                              C       ","        r r                             ","              r                         ","                                   r    "," w  H          rb                       ","                                        ","                               w      w ","              r       r                 ","    w                         w w       ","                                        "],"lo":3,"hi":3,"sea":"#0b0f16","road":[[5,9],[6,9],[7,9],[8,9],[9,9],[9,10],[10,9],[11,9],[12,9],[13,9],[13,8],[13,7],[13,10],[13,11],[14,11],[15,11],[16,11],[17,11],[18,11],[18,12],[19,12],[20,12],[21,12],[22,12],[23,12],[24,12],[24,11],[24,10],[25,10],[26,10],[26,9],[26,8],[26,11],[27,11],[28,11],[29,11],[29,12],[29,13],[29,14],[29,15],[30,15],[31,15],[32,15],[33,15],[31,14]]},"nodes":[[5,9],[9,10],[13,7],[15,11],[20,12],[24,10],[26,8],[29,11],[33,15],[31,14]]},"VIII":{"over":{"name":"the-marshals-muster","t":["~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~###..................#######~~~~~~","~~~~~~###..................#######~~~~~~","~~~~~~./...................../../.~~~~~~","~~~~~~.........#######.............~~~~~","~~~~~~.........#######.............~~~~~","~~~~~............./.................~~~~","~~~~~...............................~~~~","~~~~~~..................~~~........~~~~~","~~~~~~..................~~~.......~~~~~~","~~~~~~............................~~~~~~","~~~~~~............................~~~~~~","~~~~~~~~~~~~~~.............~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~....~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"],"d":["                                        ","          w                             ","                               w        ","               w            w           ","                                        ","      S  T            rTb   S C  Sw     "," w                     r T    br        ","                       r        b       ","          H         S            b      ","   w            b          r      r     ","                                        ","          H H                   r       ","                                r    w  ","            b b               T         ","          H H                  T S      ","              H  T H       H TT     w   ","                      T T b             ","                   TT r       w         ","                             w          ","                                        ","                               w        ","                                        "],"lo":3,"hi":3,"sea":"#0b0f16","road":[[8,14],[8,13],[8,12],[8,11],[8,10],[8,9],[7,9],[9,9],[10,9],[11,9],[12,9],[12,8],[12,7],[12,6],[13,6],[14,6],[15,6],[16,6],[17,6],[18,6],[14,7],[14,8],[14,9],[14,10],[14,11],[15,11],[16,11],[17,11],[18,11],[18,10],[18,9],[18,8],[19,11],[20,11],[21,11],[22,11],[23,11],[23,10],[23,9],[22,12],[22,13],[22,14],[21,13],[20,13],[19,13],[18,13],[17,13],[16,13],[24,11],[25,11],[26,11],[27,11],[28,11],[29,11],[29,10],[29,9],[29,8],[30,8]]},"nodes":[[8,14],[7,9],[12,6],[18,6],[18,8],[23,9],[22,14],[16,13],[29,11],[30,8]]}};
+  const VI_GROUND = [{"t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..............~~..~","~.............~~...~","~............~~....~","~...........~~.....~","~..........~~......~","~.........~~.......~","~........~~........~","~.......~~.........~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["   w                ","                    ","w                   ","  r         r       ","                    ","    r    P          ","   rr rr        r   ","              r  r w","            r       ","                    ","                    ","                w   "],"lamps":[[8,4],[16,8],[2,8],[13,2]]},{"t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~....~........~....~","~....~........~....~","~....~........~....~","~....~........~....~","~....~........~....~","~....~........~....~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["    ww   w          ","                    ","                    ","                   w","                    ","  P r       r       ","w        r          ","   r w              ","  r             r   ","  r                 ","                    ","                    "],"lamps":[[2,4],[16,9],[11,2]]},{"t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..~~~~~~..~~~~~~..~","~..................~","~..................~","~..~~~~~~..~~~~~~..~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["     ww             ","w                   ","           P        ","                    ","           w        ","                    ","    r              w","        w  w        ","    r            r  ","   r rr      r r    ","                    ","                 w  "],"lamps":[[10,2],[7,9],[16,6]]},{"t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..~~~~~~~..~~~~~..~","~..................~","~..................~","~..................~","~..................~","~..~~~~~..~~~~~~~..~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["                    ","                    ","                   w","w         r         ","                r   ","          P         ","                    ","   r                ","                   w","              r     ","                    ","  w          ww   w "],"lamps":[[10,4],[2,6],[16,7]]},{"t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..~~..........~~..~","~..~~..........~~..~","~..................~","~........~~........~","~........~~........~","~..................~","~..~~..........~~..~","~..~~..........~~..~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":[" w        www       ","                    ","                    ","       P      r     ","             r  r   ","w              r    ","               r    ","    r               ","w     r             ","             r      ","                    ","      w      ww     "],"lamps":[[6,2],[12,8]]},{"t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~...~~~~~..~~~~~...~","~...~.........~~...~","~...~.........~....~","~...............~..~","~...~~........~....~","~...~~~~~..~~~~~...~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["    w               ","                    ","w r                 ","         P          ","     rr             ","   r               w","                   w","        r           ","         r          ","  r         r       ","                    ","                  w "],"lamps":[[8,2],[16,9]]},{"t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~...~...~...~...~..~","~..................~","~.....~...~...~....~","~..................~","~...~...~...~...~..~","~..................~","~.....~...~...~....~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["         w  w     w ","                    ","                    ","                   w","               r    ","           P  w     ","w                   ","      r             ","                   w","                   w","                    ","          w         "],"lamps":[[11,4],[2,6]]},{"t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..~~~~~~..........~","~..................~","~.......~~~~~~~....~","~..................~","~..................~","~....~~~~~~~.......~","~..................~","~..........~~~~~~..~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["   ww      w  ww    ","                    ","  r                 ","              r     ","                    ","         P          ","                    ","   r                ","         r          ","w                   ","w                   ","         w  w  w    "],"lamps":[[8,6],[16,2]]},{"t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~........~~........~","~........~~........~","~........~~........~","~..~~~~.....~~~~~..~","~..~~~~.....~~~~~..~","~........~~........~","~........~~........~","~........~~........~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["           w        ","                    ","  rr                ","        P  r     r  ","                   w","           r        ","                    ","     r r    r       ","              r     ","   r                ","                    ","               w  w "],"lamps":[[8,2],[16,8]]},{"t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~~~~~~.~~~~~...~","~...~~~~~~.~~~~~...~","~...~~~~.....~~~...~","~...~~~~~~.~~~~~...~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["          ww   w    ","                    ","                   w","                   w","                    ","     w   wP    w    ","     w              ","                   w","                    ","      r            w","                    ","     w w            "],"lamps":[[10,4],[2,8]]}];
+  for(const c of MAPS.chapters){
+    const r = REDRAWN[c.key]; if(!r) continue;
+    c.over = JSON.parse(JSON.stringify(r.over));
+    c.nodes = JSON.parse(JSON.stringify(r.nodes));
+  }
+  const vi = MAPS.chapters.find(c=>c.key==="VI");
+  if(vi) VI_GROUND.forEach((g,i)=>{ const st=vi.stages[i]; if(!st) return;
+    st.t=g.t.slice(); st.d=g.d.slice(); st.lamps=g.lamps.map(l=>l.slice()); });
+})();
+
 const NODES =()=>CHMAP().nodes;
+const TEST_UNLOCK=false;  /* v72: the test build's open-everything switch, kept OFF so real progress gates stages and tabs. true opens all of them; saves are untouched either way */
+const PRU   =()=>TEST_UNLOCK ? NSTAGE : S.prog[S.chapter].unlocked;
 const PR    =()=>S.prog[S.chapter];             /* cleared / unlocked, per chapter */
 const NSTAGE=10;
 
@@ -2092,7 +2795,7 @@ const BESTIARY={
        counter:"Accuracy, not speed. It walks at a fifth of yours — the time is there."},
   WD:{ch:"II", rule:"A FALSE NAME OVER A TRUE ONE. Speaking the false name only strips the "
                    +"disguise; what is underneath is armoured and rings arrows off.",
-       counter:"Say the false name, press 2 for Ember, say the true name."},
+       counter:"Say the false name, then press 1 to nock Burn and say the true name."},
   HX:{ch:"II", rule:"REWRITES the names of up to two enemies near it, on a timer — never the "
                    +"one you are typing.",
        counter:"Kill it, or burn it: it cannot rewrite while it is alight."},
@@ -2101,10 +2804,10 @@ const BESTIARY={
        counter:"Kill the Healer first, or spend both heals. It never saves itself."},
   HR:{ch:"III", rule:"NOTHING SPECIAL, AND THAT IS THE POINT — the fastest body in the game. "
                     +"You cannot read, type and retreat from two of them.",
-       counter:"FROST (2). Chilled, it is slower than a Footman for two seconds."},
+       counter:"FREEZE (3). Frozen, then slower than a Footman for two seconds."},
   HD:{ch:"IV", rule:"A T6 NAME on an ordinary body: Ogre-length words on something that dies "
                    +"to one of them.",
-       counter:"SPARK (2) — one keystroke, if the chain is lined up. Or type all of it."},
+       counter:"THUNDER (4) — a bolt that jumps to it takes half its heart. Or type all of it."},
   /* "Endless", NOT "III", and this row was wrong until the bestiary poster started generating
      its own chapter column off the wave scripts and disagreed with it. Every other ch here is a
      DEBUT - the chapter you first meet the unit in - and it is right. The Bulwark has no debut:
@@ -2143,32 +2846,32 @@ const BESTIARY={
      card below traces to the Library, which is how a stale number reaches a new screen. */
      rule:"FASTER THAN ANYTHING ELSE THAT WALKS. It never stops closing, and you "
                         +"cannot open ground on it by walking.",
-       counter:"Press 3. Frost is the only thing that buys the distance back — that is "
-              +"the chapter's own element and this is what it is for."},
+       counter:"Nock Freeze (3) on anything near it. Freezing is the only thing that buys the "
+              +"distance back — that is the chapter's own skill and this is what it is for."},
   LC:{ch:"VII · LXX", rule:"STRIKES FROM OUTSIDE EVERYONE ELSE'S RANGE — a full "
                         +"tile and a half, drawn as a ring on the ground under it.",
        counter:"Stand outside the ring and type. Nothing else on the field reaches that "
               +"far, so the ring is the only thing you have to respect."},
   SM:{ch:"IV · XL", rule:"IT NEVER CLOSES. It stops four tiles out and throws, and "
                        +"four tiles is one Ember radius beyond your reach.",
-       counter:"Press 4. Spark buys a whole word at a distance — or walk in and take "
-              +"the throw. It can always be typed at."},
+       counter:"Nock Thunder (4) on something nearer and let the bolt jump — or walk in and "
+              +"take the throw. It can always be typed at."},
   TR:{ch:"VIII · LXXX", rule:"CANNOT BE NAMED WHILE IT SWINGS. For about a second of "
                           +"windup and blow its name will not take. Five arrows besides.",
        counter:"Take the name BEFORE it starts, or wait the second out — a name you "
               +"have already started is never taken from you."},
   TU:{ch:"II · XX", rule:"A SHELL THAT SHUTS on a clock. While it is shut every arrow "
                        +"rings off, and it opens again on its own a few seconds later.",
-       counter:"Wait, or press 2 — Ember opens it early. Waiting costs one name, which "
-              +"is exactly what the Ember would have bought."},
+       counter:"Wait, or press 1 — Burn opens it early. Waiting costs one name, which "
+              +"is exactly what the Burn would have bought."},
   SK:{ch:"V · L", rule:"WARDED WHILE ANYTHING ELSE LIVES. Every arrow rings off it "
                       +"for as long as one other enemy is standing.",
        counter:"Clear the room around it. The ward is not on a clock and there is nothing "
               +"to wait for — it comes off when the Skull is the last thing left."},
   LZ:{ch:"VI · LX", rule:"FIVE ARROWS, and a new name after every one of them. It has no "
                        +"other rule: it walks at you and it swings.",
-       counter:"Start early and keep the streak. The plaque counts the arrows down for "
-              +"you, and each name is one tier below an Ogre’s."},
+       counter:"Start early and keep the streak. Every arrow empties one of the hearts "
+              +"under its name, and each name is one tier below an Ogre’s."},
   MS:{ch:"VIII", rule:"ITS DRUM CALLS A LEVY from the lane nearest IT, every few seconds, five "
                      +"times. Kill it and every levy it called forgets a tier of its name.",
        counter:"Kill the drum first and the rest of the stage gets cheaper. It walks at a "
@@ -2177,9 +2880,9 @@ const BESTIARY={
        counter:"Type its name — or kill its Marshal and type a shorter one."},
   LS:{ch:"VIII", rule:"IT WALKS ON YOUR KEYSTROKES. Every letter you press, for any name, "
                      +"moves it one stride. Stop typing and it stops.",
-       counter:"Spark kills it for one key. Or say fewer words: it is the only enemy that "
+       counter:"Thunder hurts it without a keystroke of its own. Or say fewer words: it is the only enemy that "
               +"rewards reading the board before you touch the keyboard."},
-  SD:{ch:"VIII", rule:"DIES TO STRIKE AND NOTHING ELSE. Ember, Frost and Spark all gutter on "
+  SD:{ch:"VIII", rule:"DIES TO STRIKE AND NOTHING ELSE. Burn, Freeze and Thunder all gutter on "
                      +"wet hide and the word survives.",
        counter:"Press 1. The mirror of the Warden, and the reason to let go of an element."},
 
@@ -2187,7 +2890,7 @@ const BESTIARY={
                     +"reaches, and then it is an ordinary walker. One Sapper works at a "
                     +"time, however many are on the field.",
        counter:"Beat it to the door and open the door yourself — an open door is nothing "
-              +"to it. Or Frost it: at 70 it is already slower than you, and chilled it "
+              +"to it. Or Freeze it: at 70 it is already slower than you, and chilled it "
               +"is slower than a Footman."},
 };
 /* the order the library lists them in: the order a player MEETS them, not MOBDEF's order and
@@ -2261,18 +2964,20 @@ for(const c of CHDEF) for(const st of c.stages) for(const wv of st.waves)
    wave script, and the only thing left in the source is Chapter V's own stage-list note. */
 
 /* AND EVERY WAVE MUST BE WINNABLE WITH THE ELEMENTS THAT CHAPTER CARRIES.
+   v72: or with the skill it nocks - Burn (SK_OF) is the campaign's fire since the elements left
+   the rosters, so a Burn chapter passes and a Freeze or Thunder chapter with armour still fails.
    Armour only comes off to Ember. Chapters III and IV were first written with Wardens
    in them and no Ember in the slot, which is not a hard wave - it is a wave that
    cannot be finished, and it took a bot playing the stage to notice. A rule that makes
    an enemy unkillable belongs in a boot check, next to the one above. */
-for(const c of CHDEF) for(const st of c.stages) for(const wv of st.waves)
+CHDEF.forEach((c,ci)=>{ for(const st of c.stages) for(const wv of st.waves)
   for(const k in wv){
     const md=MOBDEF[k];
-    if(md && md.armour && ((st.elems||c.elems)||[]).indexOf("ember")<0)
+    if(md && md.armour && ((st.elems||c.elems)||[]).indexOf("ember")<0 && SK_OF[ci]!=="burn")
       console.error(`chapter ${c.key} ${st.n}: "${k}" is armoured and this `
                    +`${st.elems?"STAGE":"chapter"} has no Ember `
                    +`(${((st.elems||c.elems)||[]).join("+")}) - that wave cannot be won`);
-  }
+  } });
 
 /* ---------- saving -----------------------------------------------------------
    Month 1, P0: "an economy you cannot keep is not an economy". What is saved is
@@ -2320,7 +3025,7 @@ function saveNow(){
       prog:S.prog.map(x=>({cleared:x.cleared, unlocked:x.unlocked,
                            rec:(x.rec||[]).map(r=>r&&{wpm:r.wpm|0, stk:r.stk|0, by:r.by||""})})),
       ledger:(S.ledger||[]).map(r=>({w:r.w, t:r.t, d:r.d|0, f:r.f|0})),
-      mute:S.mute, net:NET.on, taught:S.taught, seen:S.seen, tele:TELE, sky:S.sky, run:S.run, wlen:S.wlen|0,
+      mute:S.mute, net:NET.on, taught:S.taught, seen:S.seen, tele:TELE, sky:S.sky, run:S.run, wlen:S.wlen|0, pace:S.pace|0,
       music:S.music,
       ranks:{...S.ranks}, tabs:{...S.tabs}, sp:S.sp, eBest:{...(S.eBest||{})},
       bank:S.bank|0, dealt:{...(S.dealt||{})},
@@ -2399,6 +3104,7 @@ function saveLoad(){
      the campaign exactly as it was built. Clamped on read - a hand-edited save saying 7
      would index past the end of TIERS and hand out no words at all. */
   if(typeof d.wlen==="number") S.wlen=Math.max(-1,Math.min(1,d.wlen|0));
+  if(typeof d.pace==="number") S.pace=Math.max(-1,Math.min(1,d.pace|0));
   /* same treatment as the sky, and for a sharper reason: a save written before the music
      existed has no key at all, and defaulting a MISSING key to off would mean the feature
      never played for anyone who had ever opened the game before it shipped. That is exactly
@@ -2905,6 +3611,12 @@ function canStand(m,px,py,level,swim){
   if(!c.walk) return false;
   return c.t==="stair" || c.level===level;
 }
+/* walkable at ANY level - only ever asked from a stair tile, see moveEntity */
+function canStandAny(m,px,py,swim){
+  const c=cellAt(m,px,py); if(!c) return false;
+  if(swim && c.t==="water") return true;
+  return !!c.walk;
+}
 function moveEntity(m,e,dx,dy,r,swim){
   /* axis-separated so entities slide along walls. The old version probed the
      TRAILING edge, which could veto a legal move and pin a mob on a corner. */
@@ -2914,10 +3626,47 @@ function moveEntity(m,e,dx,dy,r,swim){
      drown check at the end of the frame ever saw them. */
   if(!cur|| (!cur.walk && !(swim&&cur.t==="water"))){ rescue(m,e); return; }
   const lvl=e.level, onStair=cur.t==="stair";
-  if(dx){ const nx=e.x+dx, lead=nx+Math.sign(dx)*r;
-    if(onStair || (canStand(m,lead,e.y-r*0.55,lvl,swim)&&canStand(m,lead,e.y+r*0.55,lvl,swim))) e.x=nx; }
-  if(dy){ const ny=e.y+dy, lead=ny+Math.sign(dy)*r;
-    if(onStair || (canStand(m,e.x-r*0.55,lead,lvl,swim)&&canStand(m,e.x+r*0.55,lead,lvl,swim))) e.y=ny; }
+  /* v61: THE FOOTPRINT IS FLAT. Every body used to be a circle of radius r at its
+     feet, so walking north or south it stopped a full r (13-14px) short of a wall.
+     In this top-down view the collider is the shadow under the feet, which is wide
+     but shallow: left-right keeps r, up-down now uses rd = 0.45r (about 6px). That
+     is what let the player walk up to the rim of a plateau, the foot of a cliff and
+     the edge of a door instead of stopping a step early at an invisible line. The
+     x-probes sit at +-rd too, so a body still slides round a corner the same way. */
+  const rd=r*0.45;
+  /* v61, carried from v50: A STAIR JOINS TWO LEVELS, IT DOES NOT SWITCH COLLISION
+     OFF. This read `onStair || (...)`, so on a stair tile no probe ran at all and a
+     body could walk sideways into the cliff face beside it, then get dragged out of
+     the rock by rescue() a frame later. On a stair the level test is relaxed
+     (either level may be stepped onto) but the tile must still be walkable. */
+  const ok=(px,py)=> onStair ? canStandAny(m,px,py,swim) : canStand(m,px,py,lvl,swim);
+  /* v62: CORNER SLIDE, the player only. A move blocked by the very corner of a
+     wall used to stop dead - on the Chapter II map, standing at the top of the
+     row beside the east plateau and pressing right put the lower half of the
+     footprint against the plateau's west side, and the player stood still with
+     a free lane of grass a few pixels above them. Now, if shifting sideways by
+     no more than NUDGE px would clear the wall, the body is eased that way (at
+     most its own step per frame) instead of stopping. Enemies keep their own
+     jam-and-sidestep rule, which their pathing depends on. */
+  const NUDGE = (e===P) ? Math.round(r*1.9) : 0;   /* ~25px, a third of a tile */
+  if(dx){ const nx=e.x+dx, sx=Math.sign(dx), lead=nx+sx*r;
+    if(ok(lead,e.y-rd)&&ok(lead,e.y+rd)) e.x=nx;
+    else if(NUDGE && !dy){
+      for(let d=1; d<=NUDGE; d++){ let done=false;
+        for(const s of [-1,1]){ const ty=e.y+s*d;
+          if(ok(lead,ty-rd)&&ok(lead,ty+rd) &&
+             ok(e.x-r*0.55,ty+s*rd)&&ok(e.x+r*0.55,ty+s*rd)){
+            e.y+=s*Math.min(Math.abs(dx),d); done=true; break; } }
+        if(done) break; } } }
+  if(dy){ const ny=e.y+dy, sy=Math.sign(dy), lead=ny+sy*rd;
+    if(ok(e.x-r*0.55,lead)&&ok(e.x+r*0.55,lead)) e.y=ny;
+    else if(NUDGE && !dx){
+      for(let d=1; d<=NUDGE; d++){ let done=false;
+        for(const s of [-1,1]){ const tx=e.x+s*d;
+          if(ok(tx-r*0.55,lead)&&ok(tx+r*0.55,lead) &&
+             ok(tx+s*r,e.y-rd)&&ok(tx+s*r,e.y+rd)){
+            e.x+=s*Math.min(Math.abs(dy),d); done=true; break; } }
+        if(done) break; } } }
   const c=cellAt(m,e.x,e.y);
   if(c&&c.walk&&c.t!=="stair") e.level=c.level;
   e.x=Math.max(8,Math.min(m.w*T-8,e.x)); e.y=Math.max(8,Math.min(m.h*T-8,e.y));
@@ -3051,9 +3800,37 @@ function tabooKilled(m){
    Rank 2 is the announcement rather than a second charge: the ward pips flash
    before the hit lands rather than after, so you know the mercy is what saved
    you. Information is a rank; a number is not. */
-function loseWard(cause){
-  if(S.ward>1 || !(r("nerve")>0) || (S.nerveUsed|0) >= (r("nerve")>=3?2:1)){
-    S.ward--;
+/* HEALTH - v72-test-V7. Damage is a share of a 100-point bar, per unit. The old rule was one
+   Ward in five for everything, i.e. 20; that number is the reference the table is pitched
+   around: the chaff under it, the line units at it, the chapter bosses above it and the Troll,
+   the one blow in the game with a long readable wind-up, at the top. Nothing takes more than 40,
+   so no single body can end a run from full in fewer than three blows (V7b: the bosses
+   brought down to 24-26 after the first playtest; the Troll 35). */
+const HP_BASE=100, HP_WARD=20;
+const DMG={
+  /* chaff - the crowd */
+  T1:10, LV:10, SP:10, T4:10, HL:10, SN:0,
+  T2:12, HR:12, HX:12, SC:12, LN:12,
+  /* the line */
+  LS:15, HD:15, T3:18, AD:18, SD:18, WD:20, T5:20, BW:20,
+  /* the chapter bosses */
+  SR:20, LC:24, MS:24, MN:25, TU:25, SK:26, LZ:26, OG:30, TR:35,
+};
+const DMG_HAZ={ throw:20, blight:10, storm:20, letgo:15 };
+/* A HEAVY BLOW KNOCKS YOU CLEAR: half a second more grace after any hit of 24 or more, so a
+   boss cannot land its second blow before the player has had a moment to step away. */
+const HEAVY=24, HEAVY_IFRAME=.5;
+const dmgOf=t=>(t in DMG) ? DMG[t] : 18;
+/* v72-test-V8: THE COURIER MENDS THE LAST WOUND - see mendpatch.py */
+const HEAL_MIN=15, HEAL_MAX=35, LOW_HP=.40;
+const healAmt=()=>Math.max(HEAL_MIN, Math.min(HEAL_MAX, S.lastWound||HP_WARD));
+function loseWard(cause,dmg){
+  dmg=Math.max(0,Math.round(dmg==null?HP_WARD:dmg));
+  S.dmgBy=S.dmgBy||{}; S.dmgBy[cause]=(S.dmgBy[cause]||0)+dmg; S.hitsN=(S.hitsN|0)+1;
+  if(dmg>0) S.lastWound=dmg;
+  if(S.ward-dmg>0 || !(r("nerve")>0) || (S.nerveUsed|0) >= (r("nerve")>=3?2:1)){
+    S.ward=Math.max(0,S.ward-dmg);
+    (S.hpPops=S.hpPops||[]).push({v:dmg,t:1});
     if(S.ward<=0){ S.cause=cause; finish(false); return true; }
     return false;
   }
@@ -3173,41 +3950,53 @@ const TREE=[
      wired honestly in one pass. Column four is not an element: it is the two things that make
      an element usable, remembering which one you had and being able to read the board. */
   {key:"adept",  name:"Adept",   ink:0,  need:16,   /* 20% of an 80-stage campaign, as when this was 8 of 40 */
-   blurb:"Ember, Frost, Spark - and being able to read the board",
+   blurb:"Burn, Freeze, Thunder - and being able to read the board",
    skills:[
-     {k:"emberR", ic:"ER", name:"Emberwright", max:5, col:0,row:0,
+     /* v75: THE THREE POWERS head the first three columns, the ranks that grow each one under it.
+        power: marks a granted node - it is not in SKILL, so it costs nothing, counts in no total,
+        cannot be bought or unbound, and tree() draws it as owned (POWERS_UNLOCKED). */
+     {k:"pw_burn",    power:"burn",    ic:"BU", name:"Burn",    max:1, col:0,row:0,
+      per:"finish a name: everything within two tiles of it burns away half a heart over 3s, and armour comes off",
+      cap:"ready again 10s after it goes off"},
+     {k:"pw_freeze",  power:"freeze",  ic:"FZ", name:"Freeze",  max:1, col:1,row:0,
+      per:"finish a name: everything within two tiles of it freezes for 1.5s, then walks at half speed",
+      cap:"ready again 12s after it goes off - it takes no hearts, it buys ground"},
+     {k:"pw_thunder", power:"thunder", ic:"TH", name:"Thunder", max:1, col:2,row:0,
+      per:"finish a name: the bolt jumps to the two enemies nearest it, half a heart each, and stuns them",
+      cap:"ready again 12s after it goes off"},
+     {k:"emberR", ic:"ER", name:"Emberwright", max:5, col:0,row:1,
       per:"Ember reaches 8% further", cap:"179px instead of 128 - nearly three tiles"},
-     {k:"emberT", ic:"SB", name:"Slow Burn",   max:3, col:0,row:1, up:"emberR", need:3,
+     {k:"emberT", ic:"SB", name:"Slow Burn",   max:3, col:0,row:2, up:"emberR", need:3,
       per:"a fire burns 0.4s longer", cap:"4.2s alight instead of 3.0s"},
-     {k:"emberS", ic:"EW", name:"Emberwake",   max:2, col:0,row:2, up:"emberT", need:2,
+     {k:"emberS", ic:"EW", name:"Emberwake",   max:2, col:0,row:3, up:"emberT", need:2,
       per:"a burning enemy walks 12% slower",
       cap:"a quarter slower while it burns, which is a retreat you did not have to pay for"},
 
-     {k:"frostR", ic:"FB", name:"Frostbite",   max:5, col:1,row:0,
+     {k:"frostR", ic:"FB", name:"Frostbite",   max:5, col:1,row:1,
       per:"Frost reaches 8% further", cap:"179px instead of 128"},
-     {k:"frostT", ic:"DC", name:"Deep Chill",  max:3, col:1,row:1, up:"frostR", need:3,
+     {k:"frostT", ic:"DC", name:"Deep Chill",  max:3, col:1,row:2, up:"frostR", need:3,
       per:"a chill lasts 0.4s longer", cap:"3.2s chilled instead of 2.0s"},
-     {k:"frostD", ic:"CS", name:"Cold Snap",   max:2, col:1,row:2, up:"frostT", need:2,
+     {k:"frostD", ic:"CS", name:"Cold Snap",   max:2, col:1,row:3, up:"frostT", need:2,
       per:"the chilled move 6% slower still", cap:"38% speed instead of 50%"},
 
      /* Spark has two, not three. Its chain is board-wide and already unlimited in time, so
         the "bigger radius, longer duration" pattern the other two columns use has nothing to
         grip: the third slot stays empty rather than holding a skill whose number does not
         exist. The tab draws empty slots, and a tab with room to grow should look like one. */
-     {k:"sparkK", ic:"AR", name:"Arc",         max:1,   /* was 2. nodeArc() is a boolean, so rank 2 was unbuyable perception */ col:2,row:0,
+     {k:"sparkK", ic:"AR", name:"Arc",         max:1,   /* was 2. nodeArc() is a boolean, so rank 2 was unbuyable perception */ col:2,row:1,
       per:"a chained kill leaves its OWN last letter chained",
       cap:"a chain that carries, so one shared letter can walk down a whole pack"},
-     {k:"sparkS", ic:"ST", name:"Static",      max:2, col:2,row:1, up:"sparkK", need:1,
+     {k:"sparkS", ic:"ST", name:"Static",      max:2, col:2,row:2, up:"sparkK", need:1,
       per:"a chained kill chills everything near it for 0.6s",
       cap:"1.2s - Frost's job, done by Spark's letter"},
 
-     {k:"attune", ic:"AT", name:"Attunement",  max:2, col:3,row:0,
+     {k:"attune", ic:"AT", name:"Attunement",  max:2, col:3,row:1,
       per:"rank 1 remembers your element between stages; rank 2 across a chapter",
       cap:"the slot stops resetting to Strike behind your back"},
-     {k:"plaque", ic:"PL", name:"Clear Sight", max:3, col:3,row:1, up:"attune", need:1,
+     {k:"plaque", ic:"PL", name:"Clear Sight", max:3, col:3,row:2, up:"attune", need:1,
       per:"word plaques get a darker backing plate",
       cap:"the darkest plate, for a blighted floor or a pale beach"},
-     {k:"far",    ic:"FS", name:"Far Sight",   max:2, col:3,row:2, up:"plaque", need:2,
+     {k:"far",    ic:"FS", name:"Far Sight",   max:2, col:3,row:3, up:"plaque", need:2,
       per:"a wave is announced 0.5s earlier",
       cap:"a second of warning before the first name walks in"},
    ]},
@@ -3288,10 +4077,10 @@ const TREE=[
    ]},
 ];
 const SKILL={};                      /* k -> its definition, flattened once */
-for(const t of TREE) for(const sk of t.skills) SKILL[sk.k]={...sk, tab:t.key};
+for(const t of TREE) for(const sk of t.skills) if(!sk.power) SKILL[sk.k]={...sk, tab:t.key};   /* v75: a granted power is not a rank */
 /* how many stages have been cleared across the whole campaign - what the tabs gate on */
 const totalCleared = ()=>S.prog.reduce((n,x)=>n+x.cleared,0);
-const tabOpen = t => t.need===0 || !!(S.tabs && S.tabs[t.key]);
+const tabOpen = t => TEST_UNLOCK || t.need===0 || !!(S.tabs && S.tabs[t.key]);
 const canOpenTab = t => !tabOpen(t) && totalCleared()>=t.need;
 /* THE RANK READER. r("fletch") is 0 when unbought; everything below is arithmetic on it. */
 const r = k => (S.ranks && S.ranks[k]) || 0;
@@ -3426,6 +4215,7 @@ const nodeTally  = ()=>r("tally");
    thirteen seconds that gap was survivable. At five it would be a plaque that vanishes for no
    visible reason, so the tag now carries a drain bar - see tag(). */
 const SUP_CD=26, SUP_LIFE=5, SUP_SPD=190, SUP_REACH=30;
+const SUP_STALL=3;   /* v65: seconds a courier may stand without moving - see supplyTick */
 
 /* ================================ THE QUIVER =====================================
    An arrow is spent on every loosed shot, and the quiver can run out.
@@ -3577,6 +4367,7 @@ const QV_CAP     = 60;   /* THE CEILING, and it is derived, not chosen: the larg
                             If the wave tables change, this moves with them. */
 const ARR_FLOOR  = 8;    /* the shortest gap between arrow offers, even at zero       */
 const ARR_EVERY  = 20;   /* arrows spent between courier offers                       */
+const ARR_NEED   = 3;    /* v66: at this many or fewer the Quiver comes as if dry      */
 const BOSS_SP    = 10;   /* what a chapter's last stage pays, on its FIRST clear only */
 const TALLY_EVERY= 10;   /* clean kills between Tally's arrows - see the node          */
 
@@ -3872,8 +4663,26 @@ function supplyOffer(kind){
        40 px/s a 400px plaque is never reached. Measured: 27-68 candidate tiles at the
        wide band on a 20x12 arena, so there is room to spare for a tighter one. */
     const lo = arrow ?  90 : 200, hi = arrow ? 270 : 430;
+    /* v65: AND IT MUST BE ABLE TO WALK BACK. flow[] is the pursuit field toward the player
+       (the one the courier steers by); -1 is a tile with no path - in Chapter VII a room
+       behind a closed door. A plaque there is typed, the pawn walks into the wall, never
+       arrives, and a courier that never arrives blocks every offer after it. */
+    if(flow && flow[y*W.w+x] < 0) continue;
     if(d>lo && d<hi && !others.some(m=>Math.hypot(px-m.x,py-m.y)<SUP_MIN_GAP))
       cand.push([px,py]);
+  }
+  /* v65: DRY AND CROWDED. SUP_MIN_GAP keeps a gold name out from behind an enemy's sprite,
+     which is right while there is a choice - but with enemies packed round a dry player it
+     removed every tile in the band, and an empty quiver with nothing offered is the one
+     state this economy promises cannot last. So at zero arrows the gap is waived, and the
+     band opens to the Ward's, before giving up. Reachability still applies. */
+  if(!cand.length && arrow && (S.quiv|0) <= ARR_NEED){
+    for(let y=0;y<W.h;y++) for(let x=0;x<W.w;x++){
+      const c=W.grid[y][x]; if(!c.walk||c.level!==0||c.t==="blight") continue;
+      if(flow && flow[y*W.w+x] < 0) continue;
+      const px=x*T+T/2, py=y*T+T/2, d=Math.hypot(px-P.x,py-P.y);
+      if(d>90 && d<430) cand.push([px,py]);
+    }
   }
   if(!cand.length) return;
   /* an easy name, and a first letter nothing else is using - the same rule every enemy obeys,
@@ -3913,7 +4722,7 @@ function supplyOffer(kind){
              windFx:0, miss:0, hit:false, swing:0, swAng:0, shield:0, guardT:0,
              healFx:-1, growFx:0, saved:0, chill:0, sparkFx:0, life:SUP_LIFE});
   if(arrow){ S.arrT = ARR_CD; S.offerAt = S.spent|0; }
-  else S.supT = SUP_CD;
+  else S.supT = SUP_CD * (S.ward <= S.maxWard*LOW_HP ? .5 : 1);
   /* THE FIRST WARD COURIER EXPLAINS ITSELF. Raised here, after the mob exists, so the
      gold name is already on the field behind the card when the player reads what it is.
      The card freezes update() like every card, so SUP_LIFE does not start draining until
@@ -3934,6 +4743,13 @@ function supplyOffer(kind){
     showCard(SUPPLY_CARD);
     S.hint={kind:"supply", uid:uidN, t:0};
     S.taught["supply"]=1;
+  }
+  /* v63: THE FIRST ARROW COURIER EXPLAINS ITSELF TOO, same guards as the Ward's. Card only -
+     no hold after it closes; the freeze was asked for the Ward courier. */
+  if(arrow && !S.endless && !S.eEnter && !S.card && !S.hint
+     && !S.taught["card:"+QUIVER_CARD.name]){
+    showCard(QUIVER_CARD);
+    S.taught["quiver"]=1;
   }
   S.supLast = kind;                 /* so the two kinds can alternate - see the tick */
   /* 118 characters is the banner's budget - teachtest.mjs owns that number and caught this
@@ -3994,7 +4810,7 @@ function doorSpoken(d){
 /* the word was typed: the plaque becomes a courier at the same spot */
 function supplyTaken(m){
   m.dead=true;
-  couriers.push({x:m.x, y:m.y, f:0, done:false, face:1, gleam:0, clang:0, trail:0,
+  couriers.push({x:m.x, y:m.y, f:0, done:false, face:1, gleam:0, clang:0, trail:0, stall:0,
                  kind:m.kind||"ward"});
   /* the shield closing around it: a ring snapping inward at the spot the plaque stood, so the
      moment the word lands is also the moment the pawn becomes visibly protected */
@@ -4044,7 +4860,18 @@ function supplyTick(dt){
         break;
       }
     }
-    if(d>SUP_REACH){
+    /* v65: THE WATCHDOG. A courier that has not moved 24px in SUP_STALL seconds
+       is lifted to the player and delivers. Nothing else ever removes a courier, and while
+       one exists no plaque of either kind is offered - so a pawn stuck on a wall used to
+       end the stage's resupply for good. */
+    /* measured on the pawn's own movement, not on the gap: a Ward courier (190) is slower
+       than the sprint (232), so a player running away would look like a stall by distance. */
+    if(c.ax===undefined || Math.hypot(c.x-c.ax, c.y-c.ay) > 24){ c.ax = c.x; c.ay = c.y; c.stall = 0; }
+    else if(!supFrozen()) c.stall = (c.stall||0) + dt;
+    if(c.stall > SUP_STALL && d > SUP_REACH){
+      supRing(c.x, c.y); c.x = P.x; c.y = P.y; c.stall = 0;
+    }
+    if(Math.hypot(P.x-c.x, P.y-c.y) > SUP_REACH){
       /* IT WALKS THE FLOW FIELD, like every enemy does. Straight-line steering was the first
          version and it strands the Pawn behind the first pool it meets - measured on the anvil,
          where a courier spawned across a pond never arrived and the Ward never came. The field
@@ -4084,13 +4911,14 @@ function supplyTick(dt){
         blip(520,.12,"triangle",.06,900); blip(880,.18,"square",.05,1240);
         toast("+"+ARR_GIFT+" arrows",2.2);
       } else {
-        if(S.ward<S.maxWard) S.ward++;
+        const mend=Math.min(S.maxWard-S.ward, healAmt());
+        S.ward=Math.min(S.maxWard,S.ward+healAmt());
         S.iframe=Math.max(S.iframe,.35);
         fx.push({k:"heal",x:P.x,y:P.y-8,f:0});
         supRing(P.x,P.y);
         for(let i=0;i<10;i++) supSpark(P.x, P.y-20, i*Math.PI/5, 70);
         blip(760,.14,"sine",.06,1180); blip(1180,.20,"triangle",.05,1560);
-        toast("+1 Ward",2.2);
+        toast("+"+Math.round(mend)+" health",2.2);
       }
     }
   }
@@ -4114,7 +4942,11 @@ function supplyTick(dt){
      arrows a minute - 6.8x its own meter, the fountain the Almoner's note forbids.
      ARR_FLOOR keeps the anti-stall promise (a dry player never waits longer than one
      plaque's life plus a breath) without the fountain. */
-  if(dry && S.arrT > ARR_FLOOR) S.arrT = ARR_FLOOR;
+  /* v66: LOW IS TREATED AS DRY. At ARR_NEED or fewer the offer no longer waits for twenty
+     more to be spent - on I-X, holding two arrows against a four-arrow Minotaur, it waited
+     forever. */
+  const low = S.scene==="stage" && (S.quiv|0) <= ARR_NEED;
+  if(low && S.arrT > ARR_FLOOR) S.arrT = ARR_FLOOR;
   if(S.scene==="stage" && !couriers.length && !live().some(m=>m.supply)
      && S.t-S.startedAt>(dry?0:6)){
     /* EVERY ARR_EVERY SPENT, *OR* DRY. The document moves the trigger off the flat
@@ -4128,15 +4960,22 @@ function supplyTick(dt){
        it, a spent bank is an unwinnable save, and every other rule in this economy
        assumes that cannot happen. */
     const spentSince = (S.spent|0) - (S.offerAt|0);
-    const wantArrow = (spentSince >= ARR_EVERY || (S.quiv|0) <= 0) && S.arrT<=0;
+    const wantArrow = (spentSince >= ARR_EVERY || (S.quiv|0) <= ARR_NEED) && S.arrT<=0;
     const wantWard  = S.ward < S.maxWard    && S.supT<=0;
     /* ONLY ONE PLAQUE MAY STAND - that rule is the Almoner's and it is kept. What
        changed is that when both are wanted they TAKE TURNS, remembered in S.supLast,
        so a player who is dry AND hurt is served both eventually instead of one of
        them never. */
-    if(wantArrow && wantWard) supplyOffer(S.supLast==="arrow" ? "ward" : "arrow");
-    else if(wantArrow)        supplyOffer("arrow");
-    else if(wantWard)         supplyOffer("ward");
+    /* v65: IF THE TURN'S KIND CANNOT BE PLACED, THE OTHER ONE IS TRIED. supLast only moves
+       on a success, so a Ward that found no tile used to keep the turn forever and a dry
+       player was never offered a Quiver again. */
+    const first = (wantArrow && wantWard) ? (S.supLast==="arrow" ? "ward" : "arrow")
+                : wantArrow ? "arrow" : wantWard ? "ward" : null;
+    if(first){
+      const had = mobs.length;
+      supplyOffer(first);
+      if(mobs.length===had && wantArrow && wantWard) supplyOffer(first==="arrow" ? "ward" : "arrow");
+    }
   }
 }
 /* the sparks and the closing/arrival rings. Drawn under the couriers because they are ground
@@ -4366,7 +5205,80 @@ const WARD_LOW=2, PLQ_CAP=4;
    read by anything - kept, with this note, so that re-applying any of it is an edit in one place
    rather than a rewrite. What each one measured is in GDD 4.15.5a. */
 const PLQ_MINW=78, PLQ_PAD=52, PLQ_H=52, PLQ_GAPX=6, PLQ_GAPY=4;
+/* v69: the height of a plate that carries hearts. The name + heart block is 40 px; at 52 it had
+   6 px either side and read as crammed. 66 gives it 13 px above and below. */
+const PLQ_HH=66;
 const PLQ_FAINT=0.42, PLQ_GUARD=8;
+/* v67, FOUR AND A HALF: THE HEART. One per arrow an enemy takes, under its name, on the 13
+   units that take more than one. 8 cells x 7 at 2 px = 16x14 (the size approved of three).
+   EIGHT wide so a half splits exactly, four columns a side. The pack has no heart, so it is
+   drawn in the reds of barBigFill - the player's own ward bar - with the pack's keyline so it
+   holds on parchment and on slate. k keyline  b body  s shade  l light. A lost cell keeps its
+   keyline, so an empty heart is still counted. */
+const HRT_G=[".kk..kk.",
+             "kbbkkbbk",
+             "klbbbbbk",
+             "kbbbbbsk",
+             ".kbbbsk.",
+             "..kbsk..",
+             "...kk..."];
+const HRT_PX=2, HRT_W=HRT_G[0].length*HRT_PX, HRT_H=HRT_G.length*HRT_PX, HRT_GAP=2;
+const HRT_SIDE=10;   /* the least plate either side of a heart row - see layoutPlaques */
+/* EQUAL ABOVE AND BELOW ("make the spacing of the box equal from above and below"). On a
+   plate with hearts the name and the row are one block, centred: the space from the plate's
+   top to the tallest letter equals the space from the row's foot to the plate's bottom. The
+   row starts HRT_DY below the word's middle line - under the descenders (+9) and under the
+   next-letter underline plaques() draws at +11..+13 - so neither ever touches a heart. The
+   ascent is MEASURED once in the running font (Consolas on Windows, Menlo on a Mac), not
+   assumed. */
+const HRT_DY=16;   /* underline ends at +13; 3 px clear, and an even block so 1:1 splits */
+let _plqAsc=null;
+function plqAsc(){
+  if(_plqAsc===null){
+    g.save(); g.font=FONT; g.textBaseline="middle";
+    const a=g.measureText("dhklbt").actualBoundingBoxAscent;
+    g.restore();
+    _plqAsc = (a>0 && a<30) ? Math.round(a) : 10;
+  }
+  return _plqAsc;
+}
+/* the baseline, measured the same way: how far below the middle line a letter with no
+   descender stops */
+let _plqBase=null;
+function plqBase(){
+  if(_plqBase===null){
+    g.save(); g.font=FONT; g.textBaseline="middle";
+    const d=g.measureText("aceo").actualBoundingBoxDescent;
+    g.restore();
+    _plqBase = (d>=0 && d<20) ? Math.round(d) : 5;
+  }
+  return _plqBase;
+}
+const HRT_COL={k:"#1c1f2a", b:"#FF3E3E", s:"#B22249", l:"#FFA762"}, HRT_LOST="#3a2226";
+/* v72: a part-lost heart (Burn or Thunder - only a skill takes half a heart) is drawn in ember orange */
+const HRT_HOT={k:"#1c1f2a", b:"#F28C28", s:"#B5541A", l:"#FFE0A0"};
+/* frac 1 full, 0 empty, anything between fills from the left. It loops over the ROW's own
+   length, not a number: the first eight-wide version still stopped at seven and every heart
+   lost its right-hand outline. */
+function heart(x,y,frac){
+  const fillTo=Math.round(Math.max(0,Math.min(1,frac))*HRT_G[0].length);
+  for(let r=0;r<HRT_G.length;r++){
+    const row=HRT_G[r];
+    for(let c=0;c<row.length;c++){
+      const k=row[c]; if(k===".") continue;
+      const pal = (frac>0 && frac<1) ? HRT_HOT : HRT_COL;
+      g.fillStyle = (k==="k") ? pal.k : (c<fillTo ? pal[k] : HRT_LOST);
+      g.fillRect(x+c*HRT_PX, y+r*HRT_PX, HRT_PX, HRT_PX);
+    }
+  }
+}
+/* v68: WHO WEARS HEARTS. Every enemy - one-arrow units show a single heart (the endorsement's
+   option B, the user's pick). Not the Quiver or Supply plaque, not a sheep, not a door: those
+   are typed to be used, eaten or opened, and a heart would say they can be hurt. */
+const hasHearts = m => !!m && !m.supply && !m.sheep && !m.door;
+/* the row's width for a unit, 0 for a plate with no hearts */
+const heartRowW = m => { if(!hasHearts(m)) return 0; const n=Math.max(1,hpOf(m.tier));
+  return n*HRT_W+(n-1)*HRT_GAP; };
 /* PLQ_PAD WAS 52 AND THAT IS 24px OF PURE MARGIN ON EVERY PLAQUE. The plate is the word's
    width plus this, so every plaque was a third wider than the word it carries - and plaque
    width is what decides whether two of them collide. Halving the margin is the cheapest
@@ -4523,7 +5435,7 @@ function blightTick(dt){
     sWard(); S.flash=.4; S.shake=4;
     blip(150,.22,"sawtooth",.06,90);
     fx.push({k:"dust", x:P.x+(Math.random()-.5)*20, y:P.y-6, f:0});
-    if(loseWard("the blight took you")) return;
+    if(loseWard("the blight took you", DMG_HAZ.blight)) return;
   }
 }
 
@@ -4680,7 +5592,7 @@ function stormTick(dt){
       /* NO KNOCKBACK. A shove from the sky could put the player in the water, and that
          would be an instant death from a hazard they had already decided to eat - two
          punishments for one mistake, with the second one invisible in the telegraph. */
-      if(loseWard("the storm took you")) return;
+      if(loseWard("the storm took you", DMG_HAZ.storm)) return;
       else teach("storm","the ring is where it will land, and it does not follow you — "
                         +"walk out of it, even if it costs you the word.");
     }
@@ -5864,13 +6776,14 @@ function enterStage(i){
   if(!S.eEnter) S.endless=false;
   /* Second Wind. maxWard is recomputed on entry rather than written once when the node is
      bought, so buying it mid-run applies immediately and erasing the save takes it away. */
-  S.maxWard=5+nodeWardMax(); S.ward=S.maxWard;
+  S.maxWard=HP_BASE+HP_WARD*nodeWardMax(); S.ward=S.maxWard; S.dmgBy={}; S.hitsN=0; S.hpPops=[]; S.lastWound=0;
   /* WORD LENGTH IS COPIED HERE, NOT READ LIVE. The Settings panel opens over the map
      mid-campaign, and a setting that applied on the frame it changed would let a player
      shorten the name of the thing currently walking at them. That is not a preference, it
      is an undo. So spawnMob reads this copy and the panel writes the other one, and the
      two meet at the next stage boundary. */
   S.wlenRun = (S.wlen|0);
+  S.paceRun = (S.pace|0);
   /* MOMENTUM. The streak is CARRIED, not preserved: ranks 1–5 carry an
      increasing share of it, so the node still has five ranks and each one
      is a longer tail rather than a bigger number. At rank 5 it is whole.
@@ -5932,7 +6845,7 @@ function enterStage(i){
     S.quiv = take;
     S.drew = take;           /* what this entry drew, for the summary to report */
   }
-  S.arrT=0; S.dryT=0; S.spent=0; S.given=0;  /* no supply in the first seconds of a stage, and
+  S.arrT=0; S.dryT=0; S.spent=0; S.given=0; S.burnAt=0; S.skAt={}; S.nock=false; S.skFx=[]; S.skUsed=0; FIRE=[]; S.skPend=null;  /* no supply in the first seconds of a stage, and
                                          no echo carried in from the last one */
   S.startedAt=S.t; S.cause=""; mobs=[]; fx=[]; arrows=[]; shots=[]; flow=null; S.drownT=0; splashFx=[];
   /* ATTUNEMENT rank 1: the slot is remembered from the last stage instead of snapping back
@@ -6309,6 +7222,18 @@ function queueWave(){
   const wv = S.endless ? endlessWave(S.wave) : DEF().stages[S.stage].waves[S.wave];
   if(!wv) return;
   const q=[]; for(const k in wv) for(let i=0;i<wv[k];i++) q.push(k);
+  /* EASY (Pace STEADY) - TEST BUILD: 30% fewer escorts in a boss's last wave, and 25% fewer
+     bodies in III-6 "the choke", the one regular stage a 40 WPM bot needed it on. */
+  if(!S.endless && (S.paceRun|0)<0){
+    const st0=DEF().stages[S.stage], lastW=S.wave===st0.waves.length-1;
+    const cut = (st0.boss && lastW) ? 0.3 : (S.chapter===2 && S.stage===5) ? 0.25 : 0;
+    const KEEP=["MN","OG","TU","SR","SM","SK","LZ","LC","TR","MS"];
+    if(cut>0) for(const k in wv){
+      if(KEEP.includes(k) || !MOBDEF[k]) continue;
+      let drop=Math.round(wv[k]*cut);
+      for(let i=q.length-1;i>=0 && drop>0;i--) if(q[i]===k){ q.splice(i,1); drop--; }
+    }
+  }
   for(let i=q.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[q[i],q[j]]=[q[j],q[i]];}
   /* the Ogre leads: spawnQ is popped from the end, so it goes out first and
      spends the whole stage crossing the field at you */
@@ -6565,7 +7490,7 @@ function spawnMob(tier, atLane){
        be shot at through a cliff. */
     x:best[0],y:best[1],level:onRidge?1:0,ridge:onRidge,f:Math.random()*6,
     slot,dirx:0,diry:0,jam:0,
-    dead:false,doomed:false,shake:0,mark:!!md.mark,sheet:md.sheet,spd:md.spd*(.9+Math.random()*.2),
+    dead:false,doomed:false,shake:0,mark:!!md.mark,sheet:md.sheet,spd:md.spd*(.9+Math.random()*.2)*(S.endless?1:[0.85,1,1.1][(S.paceRun|0)+1]),
     /* the unit's NAME. It was never copied onto the mob, so every diagnostic that printed
        m.label has been printing undefined - including the one that compared the four
        monk-bodied units. Nothing in the game read it, which is why nothing complained. */
@@ -6772,9 +7697,9 @@ function spawnMob(tier, atLane){
     toast("a HEALER and a pawn. Finish the PAWN's name and watch the Healer undo it — "
          +"it can only do that twice.",7);
   else if(md.armour) teach("warden",
-    "a WARDEN — say the false name to strip it, then say the true name with EMBER (press 2)");
+    "a WARDEN — say the false name to strip it, then press 1 to nock Burn and say the true name");
   if(md.hex)    teach("hexer",
-    "a HEXER — it rewrites the names around it. Ember (2) stops it while it burns");
+    "a HEXER — it rewrites the names around it. Burn stops it while it burns");
   if(md.guard)  teach("monkin","a MONK — it wards the enemies around it, and an arrow "
                               +"at a warded enemy rings off. Kill the Monk first.");
   if(md.healer) teach("healer","a HEALER — when you finish a word it undoes the kill, and "
@@ -6942,7 +7867,7 @@ function hurlTick(dt){
       S.flash=.45; S.shake=7;
       blip(120,.26,"sawtooth",.10,70);
       fx.push({k:"dust", x:P.x, y:P.y-4, f:0});
-      loseWard("a Shaman's throw");
+      loseWard("a Shaman's throw", DMG_HAZ.throw);
       continue;
     }
     h.x+=Math.cos(h.ang)*step; h.y+=Math.sin(h.ang)*step;
@@ -7108,7 +8033,7 @@ function buyRank(k){
   S.ranks[k]=r(k)+1;
   /* Second Wind has to land on the CURRENT Ward count as well as the maximum, or buying it
      between stages shows seven pips with five filled and reads as damage you had not taken. */
-  if(k==="wind"){ S.maxWard=5+nodeWardMax(); S.ward=Math.min(S.maxWard,S.ward+1); }
+  if(k==="wind"){ S.maxWard=HP_BASE+HP_WARD*nodeWardMax(); S.ward=Math.min(S.maxWard,S.ward+HP_WARD); }
   /* ...and the same for the sprint: a longer charge should be full immediately, not next stage */
   if(k==="breath") S.spr=nodeSprint();
   blip(680,.10,"triangle",.06,980); blip(980,.16,"sine",.05,1320);
@@ -7180,8 +8105,8 @@ function pickElem(i){
    Keyed by STAGE INDEX because that is what decides when it opens. `sheet` is the
    unit's own run sheet, so the portrait is the thing the player is about to meet and
    not a drawing of it. The last line of each card is written to match the plaque the
-   unit actually wears - 2 ARROWS LEFT, MONK · WARDS OTHERS, 4 ARROWS LEFT - so the card
-   and the board say the same words. */
+   unit actually wears - MONK · WARDS OTHERS, NO MISTAKES, and since v67 the row of hearts
+   under a multi-arrow name - so the card and the board say the same thing. */
 /* MEASURED, NOT GUESSED. bbox.mjs decodes frame 0 of each sheet and reads its alpha
    bounding box; this is the body's real height inside the cell. Every portrait is then
    drawn CARD_PORT tall, so the sheep and the Ogre read at the same size in the frame
@@ -7301,7 +8226,13 @@ const CARDS={
      {sheet:"pawnRun", name:"Torch Pawn",
       lines:["Type the name above an enemy to shoot it.",
              "This one just walks at you and swings."]}],
-  1:[{sheet:"warRun", name:"Footman",
+  /* THE RESERVE, v64: on I-2, the first stage that draws from what the player carried out
+     of one, right after the first summary screen it points at. First in the queue so the
+     Footman walking in is the last thing read. It stood on I-9 behind the Healer. */
+  1:[{sheet:null, name:"The Reserve",
+        lines:["Arrows belong to the CHAPTER, not the stage. What you carry out of a stage goes back to the reserve, and you draw from it again on the next one.",
+                 "Lose a stage and the arrows that killed something are refunded. The summary screen counts what is left."]},
+     {sheet:"warRun", name:"Footman",
       lines:["Slower than a Torch Pawn, with a longer name.",
              "Start early: hitting you doesn\u2019t stop it."]}],
   /* THE SPRINT, on the player\u2019s own archer, and on stage 3 because that is the first
@@ -7314,7 +8245,7 @@ const CARDS={
      shuffle three of them to close a gap, the gap sits where it costs least. */
   4:[{sheet:"vtRun", name:"Veteran",
       lines:["It takes two arrows, and gets a new name after the first.",
-             "Its plaque counts the arrows left."]}],
+             "The hearts under its name show the arrows left."]}],
   /* THE FLOCK. Late enough that the player has seen sheep on five fields and wondered,
      early enough to matter: the meat they carry is 13% of the campaign\u2019s arrows. */
   5:[{sheet:"arShoot", name:"The Streak",
@@ -7325,9 +8256,8 @@ const CARDS={
      It carried the ward courier's sprite under the arrow courier's name from the day it
      shipped: the right words over the wrong pawn, which is the one kind of wrong a
      screenshot catches and a harness never will. */
-  6:[{sheet:"supWood", name:"The Quiver",
-      lines:["One word is one arrow. When a GOLD name appears, type it and a pawn runs arrows out to you.",
-             "It costs the seconds it takes to arrive. An empty quiver still staggers what you name."]}],
+  /* 6: THE QUIVER moved to QUIVER_CARD (v63) - raised by supplyOffer on the first arrow
+     courier, which arrives every ARR_EVERY arrows from I-1, not on I-7. */
   7:[{sheet:"monkRun", name:"Monk",
       lines:["It wards the enemies near it, and arrows bounce off a warded enemy.",
              "Kill the Monk first."]}],
@@ -7337,35 +8267,33 @@ const CARDS={
       work out by watching. */
    {sheet:"hlRun", name:"Healer",
       lines:["UNDOES A KILL \u2014 the enemy stands up again with a name ONE TIER HARDER. Twice, across two allies.",
-             "Kill the Healer first, or spend both heals. It never saves itself."]},
-     {sheet:null, name:"The Reserve",
-      lines:["Arrows belong to the CHAPTER, not the stage. What you carry out of a stage goes back to the reserve, and you draw from it again on the next one.",
-             "Lose a stage and the arrows that killed something are refunded. The summary screen counts what is left."]}],
+             "Kill the Healer first, or spend both heals. It never saves itself."]}],
+  /* THE RESERVE left I-9 for I-2 in v64 - see CARDS[1]. */
   /* CHAPTER I'S BOSS CARD. The second line is the brace, which is the whole reason the
      Minotaur replaces the Ogre: four hit points that the player can SEE being spent. */
   9:[{sheet:"mnWalk", name:"Minotaur",
       lines:["No mistakes. One wrong letter and you start its name again.",
              "It takes four arrows, but it\u2019s slow. Watch it raise its guard as "
             +"the first one lands \u2014 that is a life being spent, not a block."]}],
-  100:[{sheet:null, name:"Ember",
-        lines:["A second element. Press 2 to ready EMBER, 1 to go back to Strike \u2014 the element is chosen when the word FINISHES, not when you start it.",
-               "Ember burns armour off. It is the only answer to a Warden."]}],
+  100:[{sheet:null, name:"Burn",
+        lines:["BURN. Press 1 to NOCK it, then finish a name: that enemy and everything within two tiles of it catch fire and burn away half a heart over three seconds. Press 1 again to take it back.",
+               "A burning name is two letters shorter, and a burnt half goes with your next arrow. Fire burns armour off \u2014 nock Burn and say a Warden's true name."]}],
   101:[{sheet:"wdRun", name:"Warden",
         lines:["It wears a false name over a true one. Speaking the false name only strips the disguise, and costs no arrow.",
-               "What is underneath is ARMOURED. Press 2 for Ember, then say the true name."]}],
+               "What is underneath is ARMOURED. Press 1 to nock Burn, then say the true name."]}],
   104:[{sheet:"hxRun", name:"Hexer",
         lines:["It rewrites the names of up to two enemies near it, on a timer \u2014 never the one you are typing.",
                "Kill it, or burn it: it cannot rewrite while it is alight."]}],
   108:[{sheet:"avRun", name:"Archivist",
         lines:["Two arrows, and the longest names you will type outside an Ogre.",
-               "Start it early. Its plaque counts the arrows left."]}],
+               "Start it early. The hearts under its name show the arrows left."]}],
 /* ---- CHAPTER III ---- */
-  200:[{sheet:null, name:"Frost",
-        lines:["A third element, and the only one that does not kill faster. Press 2 for FROST.",
-               "A chilled body is slower than a Footman for two seconds. It buys you ground, not damage."]},
+  200:[{sheet:null, name:"Freeze",
+        lines:["FREEZE. Press 3 to NOCK it, then finish a name: that enemy and everything within two tiles of it freeze for a moment, then walk at half speed.",
+               "It takes no hearts. It buys you ground \u2014 the answer to anything too fast to outrun."]},
        {sheet:"hrRun", name:"Harrier",
         lines:["The fastest body in the game. It has no rule of its own \u2014 that is the rule.",
-               "Frost it. Chilled, it is slower than a Footman."]}],
+               "Freeze it. Frozen, then chilled, it is slower than a Footman."]}],
   206:[{sheet:null, name:"Hold the Ground",
         lines:["This stage is not won by clearing the board. Stand inside the circle until the meter fills and it is yours, however many are still standing.",
                "Step out and the meter stops. It does not reset."]}],
@@ -7373,12 +8301,12 @@ const CARDS={
         lines:["One name on this field is FORBIDDEN, and it is marked in red. Type it and the stage is lost.",
                "Kill everything else and it leaves on its own. Read before you commit."]}],
 /* ---- CHAPTER IV ---- */
-  300:[{sheet:null, name:"Spark",
-        lines:["The fourth and last element. Press 2 for SPARK: the kill jumps to the nearest enemy whose name begins with the letter you finished on.",
-               "First letters are unique on the board, so a chain is at most one jump \u2014 and it is free."]},
+  300:[{sheet:null, name:"Thunder",
+        lines:["THUNDER. Press 4 to NOCK it, then finish a name: the bolt jumps from that enemy to the two nearest it, half a heart each, and stuns them.",
+               "It reaches where your feet cannot. A struck half goes with your next arrow."]},
        {sheet:"hdRun", name:"Herald",
         lines:["An ordinary body wearing an Ogre-length name. One arrow kills it.",
-               "Press 2 for Spark if the chain is lined up. Otherwise type all of it."]}],
+               "Let a Thunder bolt jump to it and the long name only has half a heart left to guard."]}],
 /* ---- CHAPTER V ---- */
   400:[{sheet:null, name:"The Lamps",
         lines:["These vaults are lit by lamps, and a lamp only lights the ground around it. Names outside the light are harder to read, not hidden.",
@@ -7429,19 +8357,19 @@ const CARDS={
      learn differently. No card here makes a claim the Library does not already make. */
   109:[{sheet:"tuRun", name:"Turtle",
        lines:["A SHELL THAT SHUTS on a clock. While it is shut every arrow rings off \u2014 and it opens again on its own.",
-              "Wait, or press 2 \u2014 Ember opens it early. Waiting costs one name, which is exactly what the Ember buys back."]}],
+              "Wait, or press 1 \u2014 Burn opens it early. Waiting costs one name, which is exactly what the Burn buys back."]}],
   209:[{sheet:"srRun", name:"Spider",
        lines:["FASTER THAN ANYTHING ELSE THAT WALKS. It never stops closing, and you cannot open ground on it on foot.",
-              "Press 3. Frost is the only thing that buys the distance back \u2014 the chapter\u2019s own element, and this is what it is for."]}],
+              "Nock Freeze on anything near it. Freezing is the only thing that buys the distance back \u2014 this is what the chapter\u2019s skill is for."]}],
   309:[{sheet:"smRun", name:"Shaman",
        lines:["IT NEVER CLOSES. It stops four tiles out and throws, which is one Ember radius beyond your reach.",
-              "Press 4. Spark buys a whole word at that distance \u2014 or walk in and take the throw. It can always be typed at."]}],
+              "Nock Thunder on something between you and it, and let the bolt jump \u2014 or walk in and take the throw. It can always be typed at."]}],
   409:[{sheet:"skRun", name:"Skull",
        lines:["WARDED WHILE ANYTHING ELSE LIVES. Every arrow rings off it for as long as one other enemy is standing.",
               "Clear the room around it. The ward is not on a clock \u2014 it comes off when the Skull is the last thing left."]}],
   509:[{sheet:"lzRun", name:"Lizard",
        lines:["FIVE ARROWS, and a new name after every one of them. It has no other rule: it walks at you and it swings.",
-              "Start early and keep the streak. The plaque counts the arrows down for you."]}],
+              "Start early and keep the streak. Every arrow empties one of the hearts under its name."]}],
   609:[{sheet:"lcRun", name:"Lancer",
        lines:["STRIKES FROM OUTSIDE EVERYONE ELSE\u2019S RANGE \u2014 a full tile and a half, drawn as a ring on the ground under it.",
               "Stand outside the ring and type. Nothing else on the field reaches that far, so the ring is the only thing to respect."]}],
@@ -7481,6 +8409,12 @@ const CARDS={
 const SUPPLY_CARD = {sheet:"supRun", name:"The Supply",
   lines:["A GOLD NAME WHEN YOU ARE HURT. Type it and a pawn runs a WARD out to you \u2014 it cannot be killed, so read it and keep moving.",
          "It stands for five seconds and then leaves. The bar under the name is the time you have left."]};
+/* THE QUIVER CARD, v63. Was CARDS[6] (entering I-7); the arrow courier it explains turns up
+   every ARR_EVERY arrows spent from I-1, so it is raised by supplyOffer() on the first one,
+   exactly like the Supply. supWood, not supRun - see the draw code's kind switch. */
+const QUIVER_CARD = {sheet:"supWood", name:"The Quiver",
+  lines:["One word is one arrow. When a GOLD name appears, type it and a pawn runs arrows out to you.",
+         "It costs the seconds it takes to arrive. An empty quiver still staggers what you name."]};
 function raiseCard(st){ return raiseCards(S.chapter, st); }
 function raiseCards(ci, st){
   /* BOTH FLAGS. enterEndless sets S.endless AND S.eEnter before calling enterStage, and
@@ -7653,8 +8587,8 @@ function hintText(m){
        word - ARMOURED . PRESS 2 - and a screenshot of the two stacked was two lines of the
        same sentence. The tag gives the instruction; this gives the reason the instruction
        exists, which is the one thing a player cannot work out by trying. */
-    return elemNow()==="ember" ? "NOW SAY THE TRUE NAME"
-                              : "PRESS 2 \u2014 ONLY EMBER GETS THROUGH";
+    return (m.lit>0 || (S.nock && burnOn())) ? "NOW SAY THE TRUE NAME"
+                              : "PRESS 1 \u2014 ONLY FIRE GETS THROUGH";
   }
   /* THE RULE, THEN THE ANSWER TO IT. The first line cannot be learned by trying, because
      trying it costs the whole word - fifteen letters back to the start. The second is
@@ -8029,7 +8963,7 @@ function adamantAbandon(){
      plaque tag already says FINISH WHAT YOU START. */
   teach("adamant","the ADAMANT holds you to it — letting go of a name you have "
                  +"started costs a Ward.");
-  if(loseWard("you let go of a name you had started")) return;
+  if(loseWard("you let go of a name you had started", DMG_HAZ.letgo)) return;
 }
 
 /* completing a word looses a real arrow; the kill happens on impact */
@@ -8087,7 +9021,7 @@ function loose(m){
     m.wtier=tierOf(m.word)||m.wtier;          /* the true name is a tier harder */
     S.shake=3; blip(300,.16,"square",.10,180);
     toast(m.drill ? "that was the disguise. Underneath is its TRUE name, armoured — "
-                    +"press 2 for EMBER, then type it"
+                    +"press 1 to nock BURN, then type it"
                   : "the false name falls away", m.drill?7:2.4);
     return;
   }
@@ -8112,6 +9046,12 @@ function loose(m){
   P.face = (m.x>=P.x)?1:-1;
   const bx=P.x+P.face*14, by=P.y-46;                 /* bow height */
   arrows.push({x:bx,y:by,target:m,spd:640*arrowMul()*nodeArrow(),ang:Math.atan2(m.y-52-by,m.x-bx)});
+  /* v72-test-V4: a loaded word puts its skill on this arrow - spent now, goes off on landing */
+  if(S.nock && S.skPend===m && skOn()){
+    const k=S.nock; arrows[arrows.length-1].sk=k;
+    S.nock=false; skSpend(k); S.skUsed=(S.skUsed||0)+1;
+  }
+  S.skPend=null;
   sShoot();
 }
 
@@ -8158,7 +9098,7 @@ function update(dt){
      this clock keeps advancing every frame regardless of S.drownT, and a player who was
      mid-run when he drowned spent the whole delay running in place - motion with no travel. */
   if(S.drownT<=0){ P.at+=dt; if(P.shootT>0){ P.shootT-=dt; if(P.shootT<=0) P.anim="idle"; } }
-  fx.forEach(p=>p.f+=dt*FPS*1.3); fx=fx.filter(p=>p.f<SHEET[p.k].n);
+  fx.forEach(p=>p.f+=dt*FPS*1.3); fx=fx.filter(p=>p.f<SHEET[p.k].n); skFxTick(dt);
   splashFx.forEach(p=>p.t+=dt); splashFx=splashFx.filter(p=>p.t<DROWN_DELAY);
   confTick(dt);
   smokeTick(dt);
@@ -8483,7 +9423,9 @@ function update(dt){
       const landed = mb.hit || (TELE<=0 && inReach && S.iframe<=0);
       mb.hit=false;
       /* same elevation only: enemies below a cliff were hitting a player above */
-      if(landed && S.iframe<=0){
+      /* TEST BUILD: a Supply, sheep or door has no MOBDEF row. It used to run this branch and
+         throw on MOBDEF[tier].label - a crash, and a gift that would have cost a Ward. */
+      if(landed && S.iframe<=0 && MOBDEF[mb.tier]){
         /* the drill Warden of stage I is the one enemy in the game that cannot hurt
            you: a tutorial you can lose is a tutorial that teaches "restart" */
         /* !mb.snuffer follows the drill unit's own precedent exactly: it still winds up and
@@ -8492,8 +9434,8 @@ function update(dt){
            mean it cannot hurt you either, or that sentence is only true until a wave gets
            crowded - which ch6test.mjs's bot-clear check found happening for real. */
         if(!mb.drill && !mb.snuffer){ sWard(); S.flash=.55;
-          if(loseWard(MOBDEF[mb.tier].label+"s ("+mb.tier+") cut you down")) return; }
-        S.iframe=nodeIframe();
+          if(loseWard(MOBDEF[mb.tier].label+"s ("+mb.tier+") cut you down", dmgOf(mb.tier))) return; }
+        S.iframe=nodeIframe()+(dmgOf(mb.tier)>=HEAVY?HEAVY_IFRAME:0);
         /* CADENCE. A bought number of hits per stage no longer break the streak - the Ward is
            still spent, so the skill buys the scoreboard rather than the health. */
         if(S.hitFree < nodeHitFree()){ S.hitFree++; toast("Cadence held your streak",2.2); }
@@ -8542,7 +9484,7 @@ function update(dt){
         sSwing();
         if(mb.drill && mb.armour)
           teach("drillhit","it walks through you — armour holds against everything "
-                          +"except Ember. Press 2.");
+                          +"except fire. Press 1 to nock Burn.");
         /* A drill mob that reaches you swings, knocks you back, and costs NOTHING.
            Without a word for it that reads as a broken enemy - the player reasonably
            asks why it could not hurt them. Say that it is deliberate. */
@@ -8560,7 +9502,7 @@ function update(dt){
          another name */
       if(supFrozen() && !m.supply) continue;
       if(m.lit>0){ m.lit=Math.max(0,m.lit-dt);
-        if(m.lit>0 && Math.random()<dt*7) fx.push({k:"dust",x:m.x+(Math.random()-.5)*20,y:m.y-30,f:0}); }
+        if(m.lit>0) fireBody(m,dt); }
       if(m.chill>0) m.chill=Math.max(0,m.chill-dt);
       if(m.stun>0)  m.stun =Math.max(0,m.stun -dt);
       if(m.litFx>0) m.litFx=Math.max(0,m.litFx-dt*2);
@@ -8618,11 +9560,17 @@ function update(dt){
           fx.push({k:"dust", x:a.x, y:a.y, f:0});
           blip(880,.06,"triangle",.05,1320);
         } else {
+          if(a.sk && m){ skFire(a.sk,m); a.sk=null; }  /* its target died in flight */
           a.hit=true; continue;
         }
       }
       const tx=m.x, ty=m.y-52;
       a.ang=Math.atan2(ty-a.y,tx-a.x);
+      if(a.sk){ const bx2=a.x-Math.cos(a.ang)*14, by2=a.y-Math.sin(a.ang)*14;
+        for(let q=0;q<3;q++){
+          if(a.sk==="burn") fireAdd(bx2+(Math.random()-.5)*6, by2+(Math.random()-.5)*6, (Math.random()-.5)*20, -20-Math.random()*30, .22+Math.random()*.2, 5+Math.random()*3, "f");
+          else fireAdd(bx2+(Math.random()-.5)*6, by2+(Math.random()-.5)*6, (Math.random()-.5)*30, (Math.random()-.5)*30, .25+Math.random()*.2, a.sk==="freeze"?4:3, a.sk==="freeze"?"i":"z");
+        } }
       const step=a.spd*dt, d=Math.hypot(tx-a.x,ty-a.y);
       /* THE SHIELD COMES UP HERE, off the distance this loop already has, so there
          is no second opinion about how close "close" is. Only a body that still has
@@ -8634,6 +9582,8 @@ function update(dt){
         m.brace = Math.max(m.brace||0, BRACE_HOLD);
       if(d<=step+6){
         a.hit=true;
+        arrowGroundImpact(a,m);
+        if(a.sk){ skFire(a.sk,m); a.sk=null; }     /* v72-test-V4: the skill goes off HERE */
         /* A MONK'S WARD. Same feedback as armour - the arrow rings off and the word
            survives - but a different answer: armour says "burn it", a ward says
            "kill the Monk". Checked before armour so a warded Warden reports the
@@ -8645,8 +9595,8 @@ function update(dt){
              Spark, and telling a player to press 2 for Ember there sends them to an
              element that does nothing about a ward - the same class of mistake as the
              drill toast that announced the wrong reason for its own behaviour. */
-          toast(ROSTER().indexOf("ember")>=0
-            ? "warded by a Monk — kill the Monk, or burn the ward off with Ember (2)"
+          toast(burnOn()
+            ? "warded by a Monk — kill the Monk, or burn the ward off (press 1)"
             : "warded by a Monk — kill the Monk", 4);
         }
         /* armour: the true name is correct, but the arrow rings off unless Ember
@@ -8658,11 +9608,11 @@ function update(dt){
           /* not "burn it first" - that reads as a separate step you have to do
              beforehand, which was exactly the wrong idea. There is no prior step:
              hold Ember and say the name again. */
-          toast(elemNow()==="ember"
-            ? "the armour held — Ember has to be up when the word FINISHES"
-            : "the arrow rings off — press 2 for Ember, then say that name again", 4.5);
-          if(m.drill && elemNow()!=="ember")
-            teach("drill2","look at the top of the screen: 1 Strike, 2 Ember. Press 2.");
+          toast(burnOn()
+            ? "the arrow rings off — press 1 to nock Burn, then say it again"
+            : "the arrow rings off — it needs fire, then say that name again", 4.5);
+          if(m.drill && burnOn())
+            teach("drill2","look at the bottom of the screen: 1 is Burn. Press it, then say the true name.");
         }
 
         /* WET HIDE. The word is NOT taken away, exactly as armour does not take
@@ -8709,7 +9659,7 @@ function update(dt){
            pick() keeps first letters unique among live enemies and returns null
            rather than break that rule, so a failed pick keeps the old name: a body
            with a stale name is a small unfairness, a body with no name is a wall. */
-        } else if((m.hp|0) > 1){
+        } else if((m.hp==null?1:m.hp) > HP_FIN){
           m.hp--;
           /* THE ONE PLACE IN THE BUILD where an arrow lands on a body and the body lives.
              The stagger below already stops it and slows its frames; this gives a unit
@@ -8726,7 +9676,7 @@ function update(dt){
           if(w){ m.word=w; m.wtier=tierOf(w)||m.wtier; }
           blip(240,.07,"square",.06,170); blip(660,.09,"triangle",.05,880);
           teach("hp","that one takes more than one arrow. It is hurt, it has a NEW "
-                    +"name, and the plaque counts what is left.");
+                    +"name, and the hearts under it show what is left.");
         } else {
           m.dead=true; S.kills++;
 
@@ -8799,7 +9749,7 @@ function update(dt){
                       toast("its twin quickens",1.8); }
           }
           if(m.drill && m.armour)
-            toast("that is the whole rule: Ember only has to be UP when the word "
+            toast("that is the whole rule: it only has to be BURNING when the word "
                  +"finishes. No power-up, nothing to collect.",7);
           else if(m.drill && m.healer)
             toast("kill the Healer first and nothing gets undone — one word each.",5);
@@ -8884,7 +9834,15 @@ function update(dt){
       } else if(S.endless || S.wave < DEF().stages[S.stage].waves.length-1){
         /* ENDLESS NEVER RUNS OUT OF WAVES. The scripted branch is bounded by the arena's own
            wave list; endless has no list, so the same line simply keeps counting. */
-        S.wave++; queueWave(); sWave(); waveFlash();
+        S.wave++;
+        /* EASY (Pace STEADY) - TEST BUILD: a breather as each new boss wave begins. */
+        if(!S.endless && (S.paceRun|0)<0 && DEF().stages[S.stage].boss){
+          S.ward=Math.min(S.maxWard,S.ward+HP_WARD);
+          S.quiv=Math.min(QV_CAP,(S.quiv|0)+3);
+          fx.push({k:"heal",x:P.x,y:P.y-8,f:0}); supRing(P.x,P.y);
+          toast("a breather — +"+HP_WARD+" health, +3 arrows",2.6);
+        }
+        queueWave(); sWave(); waveFlash();
       }
       /* a HOLD stage ends on its meter, not on an empty board. Clearing the field early is
          allowed and just means you finish the hold unopposed - which is a reward for playing
@@ -9116,6 +10074,16 @@ function finish(won){
 function treeKey(e){
   if(!(S.scene==="over" && S.shop)) return false;
   const k=e.key, a=arrowOf(e);
+  /* NEW POWER CARD. Owns every key while it is up. Enter is also the buy key, so the key
+     that closes the card is swallowed until its keyup (and its repeats cannot start the
+     hold-to-unbind meter). 600 ms of grace so an Enter already on its way cannot close a
+     card nobody has seen. */
+  if(S.skCard){ e.preventDefault();
+    if(!e.repeat && (k==="Enter"||k===" "||k==="Escape")
+       && performance.now()-S.skCard.at>=600){
+      S.skCard=null; S.skSwallow=k; blip(620,.07,"triangle",.05,880); }
+    return true; }
+  if(S.skSwallow){ e.preventDefault(); return true; }
   /* the screen owns every key while it is up, arrows included: they move the cursor here,
      not the archer, and one leaking through would walk him while you shop. Every path
      returns true, because "handled" is what the caller checks. */
@@ -9143,7 +10111,9 @@ function treeKey(e){
     S.unbHeld=true; S.unbT=0;
     const tab=treeTab();
     if(!tabOpen(tab)) openTab(tab);
-    else { const sel=treeSel(); if(sel) buyRank(sel.k); }
+    else { const sel=treeSel();
+      if(sel && sel.power) toast(sel.name+" is already yours — press "+SK_KEY[sel.power]+" in a stage", 2.8);
+      else if(sel) buyRank(sel.k); }
     return true;
   }
   return true;                    /* swallow everything else: this is a menu */
@@ -9285,7 +10255,7 @@ addEventListener("keydown",e=>{
        where nothing is chasing you. `n` opens it; the arrows and Enter behave here the way
        they do on the title menu, which is the one selection idiom this game already has. */
     /* the tree screen's keys are handled ABOVE, in treeKey - see the note there */
-    if(k==="n"||k==="N"){ S.shop=true; S.csel=0; keys.clear(); return; }
+    if(k==="n"||k==="N"){ openShop(); return; }
     /* the settings icon's own keyboard equivalent - see openMapSettings()'s note by the icon's
        hit-test: every click target this game adds mirrors a key that already did the same thing,
        and this is that key for `p`/`P`. */
@@ -9303,7 +10273,7 @@ addEventListener("keydown",e=>{
         if(pn && Math.hypot(pn[0]*T+T/2-P.x, pn[1]*T+T/2-P.y)<46){ tradeMeat(); return; }
       }
       for(let i=0;i<NODES().length;i++){
-        if(i>=PR().unlocked) continue;
+        if(i>=PRU()) continue;
         const n=NODES()[i], nx=n[0]*T+T/2, ny=n[1]*T+T/2;
         if(Math.hypot(nx-P.x,ny-P.y)<46){ enterStage(i); return; }
       }
@@ -9322,6 +10292,7 @@ addEventListener("keydown",e=>{
     }
     /* 1-4 pick the element. This is why movement is on the arrows and elements
        are on digits: no game action is ever allowed to compete with the alphabet. */
+    if(KEY_SK[k] && skOn()){ e.preventDefault(); skNock(KEY_SK[k]); return; }
     if(k>="1"&&k<="4"){ e.preventDefault(); pickElem(+k-1); return; }
     if(k===" "||k==="Escape"){ e.preventDefault(); adamantAbandon();
                                S.lock=null; S.typed=0; return; }
@@ -9383,6 +10354,11 @@ cv.addEventListener("mousemove",e=>{
 });
 cv.addEventListener("mousedown",e=>{
   const [x,y]=canvasXY(e);
+  /* a click closes the new power card, after the same 600 ms grace */
+  if(S.scene==="over" && S.shop && S.skCard){
+    if(performance.now()-S.skCard.at>=600){
+      S.skCard=null; blip(620,.07,"triangle",.05,880); }
+    return; }
   if(S.scene==="title"){
     if(S.panel==="bye"){ S.panel=null; return; }
     if(menuHover(x,y)) menuActivate();
@@ -9393,7 +10369,7 @@ cv.addEventListener("mousedown",e=>{
        table affords - the alternative is hunting for a Back row in a list that scrolls */
     if(S.lib){ if(!libHover(x,y)) S.lib=false; return; }
     if(menuHover(x,y)) menuActivate(); return; }
-  if(onSkillIcon(x,y)){ S.shop=true; S.csel=0; keys.clear(); return; }
+  if(onSkillIcon(x,y)){ openShop(); return; }
   if(onSettingsIcon(x,y)) openMapSettings();
 });
 /* THE WHEEL, FOR THE ONE LIST IN THIS GAME THAT SCROLLS. The roster is fifteen rows in an
@@ -9430,6 +10406,7 @@ cv.addEventListener("wheel",e=>{
   blip(520,.03,"square",.04);
 },{passive:false});
 addEventListener("keyup",e=>{
+  if(S.skSwallow && e.key===S.skSwallow) S.skSwallow=null;   /* the new power card's close key */
   /* same sync as keydown, and for the same reason. e.shiftKey is false on Shift's own keyup
      and true on a letter's keyup while Shift is still held, so this both releases the sprint
      when the key is let go and keeps it while typing. */
@@ -9443,7 +10420,7 @@ addEventListener("keyup",e=>{
     S.unbHeld=false; S.unbT=0;
   }
 });
-addEventListener("blur",()=>{ keys.clear(); letterKeys.clear(); });
+addEventListener("blur",()=>{ keys.clear(); letterKeys.clear(); S.skSwallow=null; });
 
 function nine(img,x,y,w,h,alpha){
   const im=IMG[img]; if(!im||!im.complete) return false;
@@ -9480,12 +10457,17 @@ const LOCK_RISE=26;
 function layoutPlaques(V){
   const wx=x=>x*V.z+V.ox, wy=y=>y*V.z+V.oy;
   const list=live().map(m=>{
-    g.font=FONT; const tw=g.measureText(wof(m)).width;
-    const w=Math.max(PLQ_MINW,Math.ceil(tw)+PLQ_PAD), h=PLQ_H;
-    const ax=wx(m.x), ay=wy(m.y-70)-(S.lock===m?LOCK_RISE:0);
-    return { m, w, h, tw, word:wof(m), ax, ay,
+    g.font=FONT; g.textBaseline="middle"; const tm=g.measureText(wof(m)), tw=tm.width;
+    const asc=tm.actualBoundingBoxAscent;   /* v67: so a plate with hearts centres THIS name */
+    /* v67: the heart row's floor. A hit re-picks the name, and the fallback is T1 - a three-
+       letter name on a five-arrow body made an 86 px plate under an 88 px row. Only ever
+       widens; a plate already wide enough is untouched. */
+    const hw=heartRowW(m);
+    const w=Math.max(PLQ_MINW,Math.ceil(tw)+PLQ_PAD, hw ? hw+2*HRT_SIDE : 0), h=hw ? PLQ_HH : PLQ_H;
+    const ax=wx(m.x), ay=wy(m.y-70-icePlateRise(m))-(S.lock===m?LOCK_RISE:0);
+    return { m, w, h, tw, asc, word:wof(m), ax, ay,
              x:Math.max(4,Math.min(VW-w-4, ax-w/2)),
-             y:Math.max(plqCeil(),Math.min(VH-h-4, ay-h/2)) };
+             y:Math.max(plqCeil(),Math.min(Math.min(VH-4,skbTop())-h, ay-h/2)) };
   });
   /* NOTHING ELSE MOVES. Every plaque sits directly above its own enemy and they are allowed to
      overlap when the enemies crowd; the locked word stays readable through draw order - plaques()
@@ -9597,20 +10579,21 @@ function tagFor(m){
     return ["SWINGING \u00b7 CANNOT BE NAMED","#e06060"];
   if(m.reach) return ["REACH \u00b7 STAND FURTHER BACK","#d08a4a"];
   if(m.ranged) return ["IT WILL NOT COME TO YOU","#b58cd8"];
-  if(m.fast) return ["TOO FAST TO OUTRUN \u00b7 PRESS 3","#8fdca6"];
+  if(m.fast) return [(skOn() && skHas("freeze")) ? "TOO FAST TO OUTRUN \u00b7 FREEZE (3)" : "TOO FAST TO OUTRUN","#8fdca6"];
   if(m.shell){
     const t=Math.max(1,Math.ceil(m.shellT||0));
     if(!m.armour) return ["OPEN \u00b7 "+t+"s","#8fe0a0"];
-    return elemNow()==="ember"
-      ? ["SHELL SHUT \u00b7 EMBER OPENS IT","#e08a3c"]
+    return (burnOn() && burnReady())
+      ? ["SHELL SHUT \u00b7 BURN OPENS IT","#e08a3c"]
       : ["SHELL SHUT \u00b7 "+t+"s","#9fb6c6"];
   }
   if(m.armour){
-    const burnt=m.lit>0, ready=elemNow()==="ember";
+    const burnt=m.lit>0, ready=burnOn()&&burnReady();
     return [!m.stripped ? "FALSE NAME"
           : burnt      ? "ARMOUR BURNT"
-          : ready      ? "ARMOURED · EMBER READY"
-                       : "ARMOURED · PRESS 2",
+          : (S.nock&&burnOn()) ? "ARMOURED · BURN NOCKED"
+          : ready      ? "ARMOURED · PRESS 1, SAY IT"
+                       : "ARMOURED · BURN RECHARGING",
             burnt||ready ? "#e08a3c" : "#f0c34a"];
   }
   /* WHAT IS LEFT OF IT, and it has to be said or the rule is invisible. A player
@@ -9624,10 +10607,13 @@ function tagFor(m){
      refuses all four is the trap the Adamant's note names - a cost you discover after
      paying it. The count is still the right thing to say the moment the ward drops, so
      this reports the ward first and then gets out of the way. */
-  if(m.lastAlive) return (m.shield>0 && !(m.lit>0))
-    ? ["WARDED \u00b7 KILL THE REST FIRST","#8cd2eb"]
-    : [(m.hp|0)+" ARROWS LEFT","#e0a050"];
-  if((m.hp|0) > 1) return [(m.hp|0)+" ARROWS LEFT","#e0a050"];
+  /* v67, FOUR AND A HALF: HEALTH LEFT THE TEXT LINE. It was the 16th of 34 checks here, so it
+     lost to every rule above it (the Spider, Lancer, Shaman and Turtle never showed theirs)
+     and hid every rule below it (NO MISTAKES on the Ogre, Minotaur and Marshal until their
+     last arrow; the Bulwark's OPEN). It is now the row of hearts plaques() draws under the
+     name. The Skull's ward line keeps its place - that one IS a rule. */
+  if(m.lastAlive && m.shield>0 && !(m.lit>0))
+    return ["WARDED \u00b7 KILL THE REST FIRST","#8cd2eb"];
   if(m.strict) return ["NO MISTAKES","#e06060"];
   /* ABOVE the ward and the affix, and worded as an instruction rather than a noun - the
      same lesson the armour label had to learn twice. "ADAMANT" alone tells a player who
@@ -9841,7 +10827,7 @@ function hintBox(V){
      32 is half this box (15) plus its stem (10) plus air. */
   const pq = S.hintPlq;
   const pTop = pq ? pq.y - (pq.tagBelow ? 6 : 18)
-                  : (hm ? wy(hm.y-70)-PLQ_H : 0);
+                  : (hm ? wy(hm.y-70)-(hasHearts(hm)?PLQ_HH:PLQ_H) : 0);
   const pBot = pq ? pq.y + pq.h + (pq.tagBelow ? 18 : 4)
                   : (hm ? wy(hm.y)+14 : 0);
   const above = hm ? pTop-32 : wy(P.y-124);
@@ -9982,10 +10968,13 @@ function plaques(V){
       g.strokeStyle="rgba(240,195,74,"+m.growFx+")"; g.lineWidth=3;
       g.strokeRect(x-4.5-e,y-4.5-e,p.w+9+e*2,p.h+9+e*2);
     }
-    if(m.strict&&!L){
-      g.strokeStyle="rgba(224,96,96,.9)"; g.lineWidth=2;
-      g.strokeRect(x-2.5,y-2.5,p.w+5,p.h+5);
-    }
+    /* v67: THE STRICT RIM IS GONE ("Please remove the orange or hallow border on the box").
+       It was a 2px rgba(224,96,96) outline 2.5px outside every NO MISTAKES plate. The rule is
+       still said twice without it: the slate "special" plate the strict units wear, and the
+       NO MISTAKES line above it - which since this build shows from the first arrow. */
+    if(m.lit>0 && hasHearts(m)) plateFire(x,y,p.w,m);
+    if((m.frzT>0 || m.chill>0) && hasHearts(m)) plateIce(x,y,p.w,p.h,m);
+    if(m.stun>0 && hasHearts(m)) plateZap(x,y,p.w,p.h,m);
     const tg=tagFor(m);
     /* COALESCED. Two Bulwarks side by side drew "OPEN · 2s" twice, 40px apart, and the pair
        read as the single nonsense string "OPEN · 2 OPEN · 2s" - visible in the worst-case
@@ -10006,6 +10995,10 @@ function plaques(V){
       g.fillStyle="#f0c34a"; g.beginPath();
       g.moveTo(p.ax-7,y+p.h+2); g.lineTo(p.ax+7,y+p.h+2);
       g.lineTo(p.ax,y+p.h+14); g.closePath(); g.fill();
+      /* v72-test-V2: a nocked skill rides on this word - an arrowhead in its colour */
+      if(S.nock && skOn()){ const c=SKDEF[skNow()].col, my=y+p.h/2;
+        g.fillStyle=c; g.beginPath(); g.moveTo(x-4,my); g.lineTo(x-22,my-11); g.lineTo(x-16,my);
+        g.lineTo(x-22,my+11); g.closePath(); g.fill(); }
     }
     g.font=FONT; g.textAlign="left"; g.textBaseline="middle";
     /* MUTE draws the plaque, its size and its letter COUNT, with the letters replaced by dots.
@@ -10014,7 +11007,15 @@ function plaques(V){
        word until it is close. */
     const hush=muted(m);
     const word=hush ? "·".repeat(p.word.length) : p.word;
-    let cx=x+p.w/2-p.tw/2; const cy=y+p.h/2-2;
+    let cx=x+p.w/2-p.tw/2;
+    /* v67: with a heart row under it the name moves up so the pair is centred - see HRT_DY */
+    /* this name's own tallest letter - unless the name is muted, when dots are drawn instead
+       and the font's own ascent is the honest measure */
+    const asc = (!muted(m) && p.asc>0 && p.asc<30) ? p.asc : plqAsc();
+    /* a plate without hearts centres the same way: its name's tallest letter to its baseline
+       (descenders hang, as type does), equal space above and below */
+    const cy = hasHearts(m) ? Math.round(y+(p.h-(asc+HRT_DY+HRT_H))/2+asc)
+                              : Math.round(y+(p.h+asc-plqBase())/2);
     for(let i=0;i<word.length;i++){
       const ch=word[i], cw=g.measureText(ch).width, next=!hush&&L&&i===S.typed;
       g.fillStyle = hush ? "#8d9aa1"
@@ -10025,6 +11026,21 @@ function plaques(V){
         g.fillRect(cx-1,cy+11,cw+2,2); g.globalAlpha=1; g.fillStyle="#ff7a68"; }
       g.fillText(ch,cx,cy); cx+=cw;
     }
+    /* v67, FOUR AND A HALF: THE HEARTS. One per point of hpOf(), centred at the foot of the
+       plate, emptying right to left. Halves are drawn (rounded to the nearest 1/2, never
+       below 1/2 while alive) but m.hp-- is the only write to health in this build, so every
+       heart a player sees is whole or empty. v68: one-arrow enemies draw ONE heart (the user
+       chose the endorsement's option B); supply plaques, sheep and doors draw none. The
+       row sits HRT_DY under the name's middle line, and the two are centred together, so the
+       plate has the same margin above the name as below the hearts. */
+    { const hpMax=Math.max(1,hpOf(m.tier));
+      if(hasHearts(m)){
+        const raw=Math.max(0,Math.min(hpMax,+m.hp||0));
+        const now=raw>0 ? ((m.burnLeft>0) ? Math.max(.08,raw) : Math.max(0.5,Math.round(raw*2)/2)) : 0;
+        const tw=hpMax*HRT_W+(hpMax-1)*HRT_GAP;
+        const hx=Math.round(x+p.w/2-tw/2), hy=Math.round(cy+HRT_DY);
+        for(let i=0;i<hpMax;i++) heart(hx+i*(HRT_W+HRT_GAP), hy, Math.max(0,Math.min(1,now-i)));
+      } }
     /* THE MARK BAR STOOD HERE, and it was a red rule across the foot of every
        plaque whose unit had MOBDEF `mark:true`:
 
@@ -10781,7 +11797,7 @@ function render(){
   if(S.scene==="over"){
     for(let i=0;i<NODES().length;i++){
       const n=NODES()[i], nx=n[0]*T+T/2-cam.x, ny=n[1]*T+T/2-cam.y;
-      const open=i<PR().unlocked, done=i<PR().cleared, boss=i===NSTAGE-1;
+      const open=i<PRU(), done=i<PR().cleared, boss=i===NSTAGE-1;
       const r=boss?19:15;
       g.fillStyle="rgba(18,22,26,.75)"; g.beginPath(); g.arc(nx,ny,r+3,0,7); g.fill();
       g.fillStyle= boss?"#b03a30":(done?"#68b250":(open?"#3f7fd0":"#2e3c4a"));
@@ -10817,7 +11833,7 @@ function render(){
        was being thrown away by the renderer. */
     for(const p of fx) sprite(p.k,p.f,p.x-cam.x,p.y-cam.y,false);
     for(let i=0;i<NODES().length;i++){          /* prompts on top of everything */
-      if(i>=PR().unlocked) continue;
+      if(i>=PRU()) continue;
       const n=NODES()[i], nx=n[0]*T+T/2-cam.x, ny=n[1]*T+T/2-cam.y;
       if(Math.hypot(nx+cam.x-P.x,ny+cam.y-P.y)>46) continue;
       g.fillStyle="rgba(10,14,18,.9)"; g.fillRect(nx-52,ny-92,104,26);
@@ -10867,6 +11883,7 @@ function render(){
     drawDoors(m);
 
     drawDark(m);
+    skFxGround(cam);  /* V7: frost spreads under bodies; plaques are still drawn last. */
     const order=[...mobs].sort((a,b)=>a.y-b.y);
     let drawn=false;
     for(const mb of order){
@@ -10931,23 +11948,30 @@ function render(){
       /* THE UNFURL, once, on the frame the shell gives way - whether that was the clock
          or an Ember. Above the hit for the same reason the hit is above the swing: this is
          the thing that just happened to the body. */
-      if(mb.shellFx>0 && SHEET.tuOut){
+      const mobSprite=(key,frame,x,y,flip)=>{
+        if(!(mb.frzT>0)) mb.icePose={key,frame,dx:x-wx,dy:y-wy,flip};
+        sprite(key,frame,x,y,flip);
+      };
+      if(!mb.dead && mb.frzT>0){
+        const p=mb.frzPose||{key:mb.sheet,frame:0,dx:0,dy:0,flip:mb.x>P.x};
+        mobSprite(p.key,p.frame,wx+p.dx,wy+p.dy,p.flip);
+      } else if(mb.shellFx>0 && SHEET.tuOut){
         const os=SHEET.tuOut, ok=1-mb.shellFx/(os.n/FPS);
-        sprite("tuOut", Math.min(os.n-1,(ok*os.n)|0), wx, wy, mb.x>P.x);
+        mobSprite("tuOut", Math.min(os.n-1,(ok*os.n)|0), wx, wy, mb.x>P.x);
       } else if(mb.hitT>0 && SHEET[mb.hitSheet]){
         const hs=SHEET[mb.hitSheet], hk=1-mb.hitT/(hs.n/FPS);
-        sprite(mb.hitSheet, Math.min(hs.n-1,(hk*hs.n)|0), wx, wy, mb.x>P.x);
+        mobSprite(mb.hitSheet, Math.min(hs.n-1,(hk*hs.n)|0), wx, wy, mb.x>P.x);
       } else if(mb.wind>0 && SHEET[mb.windSheet]){
         /* ITS OWN WINDUP, played as a clip over the unit's own wind time rather than
            cycled - a windup happens once and has a shape, like the swing. */
         const ws=SHEET[mb.windSheet], wk=1-mb.wind/(mb.windT||TELE);
-        sprite(mb.windSheet, Math.min(ws.n-1,(Math.max(0,Math.min(1,wk))*ws.n)|0),
+        mobSprite(mb.windSheet, Math.min(ws.n-1,(Math.max(0,Math.min(1,wk))*ws.n)|0),
                wx, wy, mb.x>P.x);
       } else if(mb.stagger>0 && SHEET[mb.recSheet] && mb.recT){
         /* AND ITS RECOVERY, over the whole stagger, which is what makes the opening
            visibly long instead of merely long. */
         const rs=SHEET[mb.recSheet], rk=1-mb.stagger/mb.recT;
-        sprite(mb.recSheet, Math.min(rs.n-1,(Math.max(0,Math.min(1,rk))*rs.n)|0),
+        mobSprite(mb.recSheet, Math.min(rs.n-1,(Math.max(0,Math.min(1,rk))*rs.n)|0),
                wx, wy, mb.x>P.x);
       } else if(mb.wind>0){
         const k=1-mb.wind/TELE;                       /* 0 at rear-back, 1 at hit */
@@ -10955,9 +11979,9 @@ function render(){
         g.save(); g.translate(wx,wy-4); g.scale(1,.42);
         g.fillStyle="rgba(240,92,74,"+(.14+.26*k)+")";
         g.beginPath(); g.arc(0,0,48-24*k,0,Math.PI*2); g.fill(); g.restore();
-        sprite(mb.sheet,mb.f,wx,wy-6-5*k,mb.x>P.x);   /* rears back */
+        mobSprite(mb.sheet,mb.f,wx,wy-6-5*k,mb.x>P.x);   /* rears back */
         g.save(); g.globalAlpha=.25+.45*k; g.globalCompositeOperation="lighter";
-        sprite(mb.sheet,mb.f,wx,wy-6-5*k,mb.x>P.x);
+        mobSprite(mb.sheet,mb.f,wx,wy-6-5*k,mb.x>P.x);
         g.restore();
       } else if(mb.swing>0){
         /* THE SWING, played from the unit's own attack sheet: the Pawn's
@@ -10978,13 +12002,13 @@ function render(){
         const k=Math.max(0,Math.min(1,1-mb.swing/SWING));
         const fr=SHEET[mb.atk] ? Math.min(SHEET[sh].n-1, (k*SHEET[sh].n)|0) : mb.f;
         const lunge=Math.sin(Math.PI*k)*10;
-        sprite(sh,fr,wx+Math.cos(mb.swAng)*lunge,
+        mobSprite(sh,fr,wx+Math.cos(mb.swAng)*lunge,
                      wy+Math.sin(mb.swAng)*lunge,flip);
       } else if(mb.cast>0){
         /* the Monk's own Heal animation, for as long as the cast lasts */
         const cs=SHEET[mb.castSheet]?mb.castSheet:"monkHeal";
         const k=Math.max(0,Math.min(1,1-mb.cast/CAST));
-        sprite(cs,Math.min(SHEET[cs].n-1,(k*SHEET[cs].n)|0),wx,wy,mb.x>P.x);
+        mobSprite(cs,Math.min(SHEET[cs].n-1,(k*SHEET[cs].n)|0),wx,wy,mb.x>P.x);
       } else if(SHEET[mb.guardSheet] &&
                 (mb.brace>0 || (mb.bulwark && shieldBlocks(mb))
                             || (mb.lastAlive && mb.shield>0)
@@ -11005,10 +12029,10 @@ function render(){
            Anything else keeps its single guard sheet and its face-the-player flip. */
         if(mb.bulwark && SHEET[mb.guardSheet+"E"]){
           const [d,fp]=lanceDir(mb.dirx||1, mb.diry||0);
-          sprite(mb.guardSheet+d, mb.f, wx, wy, fp);
-        } else sprite(mb.guardSheet, mb.f, wx, wy, mb.x>P.x);
+          mobSprite(mb.guardSheet+d, mb.f, wx, wy, fp);
+        } else mobSprite(mb.guardSheet, mb.f, wx, wy, mb.x>P.x);
       } else {
-        sprite(mb.sheet,mb.f,wx,wy,mb.x>P.x);
+        mobSprite(mb.sheet,mb.f,wx,wy,mb.x>P.x);
         if(mb.miss>0)                                  /* the swing that missed */
           disc(24+34*(1-mb.miss),1,"rgba(206,220,234,"+mb.miss*.85+")",3);
       }
@@ -11059,6 +12083,7 @@ function render(){
         }
       }
       if(mb.healFx>=0) sprite("heal",mb.healFx,wx,wy-8,false);
+      if(!mb.dead && mb.frzT>0) iceShell(mb,cam);  /* preserve actor depth and Chapter VI lighting */
       if(mb.mark){ g.fillStyle="rgba(201,74,58,.9)";
         g.beginPath(); g.moveTo(wx-6,wy-76); g.lineTo(wx+6,wy-76);
         g.lineTo(wx,wy-66); g.closePath(); g.fill(); }
@@ -11069,6 +12094,11 @@ function render(){
     const ai=IMG.arrow;
     if(ai&&ai.complete) for(const a of arrows){
       g.save(); g.translate(Math.round(a.x-cam.x),Math.round(a.y-cam.y)); g.rotate(a.ang);
+      if(a.sk==="freeze"){
+        icePoly([[-30,-3],[-72,0],[-30,3]],"rgba(113,217,250,.70)");
+        iceLine([[-58,0],[-18,0]],"rgba(231,254,255,.98)");
+        icePoly([[-12,-4],[2,0],[-12,4]],"rgba(217,254,255,.98)");
+      }
       g.drawImage(ai,-32,-32); g.restore();
     }
     /* AND THE ONES COMING THE OTHER WAY. Same sprite geometry, different sheet: adArrow is the
@@ -11223,6 +12253,7 @@ function render(){
     }
     drawCouriers(cam);
     for(const p of fx) sprite(p.k,p.f,p.x-cam.x,p.y-cam.y,false);
+    skFxDraw(cam);
     drawSplash(cam);   /* the drowning splash - see the note by its declaration */
     /* lane markers: a faint chevron on each edge a wave walks in from */
     if(W&&W.def.lanes) for(const [lx,ly] of W.def.lanes){
@@ -11266,8 +12297,8 @@ function render(){
     g.textAlign="center"; g.textBaseline="middle";
     g.translate(VW/2, VH*0.36); g.scale(pop,pop);
     g.font='bold 52px system-ui';
-    g.lineWidth=6; g.strokeStyle="rgba(8,12,10,.85)";
-    g.strokeText("WAVE "+(S.wave+1),0,0);
+    /* v70: NO OUTLINE ("remove the outlines/glow border on the text"). Was a 6px
+       rgba(8,12,10,.85) strokeText under the fill. */
     g.fillStyle="#f3e6c4";
     g.fillText("WAVE "+(S.wave+1),0,0);
     g.restore();
@@ -11442,7 +12473,7 @@ function minimap(m){
   if(m.def.road) for(const [x,y] of m.def.road){
     g.fillStyle="#b8996a"; g.fillRect(ox+x*S3,oy+y*S3,S3,S3); }
   for(let i=0;i<NODES().length;i++){
-    const n=NODES()[i], done=i<PR().cleared, open=i<PR().unlocked;
+    const n=NODES()[i], done=i<PR().cleared, open=i<PRU();
     g.fillStyle= i===9?"#b03a30":(done?"#68b250":(open?"#5f9fe0":"#2a3440"));
     g.beginPath(); g.arc(ox+n[0]*S3+2,oy+n[1]*S3+2,i===9?4:3,0,7); g.fill();
   }
@@ -11516,7 +12547,7 @@ function debugPanel(){
    world happens to be doing underneath it, without bringing back a plate. Respects whatever font/
    align/baseline the caller already set. */
 function shadowText(t,x,y,col){
-  g.fillStyle="rgba(6,10,14,.82)"; g.fillText(t,x+1,y+1);
+  /* v70: the dark echo is gone on request - the name is kept so its four callers stay put */
   g.fillStyle=col; g.fillText(t,x,y);
 }
 
@@ -11592,6 +12623,24 @@ function elemGlyph(k, cx, cy, r, solid){
 /* WHERE A SLOT IS, asked once and answered once, because "where the roster is"
    must not drift into two different answers — the same reason skillIconRect()
    exists a few lines below. The draw code and the test hook both read this. */
+/* THE BURN SLOT - TEST BUILD. Roster slot 0's box, with the ember glyph, a dark curtain
+   that drains as the cooldown runs, and the seconds left beside it. */
+function burnSlot(){
+  const s=rosterSlot(0), cx=s.x+s.w/2, rdy=burnReady();
+  const left=Math.max(0,(S.burnAt||0)-S.t), f=rdy?0:Math.min(1,left/BURN_CD);
+  const col="#e08a3c";
+  g.save(); g.textAlign="center"; g.textBaseline="alphabetic";
+  g.fillStyle=rdy?"rgba(224,138,60,.24)":"rgba(20,24,30,.55)"; g.fillRect(s.x,s.y,s.w,s.h);
+  if(f>0){ g.fillStyle="rgba(6,8,10,.62)"; g.fillRect(s.x,s.y,s.w,Math.round(s.h*f)); }
+  g.strokeStyle=rdy?col:"rgba(111,124,132,.7)"; g.lineWidth=rdy?2:1;
+  g.strokeRect(s.x+1,s.y+1,s.w-2,s.h-2);
+  g.font='bold 8px system-ui'; g.fillStyle=rdy?col:"#8d9aa1"; g.fillText("1",cx,s.y+9);
+  g.fillStyle=rdy?col:"#6f7c84"; g.strokeStyle=rdy?col:"#6f7c84";
+  elemGlyph("ember",cx,s.y+14.5,ROS_R,rdy);
+  g.textAlign="left"; g.font='bold 11px system-ui';
+  shadowText(rdy?"BURN":("BURN "+Math.max(1,Math.ceil(left-0.05))+"s"), s.x+s.w+6, s.y+15, rdy?"#f2b27a":"#8d9aa1");
+  g.restore();
+}
 function rosterSlot(i){
   return { x: ROS_X + i*(ROS_SLOT+ROS_GAP), y: ROS_Y, w: ROS_SLOT, h: ROS_H };
 }
@@ -11655,6 +12704,61 @@ function closeSettings(){
   S.lib=false;
   S.panel=null; S.wipe=false; S.opt=false;
 }
+/* THE SKILL BAR - v72-test. Bottom centre, Design D ("The Fastest Number"), the layout the
+   skills plan ("Nock, Draw, Loose") builds on: key 1 Burn, keys 3-5 actives, key 6 the ultimate.
+   Only Burn exists yet; the other slots are drawn locked so the bar is its real size.
+   Top-left of a slot would be its arrow cost (Burn costs none), bottom-right its cooldown
+   seconds, and a shadow sweeps round the face as the cooldown runs. */
+const SKB_SLOT=46, SKB_GAP=8, SKB_SEP=14, SKB_Y=VH-SKB_SLOT-24;
+const skbTop=()=> skOn() ? SKB_Y-16 : VH;       /* plaques stay above this line */
+function skillBar(){
+  if(!skOn()) return;
+  /* v75: the three powers on their own keys - 1 Burn, 3 Freeze, 4 Thunder - each with its own
+     cooldown sweep. 5 is still a locked active and 6 the ultimate. */
+  const slots=[{key:"1",sk:"burn"},{sep:true},{key:"3",sk:"freeze"},{key:"4",sk:"thunder"},{key:"5"},{sep:true},{key:"6",ult:true}]
+                .map(q=>(q.sk && !skHas(q.sk)) ? {key:q.key} : q);
+  const n=slots.filter(q=>!q.sep).length, ns=slots.length-n;
+  const totW=n*SKB_SLOT+(n-1-ns)*SKB_GAP+ns*SKB_SEP;
+  let x=Math.round(VW/2-totW/2);
+  const y=SKB_Y, SL=SKB_SLOT;
+  g.save(); g.textBaseline="alphabetic"; g.textAlign="center";
+  for(let i=0;i<slots.length;i++){ const q=slots[i];
+    if(q.sep){ g.fillStyle="rgba(200,210,215,.30)"; g.fillRect(x+SKB_SEP/2-1,y+8,2,SL-16); x+=SKB_SEP; continue; }
+    const cx=x+SL/2;
+    g.fillStyle="rgba(14,19,25,.62)"; g.fillRect(x-2,y-2,SL+4,SL+4);
+    g.fillStyle="rgba(28,35,43,.90)"; g.fillRect(x,y,SL,SL);
+    if(q.sk){
+      const d=SKDEF[q.sk], rdy=skReady(q.sk), nk=S.nock===q.sk, left=Math.max(0,skAtOf(q.sk)-S.t), f=rdy?0:Math.min(1,left/d.cd);
+      const lit=rdy||nk;
+      if(nk){ g.fillStyle=d.col; g.globalAlpha=.30+.18*Math.sin(S.t*9); g.fillRect(x,y,SL,SL); g.globalAlpha=1; }
+      else if(rdy){ g.fillStyle=d.col; g.globalAlpha=.14+.06*Math.sin(S.t*4); g.fillRect(x,y,SL,SL); g.globalAlpha=1; }
+      g.fillStyle=lit?(nk?d.lite:d.col):"#8d9aa1"; g.strokeStyle=g.fillStyle;
+      elemGlyph(d.glyph,cx,y+SL/2,12,lit);
+      if(f>0){
+        g.save(); g.beginPath(); g.moveTo(cx,y+SL/2);
+        g.arc(cx,y+SL/2,SL,-Math.PI/2,-Math.PI/2+Math.PI*2*f); g.closePath(); g.clip();
+        g.fillStyle="rgba(4,8,10,.66)"; g.fillRect(x,y,SL,SL); g.restore();
+        g.font='bold 12px system-ui'; g.textAlign="right"; g.fillStyle="#ffd27a";
+        g.fillText(String(Math.max(1,Math.ceil(left-0.05))),x+SL-4,y+SL-5); g.textAlign="center";
+      }
+      g.strokeStyle=lit?d.col:"rgba(111,124,132,.7)"; g.lineWidth=nk?3:(rdy?2:1);
+      g.strokeRect(x+(lit?1:.5),y+(lit?1:.5),SL-(lit?2:1),SL-(lit?2:1));
+      g.font='bold 9px system-ui'; g.fillStyle=lit?d.lite:"#b9c4c9";
+      g.fillText(nk ? "NOCKED" : d.name, cx, y-6);     /* three labels side by side: no room for both words */
+      g.font='bold 11px system-ui'; g.fillStyle=lit?"#e8e0cd":"#b9c4c9";
+      g.fillText(q.key,cx,y+SL+13);
+    } else {
+      g.strokeStyle=q.ult?"rgba(214,162,74,.45)":"rgba(111,124,132,.45)"; g.lineWidth=1;
+      g.strokeRect(x+.5,y+.5,SL-1,SL-1);
+      g.fillStyle=q.ult?"rgba(214,162,74,.35)":"rgba(141,154,161,.30)";
+      g.fillRect(cx-7,y+SL/2-1,14,2);
+      g.font='bold 11px system-ui'; g.fillStyle="#8d9aa1";
+      g.fillText(q.key,cx,y+SL+13);
+    }
+    x+=SL+((slots[i+1]&&!slots[i+1].sep)?SKB_GAP:0);
+  }
+  g.restore();
+}
 function hud(){
   if(S.scene==="title") return;
   /* NO PLATE. This used to fill a solid dark bar the width of the screen behind every readout
@@ -11710,8 +12814,9 @@ function hud(){
        amber at two and red at one turns the calmest corner of the screen into an alarm while the
        player is reading words) and the notches carry the number instead. */
     g.fillStyle="rgba(14,20,28,.62)";
-    for(let i=1;i<S.maxWard;i++)
-      g.fillRect(Math.round(bd.x+bd.w*i/S.maxWard), Math.round(bd.y), 1, Math.round(bd.h));
+    for(let v=HP_WARD;v<S.maxWard;v+=HP_WARD)
+      g.fillRect(Math.round(bd.x+bd.w*v/S.maxWard), Math.round(bd.y), 1, Math.round(bd.h));
+    /* v72-test-V7: the percentage beside the bar was removed on request - the bar and its notches say it */
     /* NO LOW-WARD PULSE, AND THIS IS A REJECTION WORTH RECORDING because the idea is a good
        one in general and wrong here specifically.
        The gamecraft HUD skill says plainly that "a low-health pulse beats the bar", and it is
@@ -11916,6 +13021,8 @@ function hud(){
       }
       g.restore();
     }
+    /* v72-test: Burn left the top strip for the skill bar - see skillBar() */
+    if(skOn()) skillBar();
   } else {
     /* "N nodes" only where there is something to buy, and it counts what is affordable so a
        player with Ink in hand is told so rather than having to open a screen to find out */
@@ -11975,6 +13082,7 @@ function hud(){
      node as well as the effect - "does nothing in Chapter I" is the sort of thing a player
      should learn before paying ten Ink for it, not after. */
   if(S.scene==="over" && S.shop) tree();
+  if(S.scene==="over" && S.shop && S.skCard) SKDEMO.draw();
   /* THE MAP'S SETTINGS OVERLAY, drawn last for the same reason the spend screen is - it has to
      cover everything already drawn above it, icons included. See drawMapSettings()'s own note. */
   if(S.scene==="over" && S.opt) drawMapSettings();
@@ -12001,7 +13109,9 @@ function hud(){
 
    Keys are the ones this game already has: arrows move, enter buys, tab/[] change tab, n or
    escape closes. Nothing needs a mouse. */
-const T_COLS=5, T_ROWS=3;
+const T_COLS=5;
+/* v75: ROWS PER TAB. Adept carries the powers as a fourth row; the others keep three. */
+const treeRows=()=>Math.max(3, ...treeTab().skills.map(sk=>sk.row+1));
 
 const UNB_ARM = 0.45;    /* seconds of held Enter before the meter appears */
 const UNB_HOLD = 1.15;   /* seconds of meter before it fires               */
@@ -12009,16 +13119,508 @@ function treeTab(){ return TREE[Math.max(0,Math.min(TREE.length-1,S.tsel|0))]; }
 function treeAt(col,row){ return treeTab().skills.find(sk=>sk.col===col&&sk.row===row)||null; }
 function treeCells(){                      /* the grid, in cursor order */
   const out=[];
-  for(let row=0;row<T_ROWS;row++) for(let col=0;col<T_COLS;col++) out.push(treeAt(col,row));
+  const R=treeRows(); for(let row=0;row<R;row++) for(let col=0;col<T_COLS;col++) out.push(treeAt(col,row));
   return out;
 }
 function treeMove(dx,dy){
   const cur=S.csel|0, col=cur%T_COLS, row=(cur/T_COLS)|0;
-  const nc=(col+dx+T_COLS)%T_COLS, nr=(row+dy+T_ROWS)%T_ROWS;
+  const R=treeRows(), nc=(col+dx+T_COLS)%T_COLS, nr=(row+dy+R)%R;
   S.csel=nr*T_COLS+nc;
   blip(520,.03,"square",.04);
 }
 function treeSel(){ return treeCells()[S.csel|0]||null; }
+/* ============ SKILL INTRO MODAL: the skill screen's "new power" card ============
+   Paste once, anywhere after IMG, g and VW/VH exist. Self-contained: it keeps its own
+   particle pool, clock and units, so it never touches FIRE, live(), mobs or S.t, and the
+   stage's own effects are untouched. Public surface: SKDEMO.begin(k), SKDEMO.draw().
+   k is a SKDEF key: "burn" | "freeze" | "thunder". */
+const SKDEMO=(()=>{
+/* ======== the build's drawing routines, ported as written (v72) ======== */
+const PAPER9={lx:12,mx:128,rx:256, ty:20,my:128,by:256, cw:52,ch:44, tx:138,bx:140, ly:140,ry:131, ctx:148,cty:128, line:4};
+function paperBox(img,x,y,w,h){
+  const im=IMG[img], P=PAPER9, L=P.cw, R=P.cw, Tt=P.ch, Bb=P.ch, mw=Math.max(1,w-L-R), mh=Math.max(1,h-Tt-Bb), n=P.line;
+  const D=(sx,sy,sw,sh,dx,dy,dw,dh)=>g.drawImage(im,sx,sy,sw,sh,Math.round(dx),Math.round(dy),Math.ceil(dw),Math.ceil(dh));
+  D(P.lx,P.ty,L,Tt, x,y,L,Tt);          D(P.rx,P.ty,R,Tt, x+L+mw,y,R,Tt);
+  D(P.lx,P.by,L,Bb, x,y+Tt+mh,L,Bb);    D(P.rx,P.by,R,Bb, x+L+mw,y+Tt+mh,R,Bb);
+  D(P.tx,P.ty,n,Tt, x+L,y,mw,Tt);       D(P.bx,P.by,n,Bb, x+L,y+Tt+mh,mw,Bb);
+  D(P.lx,P.ly,L,n,  x,y+Tt,L,mh);       D(P.rx,P.ry,R,n,  x+L+mw,y+Tt,R,mh);
+  D(P.ctx,P.cty,n,n, x+L,y+Tt,mw,mh);
+}
+const PAPER_COLS=[[9,62],[130,190],[258,311]], PAPER_ROWS=[[20,62],[130,190],[258,299]];
+function specialBox(x,y,w,h){
+  const im=IMG.special, [[lx0,lx1],[mx0,mx1],[rx0,rx1]]=PAPER_COLS, [[ty0,ty1],[my0,my1],[by0,by1]]=PAPER_ROWS;
+  const lw=lx1-lx0, rw=rx1-rx0, th=ty1-ty0, bh=by1-by0, mw=Math.max(2,w-lw-rw), mh=Math.max(2,h-th-bh);
+  const c=(a0,a1,b0,b1,dx,dy,dw,dh)=>g.drawImage(im,a0,b0,a1-a0,b1-b0,Math.round(x+dx),Math.round(y+dy),Math.ceil(dw),Math.ceil(dh));
+  c(lx0,lx1,ty0,ty1,0,0,lw,th);      c(mx0,mx1,ty0,ty1,lw,0,mw,th);      c(rx0,rx1,ty0,ty1,lw+mw,0,rw,th);
+  c(lx0,lx1,my0,my1,0,th,lw,mh);     c(mx0,mx1,my0,my1,lw,th,mw,mh);     c(rx0,rx1,my0,my1,lw+mw,th,rw,mh);
+  c(lx0,lx1,by0,by1,0,th+mh,lw,bh);  c(mx0,mx1,by0,by1,lw,th+mh,mw,bh);  c(rx0,rx1,by0,by1,lw+mw,th+mh,rw,bh);
+}
+function nine(img,x,y,w,h){
+  const im=IMG[img], L=26,R=26,Tt=22,Bb=22, sL=6,sT=10,sC=64,sR=128, mw=Math.max(1,w-L-R), mh=Math.max(1,h-Tt-Bb);
+  const d=(sx,sy,sw,sh,dx,dy,dw,dh)=>g.drawImage(im,sx*2,sy*2,sw*2,sh*2,dx,dy,dw,dh);
+  d(sL,sT,L,Tt, x,y,L,Tt);         d(sC,sT,32,Tt, x+L,y,mw,Tt);         d(sR,sT,R,Tt, x+L+mw,y,R,Tt);
+  d(sL,sC,L,32, x,y+Tt,L,mh);      d(sC,sC,32,32, x+L,y+Tt,mw,mh);      d(sR,sC,R,32, x+L+mw,y+Tt,R,mh);
+  d(sL,sR,L,Bb, x,y+Tt+mh,L,Bb);   d(sC,sR,32,Bb, x+L,y+Tt+mh,mw,Bb);   d(sR,sR,R,Bb, x+L+mw,y+Tt+mh,R,Bb);
+}
+const HRT_G=[".kk..kk.","kbbkkbbk","klbbbbbk","kbbbbbsk",".kbbbsk.","..kbsk..","...kk..."];
+const HRT_PX=2, HRT_W=16, HRT_H=14, HRT_GAP=2, HRT_DY=16, HRT_SIDE=10;
+const HRT_COL={k:"#1c1f2a", b:"#FF3E3E", s:"#B22249", l:"#FFA762"}, HRT_LOST="#3a2226";
+const HRT_HOT={k:"#1c1f2a", b:"#F28C28", s:"#B5541A", l:"#FFE0A0"};
+function heart(x,y,frac){
+  const fillTo=Math.round(Math.max(0,Math.min(1,frac))*HRT_G[0].length);
+  for(let r=0;r<HRT_G.length;r++){ const row=HRT_G[r];
+    for(let c=0;c<row.length;c++){ const k=row[c]; if(k===".") continue;
+      const pal=(frac>0&&frac<1)?HRT_HOT:HRT_COL;
+      g.fillStyle=(k==="k")?pal.k:(c<fillTo?pal[k]:HRT_LOST); g.fillRect(x+c*HRT_PX,y+r*HRT_PX,HRT_PX,HRT_PX); } }
+}
+function elemGlyph(k,cx,cy,r){
+  g.lineWidth=2; g.lineCap="round"; g.lineJoin="round";
+  if(k==="ember"){ g.beginPath(); g.arc(cx,cy,r*0.46,0,Math.PI*2); g.fill(); g.beginPath(); g.arc(cx,cy,r*0.92,0,Math.PI*2); g.stroke(); }
+  else if(k==="frost"){ for(let i=0;i<6;i++){ const a=i*Math.PI/3; g.beginPath();
+      g.moveTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r); g.lineTo(cx+Math.cos(a)*r*0.22, cy+Math.sin(a)*r*0.22); g.stroke(); } }
+  else if(k==="spark"){ g.beginPath(); g.moveTo(cx+r*0.62,cy-r); g.lineTo(cx-r*0.48,cy+r*0.10);
+      g.lineTo(cx+r*0.26,cy+r*0.10); g.lineTo(cx-r*0.62,cy+r); g.stroke(); }
+}
+/* one 2px particle pool for fire, ice and sparks, as in the build */
+const FIRE_MAX=1400; let FIRE=[];
+const FIRE_RAMP=[[0,"255,244,190"],[.12,"255,214,90"],[.32,"252,150,44"],[.56,"226,80,30"],[.76,"150,42,28"]];
+function fireAdd(x,y,vx,vy,life,size,kind){ if(FIRE.length>=FIRE_MAX) FIRE.shift();
+  FIRE.push({x,y,vx,vy,t:0,T:life,s:size,k:kind||"f",ph:Math.random()*6.28}); }
+function fireBody(m,dt){
+  const rate=(m.lit>1?44:26); let n=rate*dt;
+  while(n>0){ if(Math.random()<n){ const h=Math.pow(Math.random(),1.6);
+    fireAdd(m.x+(Math.random()-.5)*26, m.y-2-h*30, (Math.random()-.5)*14, -38-Math.random()*52, .45+Math.random()*.4, 5+Math.random()*4, "f"); } n-=1; }
+  if(Math.random()<dt*5) fireAdd(m.x+(Math.random()-.5)*20, m.y-34, (Math.random()-.5)*30, -90-Math.random()*60, .9+Math.random()*.8, 2, "e");
+  if(Math.random()<dt*6) fireAdd(m.x+(Math.random()-.5)*14, m.y-44, (Math.random()-.5)*10, -30-Math.random()*20, 1.1+Math.random()*.6, 7+Math.random()*4, "s");
+}
+function fireBurst(x,y,k){
+  for(let i=0;i<(k||26);i++){ const a=Math.random()*6.28, sp=30+Math.random()*90;
+    fireAdd(x+Math.cos(a)*8, y-6-Math.random()*20, Math.cos(a)*sp, Math.sin(a)*sp*.4-60-Math.random()*70, .35+Math.random()*.45, 6+Math.random()*6, "f"); }
+  for(let i=0;i<10;i++){ const a=Math.random()*6.28;
+    fireAdd(x, y-20, Math.cos(a)*(60+Math.random()*120), -120-Math.random()*140, .8+Math.random()*.9, 2, "e"); }
+}
+function fireWave(x,y,R){ const N=Math.round(R*0.9);
+  for(let i=0;i<N;i++){ const a=i/N*6.28+Math.random()*.1, rr=R*(.25+Math.random()*.75), ux=Math.cos(a), uy=Math.sin(a)*.5;
+    fireAdd(x+ux*rr*.35, y+uy*rr*.35, ux*rr*2.1, uy*rr*2.1-30-Math.random()*40, .30+Math.random()*.25, 6+Math.random()*5, "f"); } }
+function iceBurst(x,y,k){
+  for(let i=0;i<(k||18);i++){ const a=Math.random()*6.28, sp=50+Math.random()*130;
+    fireAdd(x+Math.cos(a)*6, y-18-Math.random()*16, Math.cos(a)*sp, Math.sin(a)*sp*.5-90-Math.random()*80, .55+Math.random()*.45, 2+((Math.random()*2)|0)*2, "sh"); }
+  for(let i=0;i<6;i++) fireAdd(x+(Math.random()-.5)*30, y-10-Math.random()*20, (Math.random()-.5)*16, -8-Math.random()*10, 1.0+Math.random()*.6, 8+Math.random()*6, "mi");
+}
+function zapBurst(x,y,k){ for(let i=0;i<(k||14);i++){ const a=Math.random()*6.28, sp=80+Math.random()*180;
+  fireAdd(x, y-26, Math.cos(a)*sp, Math.sin(a)*sp, .18+Math.random()*.25, 2, "z"); } }
+function fireTick(dt){
+  for(const p of FIRE){ p.t+=dt;
+    if(p.k==="f"){ p.vx*=Math.pow(.10,dt); p.vy=p.vy*Math.pow(.35,dt)-40*dt; p.x+=(p.vx+Math.sin(p.ph+p.t*13)*18)*dt; p.y+=p.vy*dt; p.s=Math.max(1.5,p.s*(1-dt*1.6)); }
+    else if(p.k==="e"){ p.vx*=Math.pow(.4,dt); p.vy+=60*dt; p.x+=(p.vx+Math.sin(p.ph+p.t*7)*25)*dt; p.y+=p.vy*dt; }
+    else if(p.k==="sh"){ p.vx*=Math.pow(.5,dt); p.vy+=420*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; }
+    else if(p.k==="mi"){ p.x+=(p.vx+Math.sin(p.ph+p.t*2)*5)*dt; p.y+=p.vy*dt; p.s+=dt*6; }
+    else if(p.k==="z"){ p.vx*=Math.pow(.2,dt); p.vy=p.vy*Math.pow(.2,dt); p.x+=p.vx*dt; p.y+=p.vy*dt; }
+    else { p.x+=(p.vx+Math.sin(p.ph+p.t*3)*8)*dt; p.y+=p.vy*dt; p.s+=dt*9; } }
+  FIRE=FIRE.filter(p=>p.t<p.T);
+}
+function fireDraw(){
+  g.save(); g.globalCompositeOperation="lighter";
+  for(const m of U) if(m.lit>0){
+    const fl=.75+.25*Math.sin(T*17+m.x)*Math.sin(T*23+m.y), r=38, gx=m.x, gy=m.y-4;
+    const gr=g.createRadialGradient(gx,gy,2,gx,gy,r);
+    gr.addColorStop(0,"rgba(255,120,30,"+(.22*fl)+")"); gr.addColorStop(1,"rgba(255,80,20,0)");
+    g.fillStyle=gr; g.save(); g.translate(gx,gy); g.scale(1,.55); g.translate(-gx,-gy); g.beginPath(); g.arc(gx,gy,r,0,6.28); g.fill(); g.restore(); }
+  g.globalCompositeOperation="source-over";
+  const L=FIRE.slice().sort((a,b)=>(b.t/b.T)-(a.t/a.T));
+  for(const p of L){ const f=p.t/p.T, X=Math.round(p.x/2)*2, Y=Math.round(p.y/2)*2;
+    if(p.k==="s"){ const a=.30*(1-f)*Math.min(1,f*4), sz=Math.round(p.s/2)*2; g.fillStyle="rgba(52,40,38,"+a+")"; g.fillRect(X-sz/2,Y-sz/2,sz,sz); continue; }
+    if(p.k==="sh"){ const a=Math.max(0,1-f*f); g.fillStyle=f<.3?"rgba(255,255,255,"+a+")":"rgba(160,220,242,"+a+")"; g.fillRect(X-p.s/2,Y-p.s/2,p.s,p.s); continue; }
+    if(p.k==="mi"){ const a=.20*(1-f)*Math.min(1,f*5), sz=Math.round(p.s/2)*2; g.fillStyle="rgba(220,242,252,"+a+")"; g.fillRect(X-sz/2,Y-sz/2,sz,sz); continue; }
+    if(p.k==="z"){ const a=Math.max(0,1-f), sz=Math.max(2,Math.round(p.s*(1-f*.5)/2)*2);
+      g.fillStyle=f<.4?"rgba(255,250,210,"+a+")":"rgba(242,216,87,"+a+")"; g.fillRect(X-sz/2,Y-sz/2,sz,sz); continue; }
+    if(p.k==="e"){ const a=(1-f)*(.65+.35*Math.sin(p.ph+p.t*30)); g.fillStyle="rgba(255,"+(200-(f*90|0))+",90,"+Math.max(0,a)+")"; g.fillRect(X-1,Y-1,2,2); continue; }
+    let col=FIRE_RAMP[0][1]; for(const [at,c] of FIRE_RAMP) if(f>=at) col=c;
+    const a=f>.78?Math.max(0,(1-f)/.22):1, sz=Math.max(2,Math.round(p.s/2)*2);
+    g.fillStyle="rgba("+col+","+a+")"; g.fillRect(X-sz/2,Y-sz/2,sz,sz); }
+  g.restore();
+}
+function plateFire(x,y,w,m){
+  const k=Math.min(1,m.lit/0.6), t=T, top=Math.round(y)-1, n=Math.max(3,Math.round((w-16)/18));
+  for(let i=0;i<n;i++){ const seed=i*12.9898+m.x*.013, cx=Math.round(x+10+(w-20)*(i+.5)/n+Math.sin(seed)*4);
+    const h=Math.round(((15+9*Math.sin(t*7.3+seed*3)+4*Math.sin(t*17+seed))*k)/2)*2; if(h<4) continue;
+    const wb=12+((i*5)%3)*2;
+    for(let j=0;j<h;j+=2){ const fr=j/h, sway=Math.round(Math.sin(t*6+seed+fr*2)*2.2*fr), ww=Math.max(2,Math.round(wb*(1-Math.pow(fr,.85))/2)*2);
+      g.fillStyle=fr>.78?"#a8321c":fr>.5?"#e25a1e":"#ff9a2e"; g.fillRect(cx-ww/2+sway,top-2-j,ww,2);
+      const iw=Math.max(0,Math.round(ww*.5/2)*2); if(iw>0&&fr<.55){ g.fillStyle=fr<.22?"#fff1b8":"#ffd65a"; g.fillRect(cx-iw/2+sway,top-2-j,iw,2); } }
+    const ph=((t*1.6+seed)%1+1)%1;
+    if(ph<.6){ g.globalAlpha=1-ph/.6; g.fillStyle=ph<.25?"#ff9a2e":"#c9401c"; g.fillRect(cx-1+Math.round(Math.sin(t*5+seed)*3), top-2-h-2-Math.round(ph*22), 2, 2); g.globalAlpha=1; } }
+}
+function rng(seed){ let t=seed>>>0; return ()=>{ t+=0x6D2B79F5; let r=Math.imul(t^t>>>15,1|t); r^=r+Math.imul(r^r>>>7,61|r); return ((r^r>>>14)>>>0)/4294967296; }; }
+function boltPath(x0,y0,x1,y1,R,disp,iters){
+  let pts=[[x0,y0],[x1,y1]];
+  for(let it=0;it<(iters||3);it++){ const np=[pts[0]];
+    for(let i=0;i<pts.length-1;i++){ const [ax,ay]=pts[i],[bx,by]=pts[i+1], mx=(ax+bx)/2, my=(ay+by)/2, len=Math.hypot(bx-ax,by-ay)||1;
+      const off=(R()-.5)*disp*len/(1+it*.15); np.push([mx+(-(by-ay)/len)*off, my+((bx-ax)/len)*off],[bx,by]); }
+    pts=np; disp*=.55; }
+  return pts;
+}
+function strokeBolt(pts,a,wide){
+  for(const [w,c] of [[wide?13:9,"rgba(40,28,8,"+(.32*a)+")"],[wide?8:6,"rgba(255,206,60,"+(.9*a)+")"],[wide?4:3,"rgba(255,255,245,"+a+")"]]){
+    g.strokeStyle=c; g.lineWidth=w; g.beginPath(); pts.forEach(([x,y],i)=>{ const X=Math.round(x), Y=Math.round(y); i?g.lineTo(X,Y):g.moveTo(X,Y); }); g.stroke(); }
+}
+function drawStrike(p,a){
+  const R=rng((p.seed|0)+((T*24)|0)), top=p.y-480, sx=p.x+(R()-.5)*90, main=boltPath(sx,top,p.x,p.y-30,R,.5,4);
+  g.fillStyle="rgba(8,10,30,"+(.30*a)+")"; g.fillRect(-4000,-4000,9000,9000);
+  g.save(); g.lineCap="square"; g.lineJoin="miter"; g.miterLimit=6; strokeBolt(main,a,true);
+  for(let b=0;b<3;b++){ const k=2+((R()*(main.length-6))|0), [bx,by]=main[k], ex=bx+(R()-.5)*120, ey=by+40+R()*80; strokeBolt(boltPath(bx,by,ex,ey,R,.45,2),a*.7,false); }
+  const gx=p.x, gy=p.y, gr=g.createRadialGradient(gx,gy,2,gx,gy,46);
+  gr.addColorStop(0,"rgba(255,250,215,"+(.75*a)+")"); gr.addColorStop(1,"rgba(255,230,120,0)");
+  g.fillStyle=gr; g.save(); g.translate(gx,gy); g.scale(1,.5); g.translate(-gx,-gy); g.beginPath(); g.arc(gx,gy,46,0,6.28); g.fill(); g.restore();
+  g.restore();
+}
+function drawChain(p,a){
+  const R=rng((p.seed|0)+((T*30)|0));
+  g.save(); g.lineCap="square"; g.lineJoin="miter"; g.miterLimit=6;
+  for(let i=0;i<p.pts.length-1;i++){ const [x0,y0]=p.pts[i],[x1,y1]=p.pts[i+1];
+    strokeBolt(boltPath(x0,y0,x1,y1,R,.4,3),a,false); if(R()<.4) strokeBolt(boltPath(x0,y0,x1,y1,R,.5,2),a*.45,false); }
+  g.restore();
+}
+function drawFrost(p,a){
+  const life=1-a, grow=Math.min(1,life/.35), rr=p.r*grow, X=p.x, Y=p.y;
+  g.save(); g.fillStyle="rgba(205,238,250,"+(.16*a)+")"; g.save(); g.translate(X,Y); g.scale(1,.5); g.beginPath(); g.arc(0,0,rr,0,6.28); g.fill(); g.restore();
+  const N=Math.max(18,Math.round(p.r/5));
+  for(let i=0;i<N;i++){ const ang=i/N*6.28, h=(6+((i*7)%5)*2)*(.6+.4*a), cx=X+Math.cos(ang)*rr, cy=Y+Math.sin(ang)*rr*.5;
+    g.fillStyle=(i%3===0)?"rgba(255,255,255,"+a+")":"rgba(170,226,245,"+a+")";
+    for(let j=0;j<h;j+=2){ const w=Math.max(2,Math.round((1-j/h)*4/2)*2); g.fillRect(Math.round(cx-w/2), Math.round(cy-j), w, 2); } }
+  g.restore();
+}
+const FRZ_HOLD=1.5, FRZ_T=2.0, FRZ_R=128, EMB_R=128, EMB_T=3.0, THU_JUMP=192;
+function iceShell(m){
+  const f=Math.min(1,m.frzT/FRZ_HOLD), w=38, h=58, X=Math.round((m.x-w/2)/2)*2, Y=Math.round((m.y-h+4)/2)*2;
+  g.save();
+  g.fillStyle="rgba(215,242,252,.45)"; g.save(); g.translate(m.x,m.y); g.scale(1,.42); g.beginPath(); g.arc(0,0,w*.9,0,6.28); g.fill(); g.restore();
+  g.fillStyle="rgba(150,214,240,.40)"; g.fillRect(X,Y,w,h);
+  g.fillStyle="rgba(235,250,255,.38)"; for(let j=0;j<h;j+=2){ const sx=X+Math.round((j*.45)/2)*2; if(sx<X+w-6) g.fillRect(sx,Y+j,4,2); }
+  g.fillStyle="rgba(110,180,215,.30)"; g.fillRect(X+w-8,Y+6,6,h-8);
+  g.fillStyle="rgba(240,252,255,.85)"; g.fillRect(X,Y,2,h); g.fillRect(X+w-2,Y,2,h); g.fillRect(X,Y+h-2,w,2);
+  for(let c=0;c<w;c+=6){ const sp=4+((c*13+((m.x|0)))%3)*4; for(let j=0;j<sp;j+=2) g.fillRect(X+c+Math.round(j/4)*2,Y-j,Math.max(2,6-j),2); }
+  if(f<.25){ g.strokeStyle="rgba(255,255,255,.9)"; g.lineWidth=2; g.beginPath(); g.moveTo(X+w*.3,Y+4); g.lineTo(X+w*.5,Y+h*.4); g.lineTo(X+w*.35,Y+h*.7); g.lineTo(X+w*.6,Y+h-4); g.stroke(); }
+  for(let i=0;i<3;i++){ const ph=(T*2.2+i*.37+(m.x%1))%1; if(ph<.35){ const sx=X+4+((i*17+(m.x|0))%(w-8)), sy=Y+6+((i*23+(m.y|0))%(h-12));
+    g.fillStyle="rgba(255,255,255,"+(1-ph/.35)+")"; g.fillRect(sx,sy-2,2,6); g.fillRect(sx-2,sy,6,2); } }
+  g.restore();
+}
+function plateIce(x,y,w,h,m){
+  const k=m.frzT>0?1:Math.min(1,(m.chill||0)/2)*.7; if(k<=0) return;
+  const base=Math.round(y+h);
+  g.fillStyle="rgba(235,250,255,.9)"; g.fillRect(Math.round(x)+2, Math.round(y), Math.round(w)-4, 2);
+  for(let c=Math.round(x)+6;c<=x+w-10;c+=8){ if(Math.abs(c+2-(x+w/2))<12) continue;
+    const L=Math.round(((4+((c*7)%5)*2)*k)/2)*2; if(L<2) continue;
+    for(let j=0;j<L;j+=2){ const ww=j<L*.5?4:2; g.fillStyle=j>=L-2?"#ffffff":(j<2?"#bfe6f2":"#8fd3e8"); g.fillRect(c+(4-ww)/2, base+j, ww, 2); } }
+}
+function plateZap(x,y,w,h,m){
+  const R=rng(((m.x|0)*31)+((T*18)|0));
+  g.save(); g.lineCap="square"; g.lineJoin="miter";
+  for(let i=0;i<2;i++){ const side=(R()*4)|0, t0=R(), L=18+R()*16; let x0,y0,x1,y1;
+    if(side===0){ x0=x+t0*w; y0=y; x1=x0+L; y1=y; } else if(side===1){ x0=x+t0*w; y0=y+h; x1=x0+L; y1=y+h; }
+    else if(side===2){ x0=x; y0=y+t0*h; x1=x; y1=y0+L*.6; } else { x0=x+w; y0=y+t0*h; x1=x+w; y1=y0+L*.6; }
+    const pts=boltPath(x0,y0,x1,y1,R,.6,2);
+    for(const [lw,c] of [[4,"rgba(255,232,120,.35)"],[2,"rgba(255,255,235,.95)"]]){ g.strokeStyle=c; g.lineWidth=lw; g.beginPath();
+      pts.forEach(([px,py],j)=>j?g.lineTo(Math.round(px),Math.round(py)):g.moveTo(Math.round(px),Math.round(py))); g.stroke(); } }
+  g.restore();
+}
+
+/* ======== the three skills ======== */
+const DEFS = {
+  burn:{ name:"Burn", label:"BURN", key:"1", col:"#e08a3c", lite:"#f2b27a", glyph:"ember", cd:10, walk:6,
+    lines:["A new power, unlocked. It costs no ink.",
+           "In a stage, press 1, then finish a name: everything near that enemy catches fire. Ready again in 10 seconds."],
+    loop:8.2,
+    units:()=>[
+      {k:"vtRun", word:"marrow", next:"tallow", hp:2, max:2, x:476, y:222},
+      {k:"warRun", word:"corner",  hp:1, max:1, x:366, y:160},
+      {k:"warRun", word:"planter", hp:1, max:1, x:584, y:282},
+      {k:"warRun", word:"reed",    hp:1, max:1, x:790, y:196}] },
+  freeze:{ name:"Freeze", label:"FREEZE", key:"3", col:"#8fd3e8", lite:"#c4ecf7", glyph:"frost", cd:12, walk:56,
+    lines:["A new power, unlocked. It costs no ink.",
+           "In a stage, press 3, then finish a name: everything near that enemy freezes, then walks at half speed. Ready again in 12 seconds."],
+    loop:8.6,
+    units:()=>[
+      {k:"vtRun", word:"marrow", next:"tallow", hp:2, max:2, x:640, y:222},
+      {k:"hrRun", word:"flint", hp:1, max:1, x:530, y:160},
+      {k:"hrRun", word:"gale",  hp:1, max:1, x:748, y:282},
+      {k:"hrRun", word:"reed",  hp:1, max:1, x:960, y:196}] },
+  thunder:{ name:"Thunder", label:"THUNDER", key:"4", col:"#f2d857", lite:"#f7e89a", glyph:"spark", cd:12, walk:6,
+    lines:["A new power, unlocked. It costs no ink.",
+           "In a stage, press 4, then finish a name: lightning jumps to the two enemies nearest it and stuns them. Ready again in 12 seconds."],
+    loop:7.4,
+    units:()=>[
+      {k:"vtRun", word:"marrow", next:"tallow", hp:2, max:2, x:430, y:226},
+      {k:"hdRun", word:"lighthouse", hp:1, max:1, x:600, y:160},
+      {k:"warRun", word:"corner", hp:1, max:1, x:735, y:276},
+      {k:"warRun", word:"reed",   hp:1, max:1, x:880, y:192}] }
+};
+let SKILL=null, D=null;
+const DSHEET={arIdle:{foot:39}, arShoot:{foot:39}, warRun:{foot:40}, vtRun:{foot:40}, hrRun:{foot:38}, hdRun:{foot:40}};
+
+/* ======== the demo field ======== */
+const FONT='bold 19px ui-monospace,"SF Mono",Menlo,Consolas,monospace';
+const PLQ_MINW=78, PLQ_PAD=52, PLQ_HH=66, LOCK_RISE=26, FPS=10;
+const wof = m => (m.lit>0 && m.word.length>3) ? m.word.slice(0,Math.max(3,m.word.length-2)) : m.word;
+let U=[], P, arrow=null, nock=false, lock=null, typed=0, skAt=-1e9, FX=[], T=0, bi=0, key1=0;
+function reset(){
+  FIRE=[]; FX=[]; arrow=null; nock=false; lock=null; typed=0; skAt=-1e9; bi=0; key1=0;
+  P={x:112, y:236, anim:"idle", at:0};
+  U=D.units().map(u=>Object.assign({lit:0, frzT:0, chill:0, stun:0, shake:0}, u));
+}
+const tgt = () => U[0];
+const BEATS = [
+  [0.70, () => { nock = true; key1 = 1; }],
+  [1.05, () => { lock = tgt(); }],
+  [1.25, () => { typed = 1; }], [1.43, () => { typed = 2; }], [1.61, () => { typed = 3; }],
+  [1.79, () => { typed = 4; }], [1.97, () => { typed = 5; }],
+  [2.15, () => { typed = 6; P.anim = "shoot"; P.at = 0; }],
+  [2.36, () => { const m=tgt(); arrow = {x:P.x+30, y:P.y-46, tx:m.x, ty:m.y-36, t:0}; lock = null; typed = 0; }]
+];
+function skFire(){
+  const src = tgt();
+  if(SKILL==="burn"){
+    /* v73: Burn takes its half heart SLOWLY, over the burn time, as burnTick() does in the
+       build - the target too. The ported v72 demo took it at once. */
+    src.lit = EMB_T; src.burnLeft = 0.5;
+    for(const m of U) if(m!==src && Math.hypot(m.x-src.x, m.y-src.y) <= EMB_R){
+      m.lit = EMB_T; m.burnLeft = 0.5; m.shake = .25; fireBurst(m.x, m.y, 22); }
+    fireWave(src.x, src.y, EMB_R); fireBurst(src.x, src.y, 34);
+    FX.push({k:"ring", x:src.x, y:src.y, r:EMB_R, col:"255,150,70", t:.30, T:.30});
+  } else if(SKILL==="freeze"){
+    for(const m of U) if(Math.hypot(m.x-src.x, m.y-src.y) <= FRZ_R){
+      m.chill = FRZ_HOLD+FRZ_T; m.frzT = FRZ_HOLD; iceBurst(m.x, m.y, 12); }
+    iceBurst(src.x, src.y, 26);
+    FX.push({k:"frost", x:src.x, y:src.y, r:FRZ_R, t:.9, T:.9});
+  } else {
+    src.stun = .5;
+    const hit=[src], pts=[[src.x, src.y-28]]; let cur=src;
+    for(let i=0;i<2;i++){ let best=null, bd=1e9;
+      for(const m of U){ if(hit.includes(m)) continue; const dd=Math.hypot(m.x-cur.x, m.y-cur.y); if(dd<=THU_JUMP && dd<bd){ bd=dd; best=m; } }
+      if(!best) break;
+      hit.push(best); pts.push([best.x, best.y-28]); best.stun = .5; best.hp = Math.max(0, best.hp-0.5); best.shake=.25; cur=best; }
+    FX.push({k:"strike", x:src.x, y:src.y, t:.30, T:.30, seed:(Math.random()*1e6)|0});
+    FX.push({k:"bolt", pts, t:.45, T:.45, seed:(Math.random()*1e6)|0});
+    for(const [px,py] of pts) zapBurst(px, py+28, 12);
+  }
+  /* the arrow itself lands too: one heart, and a two-arrow body takes a new name */
+  src.hp -= 1; src.word = src.next; src.shake = Math.max(src.shake, .3);
+  nock = false; skAt = T;
+}
+function step(dt){
+  T += dt;
+  while(bi < BEATS.length && T >= BEATS[bi][0]){ BEATS[bi][1](); bi++; }
+  if(key1 > 0) key1 = Math.max(0, key1 - dt*2.2);
+  P.at += dt;
+  if(P.anim==="shoot" && P.at > 8/(FPS*1.6)){ P.anim = "idle"; P.at = 0; }
+  if(arrow){ arrow.t += dt/0.42; if(arrow.t >= 1){ arrow = null; skFire(); } }
+  for(const m of U){
+    if(m.lit>0){ m.lit = Math.max(0, m.lit-dt); fireBody(m, dt); }
+    if(m.burnLeft>0){ const d=Math.min(m.burnLeft, 0.5/EMB_T*dt); m.burnLeft-=d; m.hp=Math.max(0,m.hp-d); }
+    if(m.shake>0) m.shake = Math.max(0, m.shake-dt);
+    if(m.stun>0) m.stun = Math.max(0, m.stun-dt);
+    if(m.frzT>0){ m.frzT -= dt; if(m.frzT<=0){ m.frzT=0; iceBurst(m.x, m.y, 22); } }
+    else if(m.chill>0 && Math.random()<dt*5) fireAdd(m.x+(Math.random()-.5)*24, m.y-20-Math.random()*20, (Math.random()-.5)*8, -6-Math.random()*8, .9+Math.random()*.5, 6+Math.random()*5, "mi");
+    if(m.chill>0) m.chill = Math.max(0, m.chill-dt);
+    const v = (m.frzT>0 || m.stun>0) ? 0 : (m.chill>0 ? .5 : 1);
+    m.x -= D.walk * v * dt; m.moving = v>0;
+  }
+  FX = FX.filter(p => (p.t -= dt) > 0);
+  fireTick(dt);
+  if(T >= D.loop){ T = 0; reset(); }
+}
+function spriteFrame(key, frame, x, y, flip){
+  const im=IMG[key], fs=192, n=Math.round(im.width/fs), f=((frame|0)%n+n)%n, dy=Math.round(y-fs/2-DSHEET[key].foot);
+  if(flip){ g.save(); g.translate(Math.round(x),0); g.scale(-1,1); g.drawImage(im,f*fs,0,fs,fs,-fs/2,dy,fs,fs); g.restore(); }
+  else g.drawImage(im,f*fs,0,fs,fs,Math.round(x-fs/2),dy,fs,fs);
+}
+function plaque(m){
+  g.font=FONT; g.textBaseline="middle";
+  const word=wof(m), tm=g.measureText(word), tw=tm.width, asc=tm.actualBoundingBoxAscent||14;
+  const hw=m.max*HRT_W+(m.max-1)*HRT_GAP, w=Math.max(PLQ_MINW, Math.ceil(tw)+PLQ_PAD, hw+2*HRT_SIDE), h=PLQ_HH, L=(lock===m);
+  const sx=(m.shake>0?(Math.random()-.5)*6:0), x=Math.round(m.x-w/2+sx), y=Math.round(m.y-70-(L?LOCK_RISE:0)-h/2);
+  nine((L||m.lit>0)?"special":"paper", x, y, w, h);
+  if(m.lit>0) plateFire(x, y, w, m);
+  if(m.frzT>0 || m.chill>0) plateIce(x, y, w, h, m);
+  if(m.stun>0) plateZap(x, y, w, h, m);
+  if(L){
+    g.strokeStyle="rgba(240,195,74,.9)"; g.lineWidth=2; g.strokeRect(x-2.5,y-2.5,w+5,h+5);
+    g.fillStyle="#f0c34a"; g.beginPath(); g.moveTo(m.x-7,y+h+2); g.lineTo(m.x+7,y+h+2); g.lineTo(m.x,y+h+14); g.closePath(); g.fill();
+    if(nock){ const my=y+h/2; g.fillStyle=D.col; g.beginPath(); g.moveTo(x-4,my); g.lineTo(x-22,my-11); g.lineTo(x-16,my); g.lineTo(x-22,my+11); g.closePath(); g.fill(); }
+  }
+  const cy=Math.round(y+(h-(asc+HRT_DY+HRT_H))/2+asc);
+  let cx=x+w/2-tw/2; g.textAlign="left"; g.textBaseline="alphabetic";
+  for(let i=0;i<word.length;i++){ const ch=word[i], cw=g.measureText(ch).width, next=L&&i===typed;
+    g.fillStyle = i<typed&&L ? "#f0c34a" : next ? "#ff7a68" : (L?"#f2ece0":(m.lit>0?"#d8cfc0":"#4a3d2c"));
+    if(next){ g.globalAlpha=.55+.45*Math.sin(T*11); g.fillRect(cx-1,cy+4,cw+2,2); g.globalAlpha=1; g.fillStyle="#ff7a68"; }
+    g.fillText(ch,cx,cy); cx+=cw; }
+  const raw=Math.max(0,Math.min(m.max,m.hp)), now=raw>0?((m.burnLeft>0)?Math.max(.08,raw):Math.max(.5,Math.round(raw*2)/2)):0;
+  const hx=Math.round(x+w/2-hw/2), hy=Math.round(cy+HRT_DY-12);
+  for(let i=0;i<m.max;i++) heart(hx+i*(HRT_W+HRT_GAP), hy, Math.max(0,Math.min(1,now-i)));
+}
+function drawField(vx, vy, vw, vh){
+  const z = 0.6;
+  g.save(); g.beginPath(); g.rect(vx, vy, vw, vh); g.clip();
+  g.translate(vx, vy); g.scale(z, z);
+  const W = vw/z, H = vh/z;
+  for(let y=0; y<H; y+=64) for(let x=0; x<W; x+=64) g.drawImage(IMG.tm1, 64,64,64,64, x,y,64,64);
+  for(const p of FX) if(p.k==="frost") drawFrost(p, Math.max(0,p.t/p.T));
+  for(const p of FX) if(p.k==="ring"){ const a=Math.max(0,p.t/p.T), rr=p.r*(1.05-.35*a);
+    g.save(); g.translate(p.x,p.y); g.scale(1,.5); g.fillStyle="rgba("+p.col+","+(.18*a)+")"; g.beginPath(); g.arc(0,0,rr,0,6.28); g.fill();
+    g.strokeStyle="rgba("+p.col+","+(.9*a)+")"; g.lineWidth=4; g.beginPath(); g.arc(0,0,rr,0,6.28); g.stroke(); g.restore(); }
+  const order=[...U].sort((a,b)=>a.y-b.y);
+  for(const m of order){
+    g.fillStyle="rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(m.x, m.y+2, 22, 7, 0, 0, 6.28); g.fill();
+    if(m.anim==null) m.anim = Math.random()*6;
+    if(m.moving!==false) m.anim += 0;            /* frames come off the clock below */
+    const fr = (m.frzT>0 || m.stun>0) ? (m.hold ?? (m.hold = (T*FPS)|0)) : ((m.hold = null), T*FPS*(m.chill>0?.5:1) + m.x*.01);
+    spriteFrame(m.k, fr, m.x, m.y, true);
+  }
+  g.fillStyle="rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(P.x, P.y+2, 22, 7, 0, 0, 6.28); g.fill();
+  spriteFrame(P.anim==="shoot"?"arShoot":"arIdle", P.anim==="shoot" ? P.at*FPS*1.6 : T*FPS*.6, P.x, P.y, false);
+  if(arrow){ const t=Math.min(1,arrow.t), ax=arrow.x+(arrow.tx-arrow.x)*t, ay=arrow.y+(arrow.ty-arrow.y)*t-Math.sin(t*Math.PI)*10;
+    g.save(); g.translate(Math.round(ax),Math.round(ay)); g.rotate(Math.atan2(arrow.ty-arrow.y, arrow.tx-arrow.x)); g.drawImage(IMG.arrow,-32,-32); g.restore();
+    if(Math.random()<.9){ if(SKILL==="burn") fireAdd(ax-6, ay, -20, -20, .3, 5, "f");
+      else if(SKILL==="freeze") fireAdd(ax-6, ay, -10, -6, .5, 6, "mi");
+      else fireAdd(ax-6, ay, (Math.random()-.5)*60, (Math.random()-.5)*60, .2, 2, "z"); } }
+  fireDraw();
+  for(const m of U) if(m.frzT>0) iceShell(m);
+  for(const p of FX){ const a=Math.max(0,p.t/p.T);
+    if(p.k==="strike") drawStrike(p,a); else if(p.k==="bolt") drawChain(p,a); }
+  for(const m of order) plaque(m);
+  g.restore();
+}
+function skillBar(cx, by, s){
+  const SL=46, GAP=8, SEP=14, slots=[{key:"1"},{sep:true},{key:"3"},{key:"4"},{key:"5"},{sep:true},{key:"6",ult:true}]
+          .map(q=>(q.key && q.key===D.key) ? {...q, sk:true} : q);   /* v75: the power sits on its own key */
+  const totW=5*SL+2*GAP+2*SEP;
+  g.save(); g.translate(cx, by); g.scale(s,s); g.translate(-totW/2, 0);
+  let x=0; const y=0; g.textBaseline="alphabetic"; g.textAlign="center";
+  const left=Math.max(0, D.cd-(T-skAt)), rdy=left<=0, nk=nock, f=rdy?0:Math.min(1,left/D.cd);
+  for(let i=0;i<slots.length;i++){ const q=slots[i];
+    if(q.sep){ g.fillStyle="rgba(200,210,215,.30)"; g.fillRect(x+SEP/2-1,y+8,2,SL-16); x+=SEP; continue; }
+    const cxs=x+SL/2;
+    g.fillStyle="rgba(14,19,25,.62)"; g.fillRect(x-2,y-2,SL+4,SL+4);
+    g.fillStyle="rgba(28,35,43,.90)"; g.fillRect(x,y,SL,SL);
+    if(q.sk){ const lit=rdy||nk;
+      if(nk){ g.fillStyle=D.col; g.globalAlpha=.30+.18*Math.sin(T*9); g.fillRect(x,y,SL,SL); g.globalAlpha=1; }
+      else if(rdy){ g.fillStyle=D.col; g.globalAlpha=.14+.06*Math.sin(T*4); g.fillRect(x,y,SL,SL); g.globalAlpha=1; }
+      g.fillStyle=lit?(nk?D.lite:D.col):"#8d9aa1"; g.strokeStyle=g.fillStyle;
+      elemGlyph(D.glyph, cxs, y+SL/2, 12);
+      if(f>0){ g.save(); g.beginPath(); g.moveTo(cxs,y+SL/2); g.arc(cxs,y+SL/2,SL,-Math.PI/2,-Math.PI/2+Math.PI*2*f); g.closePath(); g.clip();
+        g.fillStyle="rgba(4,8,10,.66)"; g.fillRect(x,y,SL,SL); g.restore();
+        g.font='bold 12px system-ui'; g.textAlign="right"; g.fillStyle="#ffd27a";
+        g.fillText(String(Math.max(1,Math.ceil(left-0.05))),x+SL-4,y+SL-5); g.textAlign="center"; }
+      g.strokeStyle=lit?D.col:"rgba(111,124,132,.7)"; g.lineWidth=nk?3:(rdy?2:1);
+      g.strokeRect(x+(lit?1:.5),y+(lit?1:.5),SL-(lit?2:1),SL-(lit?2:1));
+      g.font='bold 10px system-ui'; g.fillStyle=lit?D.lite:"#b9c4c9"; g.fillText(nk?D.label+" · NOCKED":D.label, cxs, y-6);
+      g.font='bold 11px system-ui'; g.fillStyle=key1>0?"#ffffff":(lit?"#e8e0cd":"#b9c4c9"); g.fillText(q.key, cxs, y+SL+13+key1*2);
+      if(key1>0){ g.strokeStyle="rgba(255,255,255,"+key1+")"; g.lineWidth=2; g.strokeRect(x-4-key1*3,y-4-key1*3,SL+8+key1*6,SL+8+key1*6); }
+    } else {
+      g.strokeStyle=q.ult?"rgba(214,162,74,.45)":"rgba(111,124,132,.45)"; g.lineWidth=1; g.strokeRect(x+.5,y+.5,SL-1,SL-1);
+      g.fillStyle=q.ult?"rgba(214,162,74,.35)":"rgba(141,154,161,.30)"; g.fillRect(cxs-7,y+SL/2-1,14,2);
+      g.font='bold 11px system-ui'; g.fillStyle="#8d9aa1"; g.fillText(q.key,cxs,y+SL+13);
+    }
+    x+=SL+((slots[i+1]&&!slots[i+1].sep)?GAP:0);
+  }
+  g.restore();
+}
+
+/* ======== the card ======== */
+const openK = 1;
+function cardBox(){
+  const W0=680, DEMO_H=270, FIELD_H=182;
+  g.font='400 15px system-ui';
+  const TW=W0-46-46, rows=[];
+  for(const ln of D.lines){ let line="";
+    for(const w of ln.split(" ")){ const t=line?line+" "+w:w; if(g.measureText(t).width>TW && line){ rows.push(line); line=w; } else line=t; }
+    if(line) rows.push(line); rows.push(null); }
+  const textH=rows.length*21, H0=40+DEMO_H+64+textH+46, x0=(VW-W0)/2, y0=Math.round((VH-H0)/2)+4;
+  g.save(); g.globalAlpha=openK;
+  g.fillStyle="rgba(6,9,12,.62)"; g.fillRect(0,0,VW,VH);
+  g.translate(0, (1-openK)*10);
+  paperBox("paper", x0, y0, W0, H0);
+  g.drawImage(IMG.cardRod, x0-18, y0-26, W0+36, 36);
+  g.drawImage(IMG.cardRod, x0-18, y0+H0-10, W0+36, 36);
+  const dx=x0+30, dy=y0+34, dw=W0-60, dh=DEMO_H;
+  specialBox(dx, dy, dw, dh);
+  drawField(dx+12, dy+12, dw-24, FIELD_H);
+  g.fillStyle="rgba(14,19,25,.94)"; g.fillRect(dx+12, dy+12+FIELD_H, dw-24, dh-24-FIELD_H);
+  g.fillStyle="rgba(255,255,255,.06)"; g.fillRect(dx+12, dy+12+FIELD_H, dw-24, 1);
+  skillBar(dx+dw/2, dy+12+FIELD_H+16, .78);
+  const tx=x0+46, ty=dy+dh+44;
+  g.textAlign="left"; g.textBaseline="alphabetic";
+  g.fillStyle="#3b2f1e"; g.font='bold 27px system-ui'; g.fillText(D.name, tx, ty);
+  g.font='bold 11px system-ui'; g.fillStyle="#8a7a5c"; g.textAlign="right"; g.fillText("NEW POWER", x0+W0-46, ty); g.textAlign="left";
+  g.font='400 15px system-ui'; g.fillStyle="#4a3d29";
+  let yy=ty+30; for(const ln of rows){ if(ln===null){ yy+=10; continue; } g.fillText(ln, tx, yy); yy+=21; }
+  g.font='bold 11px system-ui'; g.fillStyle="#7a6a4c"; g.textAlign="center"; g.fillText("PRESS ENTER TO CONTINUE", x0+W0/2, y0+H0-34);
+  g.restore();
+}
+
+
+let lastNow=0;
+function begin(k){ SKILL=k; D=DEFS[k]; T=0; reset(); lastNow=performance.now(); }
+function draw(){
+  if(!D) return;
+  const now=performance.now(), dt=Math.min(.05,(now-lastNow)/1000); lastNow=now;
+  step(dt);
+  g.save(); g.imageSmoothingEnabled=false; cardBox(); g.restore();
+}
+return {begin, draw, defs:DEFS};
+})();
+
+/* SKILL SCREEN DOOR. Both ways onto the skill screen go through here, so the
+   "new power" card has exactly one place to decide whether it shows. It reads SK_OF, not
+   skNow(): skNow() only answers inside a stage. Once per save (S.taught, which saveNow()
+   writes and Erase progress clears), written when the card OPENS so quitting with it up
+   does not show it again. Never in Chapter I (no skill) or Endless. */
+/* v75: A POWER'S TILE. Drawn owned - its own colour, its glyph, UNLOCKED over it and its key in
+   the corner - and at full strength even on a closed tab, because the power is not behind the
+   tab's gate: it is yours now. */
+function powerTile(sk,x,y,TILE,cur,CW){
+  const d=SKDEF[sk.power], cx=x+TILE/2;
+  g.save(); g.globalAlpha=1;
+  g.fillStyle=d.col; g.globalAlpha=.20; g.fillRect(x,y,TILE,TILE); g.globalAlpha=1;
+  g.strokeStyle=cur?"#f0c34a":d.col; g.lineWidth=cur?2:1.5; g.strokeRect(x+.5,y+.5,TILE-1,TILE-1);
+  g.fillStyle=d.lite; g.strokeStyle=d.lite; elemGlyph(d.glyph, cx, y+TILE/2, TILE*0.2, true);
+  g.font='bold 10px system-ui'; g.textAlign="center"; g.textBaseline="middle";
+  const pill="UNLOCKED", pw=g.measureText(pill).width+12;
+  g.fillStyle=d.col; g.fillRect(cx-pw/2, y-9, pw, 15);
+  g.fillStyle="#0e1418"; g.fillText(pill, cx, y-1);
+  g.fillStyle="rgba(14,20,24,.85)"; g.fillRect(x+TILE-15, y+TILE-15, 15, 15);
+  g.fillStyle=d.lite; g.font='bold 11px system-ui'; g.fillText(SK_KEY[sk.power], x+TILE-7.5, y+TILE-7);
+  g.font=cur?'bold 12px system-ui':'400 12px system-ui';
+  g.fillStyle=cur?"#f0e6d0":d.lite;
+  g.fillText(sk.name, cx, y+TILE+14);
+  g.restore();
+}
+function powerPanel(sel, P0, BY){
+  const d=SKDEF[sel.power];
+  g.textAlign="left"; g.textBaseline="alphabetic";
+  g.font='bold 16px system-ui'; g.fillStyle="#e8e0cd";
+  g.fillText(sel.name+"   key "+SK_KEY[sel.power], P0, BY);
+  g.font='400 13px system-ui'; g.fillStyle="#9fb0b8";
+  g.fillText("press "+SK_KEY[sel.power]+" in a stage, then "+sel.per, P0, BY+20);
+  g.fillStyle="#7e8c92";
+  g.fillText(sel.cap+"   ·   the ranks below it make it stronger", P0, BY+38);
+  g.textAlign="right"; g.font='bold 13px system-ui'; g.fillStyle=d.lite;
+  g.fillText("unlocked — free for now", VW-P0, BY);
+  g.textAlign="left";
+}
+function openShop(){
+  S.shop=true; S.csel=0; keys.clear(); S.skCard=null;   /* never a stale card from a screen closed some other way */
+  /* v75: all three are unlocked from Chapter I, so the card introduces whichever has not been
+     seen yet - this chapter's own power first - one per visit to the skill screen. */
+  const k=POWERS_UNLOCKED
+    ? [SK_OF[S.chapter], ...SK_ORDER].find(q=>q && skHas(q) && !S.taught["skcard:"+q])
+    : SK_OF[S.chapter];
+  if(k && !S.endless && !S.taught["skcard:"+k]){
+    S.skCard={k, at:performance.now()};
+    S.taught["skcard:"+k]=1; saveNow();
+    SKDEMO.begin(k);
+  }
+}
 function tree(){
   const P0=28, W0=VW-56;
   g.fillStyle="#0a0f14"; g.fillRect(0,0,VW,VH);
@@ -12065,8 +13667,9 @@ function tree(){
   const locked=!tabOpen(tab);
 
   /* ---- the grid ---- */
-  const CW=Math.floor(W0/T_COLS), CH=104, GY=86;
-  const TILE=64;
+  /* four rows (Adept) pack tighter so the panel below still clears the footer */
+  const ROWS=treeRows(), CW=Math.floor(W0/T_COLS), CH=ROWS>3?88:104, GY=86;
+  const TILE=ROWS>3?56:64;
   /* prerequisite lines first, so a tile is never drawn under one */
   for(const sk of tab.skills){
     if(!sk.up) continue;
@@ -12078,9 +13681,17 @@ function tree(){
     g.lineWidth=done?3:2;
     g.beginPath(); g.moveTo(x, uy+TILE+16); g.lineTo(x, y+4); g.stroke();
   }
+  for(const sk of tab.skills){
+    if(!sk.power) continue;
+    const below=treeAt(sk.col,sk.row+1); if(!below) continue;
+    const x=P0+sk.col*CW+CW/2;
+    g.strokeStyle=SKDEF[sk.power].col; g.globalAlpha=.6; g.lineWidth=3;
+    g.beginPath(); g.moveTo(x, GY+sk.row*CH+TILE+16); g.lineTo(x, GY+below.row*CH+4); g.stroke();
+    g.globalAlpha=1;
+  }
   g.save();
   if(locked) g.globalAlpha=.55;      /* a preview reads as a preview */
-  for(let row=0;row<T_ROWS;row++) for(let col=0;col<T_COLS;col++){
+  for(let row=0;row<ROWS;row++) for(let col=0;col<T_COLS;col++){
     const sk=treeAt(col,row);
     const idx=row*T_COLS+col, cur=idx===(S.csel|0);
     const x=P0+col*CW+(CW-TILE)/2, y=GY+row*CH+4;
@@ -12091,6 +13702,7 @@ function tree(){
       g.strokeRect(x+.5,y+.5,TILE-1,TILE-1);
       continue;
     }
+    if(sk.power){ powerTile(sk,x,y,TILE,cur,CW); continue; }
     const rank=r(sk.k), maxed=rank>=sk.max, open=skillOpen(sk);
     const buyable=!locked && open && !maxed && spLeft()>=rankCost(rank+1);
     /* the tile */
@@ -12135,9 +13747,10 @@ function tree(){
   g.restore();
   /* ---- the selected skill, spelled out at the bottom ---- */
   const sel=treeSel();
-  const BY=GY+T_ROWS*CH+18;
+  const BY=GY+ROWS*CH+18;
   g.textAlign="left"; g.textBaseline="alphabetic";
-  if(sel){
+  if(sel && sel.power) powerPanel(sel, P0, BY);
+  else if(sel){
     const rank=r(sel.k), maxed=rank>=sel.max;
     g.font='bold 16px system-ui'; g.fillStyle="#e8e0cd";
     g.fillText(sel.name+"   "+rank+"/"+sel.max, P0, BY);
@@ -12169,7 +13782,7 @@ function tree(){
   }
   /* ---- the gate, spelled out under the preview ---- */
   if(locked){
-    const gy=BY+64, okStage=totalCleared()>=tab.need;
+    const gy=Math.min(BY+64, VH-74), okStage=totalCleared()>=tab.need;   /* above the footer at four rows */
     g.fillStyle="rgba(255,255,255,.04)"; g.fillRect(P0,gy,W0,44);
     g.strokeStyle=canOpenTab(tab)?"rgba(240,195,74,.65)":"rgba(120,134,142,.35)";
     g.lineWidth=1; g.strokeRect(P0+.5,gy+.5,W0-1,43);
@@ -12192,10 +13805,10 @@ function tree(){
 }
 function treeFoot(){
   g.textAlign="left"; g.font='400 12px system-ui'; g.fillStyle="#6b787f";
-  g.fillText("←↑↓→ choose   ·   enter buy   ·   hold enter to unbind   ·   "
-            +"tab / [ ] change tab   ·   n or escape close", 28, VH-16);
+  g.fillText("←↑↓→ choose  ·  enter buy  ·  hold enter to unbind  ·  "
+            +"tab / [ ] tab  ·  n / esc close", 28, VH-16);
   g.textAlign="right"; g.fillStyle="#5d6b72";
-  g.fillText("nothing here adds damage or removes a word", VW-28, VH-16);
+  g.fillText("nothing you buy here adds damage or removes a word", VW-28, VH-16);
   g.textAlign="left";
 }
 
@@ -12769,6 +14382,14 @@ function panelRects(){
     if(S.scene==="stage") toast("word length applies from the next stage",3.2);
     saveNow();
   }),
+  /* PACE - TEST BUILD. How fast enemies walk: x0.85 / x1 / x1.1. STEADY also turns on the
+     Easy boss package (a breather as each boss wave begins, fewer escorts in the last). */
+  tog("Pace",["STEADY","STANDARD","FIERCE"],()=>(S.pace|0)+1, ()=>{
+    S.pace = ((S.pace|0)+2)%3 - 1;
+    blip(S.pace>0?640:S.pace<0?420:520,.05,"sine",.05);
+    if(S.scene==="stage") toast("pace applies from the next stage",3.2);
+    saveNow();
+  }),
   tog("Music",["ON","OFF"],()=>S.music?0:1,
         ()=>{S.music=!S.music; if(S.music) musPlay(); blip(S.music?660:380,.05,"sine",.05);
              saveNow();}),
@@ -12902,7 +14523,7 @@ function ttRow(o){
   const live  = o.on?gold:plain;
   g.save(); g.globalAlpha=ease;
   g.textAlign="left"; g.textBaseline="alphabetic"; ttFont();
-  const put=(s,x,c)=>{ if(!onPaper){ g.fillStyle="rgba(0,0,0,.55)"; g.fillText(s,x+2,mid+2); }
+  const put=(s,x,c)=>{ /* v70: no drop shadow under menu words, on request */
                        g.fillStyle=c; g.fillText(s,x,mid);
                        return x+g.measureText(s).width; };
   let right;
@@ -13605,8 +15226,7 @@ function summary(){
      the sheet's own art) - the ribbon reads fine without one. */
   ribbon(RIB[bandCol],rbx,rby,rib.w,RIB_H);
   g.font='bold 30px system-ui'; g.textBaseline="middle";
-  g.fillStyle="rgba(20,14,8,.5)"; g.fillText(titleTxt,VW/2+1,rby+RIB_H/2+1);
-  g.fillStyle="#1e1508";          g.fillText(titleTxt,VW/2,rby+RIB_H/2);
+  g.fillStyle="#1e1508";          g.fillText(titleTxt,VW/2,rby+RIB_H/2);   /* v70: echo removed */
   g.textBaseline="alphabetic"; g.font='bold 30px system-ui';
   if(S.endless){
     g.font='400 13px system-ui'; g.fillStyle="#9fb0b8";
@@ -13675,6 +15295,9 @@ window.__K={S:()=>S,P:()=>P,mobs:()=>mobs,arrows:()=>arrows,live,
      the way Enter does. */
   card:()=>S.card&&{name:S.card.name, sheet:S.card.sheet, lines:S.card.lines.slice()},
   cardClose:()=>cardClose(),
+  /* the skill screen's new power card, readable and closable by a bot */
+  skCard:()=>S.skCard&&{k:S.skCard.k},
+  skCardClose:()=>{ S.skCard=null; },
   /* A HELD WAVE STOPS A BOT THE WAY IT STOPS A PLAYER. Without these a harness would
      report I-1 as a stage that never spawned anything and sat empty for 25 seconds. */
   hint:()=>S.hint&&{kind:S.hint.kind, t:+S.hint.t.toFixed(2), uid:S.hint.uid,
