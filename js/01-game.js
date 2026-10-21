@@ -288,7 +288,26 @@ ASSETS.firstJobAtlas='assets/images/image-7b46c2ad7a2727bc.png';
 ASSETS.basicSkillAtlas='assets/images/image-e45ffce079e9e278.png';
 /* END BASIC SKILLS ATLAS */
 const IMG={}; let loaded=0; const total=Object.keys(ASSETS).length;
-for(const k in ASSETS){ const im=new Image(); im.onload=()=>loaded++; im.src=ASSETS[k]; IMG[k]=im; }
+/* v124b: a missing or slow image no longer freezes the loading screen. A file that fails is
+   swapped for a blank pixel and named in a note at the bottom left; after 20s the game starts
+   with whatever has arrived. */
+const ART_BLANK='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+function artMissing(src){ (window.ARTMISS||(window.ARTMISS=[])).push(src); console.warn('KEYWARD: art did not load:',src);
+  let d=document.getElementById('art-missing');
+  if(!d){ d=document.createElement('div'); d.id='art-missing';
+    Object.assign(d.style,{position:'fixed',left:'12px',bottom:'12px',zIndex:10001,maxWidth:'70vw',padding:'8px 10px',background:'#2a1414ee',color:'#f3d6c8',font:'12px system-ui',whiteSpace:'pre-wrap'});
+    (document.body||document.documentElement).appendChild(d); setTimeout(()=>d.remove(),30000); }
+  d.textContent='Some art did not load ('+ARTMISS.length+'):\n'+ARTMISS.join('\n'); }
+for(const k in ASSETS){ const im=new Image(); let done=false; const fin=()=>{ if(!done){ done=true; loaded++; } };
+  im.onload=fin; im.onerror=()=>{ artMissing(ASSETS[k]); im.onerror=null; im.onload=fin; im.src=ART_BLANK; };
+  im.src=ASSETS[k]; IMG[k]=im; }
+/* v124b: opened by double-clicking index.html? Browsers block the art tools there (file://).
+   Say so on screen instead of failing quietly: PLAY.cmd serves the folder properly. */
+if(location.protocol==='file:'){ const n=document.createElement('div'); n.id='file-note';
+  n.textContent='Opened from a file: some art may not load. Double-click PLAY.cmd in the KEYWARD-Web folder to play.';
+  Object.assign(n.style,{position:'fixed',left:'50%',top:'12px',transform:'translateX(-50%)',zIndex:10001,padding:'8px 12px',background:'#14232aee',color:'#e7dcc2',font:'13px system-ui'});
+  (document.body||document.documentElement).appendChild(n); }
+setTimeout(()=>{ if(loaded<total){ for(const k in IMG){ const im=IMG[k]; if(!(im.complete&&im.naturalWidth)) artMissing(ASSETS[k]+' (still loading after 20s)'); } loaded=total; } },20000);
 const SHEET={
   spRun:{fs:192,n:4,foot:37}, spCast:{fs:192,n:11,foot:37}, msRun:{fs:144,n:6,foot:66}, msCast:{fs:144,n:4,foot:66}, lvRun:{fs:192,n:6,foot:38}, lsRun:{fs:192,n:6,foot:38}, sdRun:{fs:192,n:6,foot:40},
 
