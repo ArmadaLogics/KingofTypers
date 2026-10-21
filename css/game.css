@@ -1,0 +1,12 @@
+
+  html,body{margin:0;height:100%;background:#0b1114;overflow:hidden;
+    font:400 14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:#d8d2c4}
+  /* THE HINT BAR IS GONE (removed on request) and so is the 24px row it reserved. That row and
+     fit()'s `innerHeight-24` were a matched pair - they had already disagreed once, when this
+     was `inset:0` and the canvas grew down into the bar and drew over it - so both come out
+     together. The canvas now centres in the whole viewport, which is what it always looked
+     like it was doing. */
+  #wrap{position:fixed;inset:0;display:grid;place-items:center}
+  /* image-rendering is set by fit(), not here: it belongs to whichever scale is in use
+     (pixelated on an exact multiple, auto on a fractional one - see fit()). */
+  canvas{box-shadow:0 12px 60px rgba(0,0,0,.65);display:block}
