@@ -1,6 +1,6 @@
 
 /* Chapter VIII Troll: finite, terrain-validated ground attacks. */
-const TROLL={states:new Map(),allyBuffs:new Map(),damageBuffs:new Map(),WIND:1.8,CENTER:72,OUTER:192,RATE:160,WIDTH:14,RECOVERY:3,RALLY:3,RUN:175,MELEE:140,CHASE_WARN:1,CHASE_BURST:3.5,BREATH:1,BUFF_RADIUS:320,BUFF_SECONDS:6,BUFF_SPEED:1.35,FURY_DAMAGE:1.25,FURY_OPEN:12,FURY_COOLDOWN:18};
+const TROLL={states:new Map(),allyBuffs:new Map(),damageBuffs:new Map(),WIND:1.8,CENTER:72,OUTER:192,RATE:160,WIDTH:14,RECOVERY:3,RALLY:3,RUN:175,MELEE:140,CHASE_WARN:1,CHASE_BURST:3.5,BREATH:1,BUFF_RADIUS:320,BUFF_SECONDS:6,BUFF_SPEED:1.35,FURY_DAMAGE:1.25,FURY_OPEN:5,FURY_COOLDOWN:18};
 function trollEligible(m){return !!m&&m.tier==='TR'&&S.chapter===7&&!S.endless&&!m.dead;}
 function trollBuffTarget(m){return !!m&&!m.dead&&!m.door&&!m.sheep&&!m.supply&&m.tier!=='TR'&&!!MOBDEF[m.tier]&&m.spd>0;}
 // Damage remains boosted when an attacker plants its feet and temporarily sets speed to zero.
@@ -60,13 +60,13 @@ function trollChase(m,d,dt){
 }
 function trollRecover(d){d.recoverFrom=d.phase;d.phase='recover';d.t=0;d.zones=[];}
 function trollPursuitPhase(m,d,phase){d.phase=phase;d.t=0;d.anchor={x:m.x,y:m.y};d.safePath=[];d.bursts=[];m.dirx=m.diry=0;if(d.chase){d.chase.flow=null;d.chase.left=0;d.chase.recenter=null;d.chase.jam=0;}}
-function trollArrowHit(m){if(!trollEligible(m))return;const d=trollState(m);if(m.hp<=2.5&&!d.rallyUsed)d.rallyQueued=true;if(d.phase==='rally'||d.phase==='fury'){if(d.phase==='fury')d.furyResult='Interrupted';else d.rallyResult='Interrupted';d.haste=false;trollRecover(d);}d.lastHp=m.hp;}
+function trollArrowHit(m){if(!trollEligible(m))return;const d=trollState(m);if(m.hp<=hpOf('TR')/2&&!d.rallyUsed)d.rallyQueued=true;if(d.phase==='rally'||d.phase==='fury'){if(d.phase==='fury')d.furyResult='Interrupted';else d.rallyResult='Interrupted';d.haste=false;trollRecover(d);}d.lastHp=m.hp;}
 function trollLock(m){if(!trollEligible(m))return false;const d=trollState(m);return d.phase==='slamWind'&&d.t>=1.3||d.phase==='slamWave'&&d.t<.6;}
 function trollDamage(m,d,skill){if(d.hit||S.iframe>0||P.level!==m.level||!trollFloor(P.x,P.y,m.level))return false;d.hit=true;S.flash=.4;S.shake=5;S.iframe=nodeIframe();loseWard('Troll '+skill,35,m);sWard();return true;}
 function trollWaveHit(m,d,previous,current){const r=Math.hypot(P.x-m.x,P.y-m.y);if(r<previous-27||r>current+27||!trollRay(m,P.x,P.y))return;const angle=Math.atan2(P.y-m.y,P.x-m.x),safe=trollAngle(angle,d.gap)<d.gapHalf-Math.asin(Math.min(1,13/Math.max(r,13)));if(!safe)trollDamage(m,d,'Drumbeat Slam');}
 function trollTick(m,dt){
  if(!trollEligible(m))return false;const d=trollState(m);m.wind=m.swing=0;m.hit=false;
- if(m.hp<=2.5&&!d.rallyUsed)d.rallyQueued=true;
+ if(m.hp<=hpOf('TR')/2&&!d.rallyUsed)d.rallyQueued=true;
  const staggered=m.stagger>0;if(staggered)m.stagger=Math.max(0,m.stagger-dt);
  if(m.frzT>0||m.stun>0||staggered||supFrozen())return true;
  const step=dt*(m.chill>0?.5:1),before=d.t;d.t+=step;d.furyWait=Math.max(0,d.furyWait-step);d.bursts=d.bursts.filter(b=>(b.age+=step)<(b.kind==='charge'?.36:.45));
@@ -178,7 +178,7 @@ const ASSETS = {"f_tree4":"assets/images/image-ac9094dba8939210.png","f_stump1":
    and in the settings footer. Three rounds of "are you sure this is fixed?" went by with
    no way for either side to tell whether the file being played was the file being
    fixed - a browser will happily serve a cached 1MB local file after a plain reload. */
-const BUILD = "v120 = Troll skills build + boss maps (Last Ground rev 3) - 2026-10-19";
+const BUILD = "v130 = v129.1 + Spider: egg ring at 5, web rot from half; Lizard: embers hold 4s, three kept keep the light - 2026-10-22";
 /* THE BAR THAT CARRIED THIS IS GONE, so there is nothing left to stamp - and the question it
    answered has two other answers that survive: the title screen's own credit line prints the
    build next to the art credit, and F1's readout opens with `BUILD <stamp>` on every screen.
@@ -287,11 +287,24 @@ ASSETS.firstJobAtlas='assets/images/image-7b46c2ad7a2727bc.png';
 /* BASIC SKILLS ATLAS */
 ASSETS.basicSkillAtlas='assets/images/image-e45ffce079e9e278.png';
 /* END BASIC SKILLS ATLAS */
+/* v129.4: native preloading includes the approved poison art. */
+["assets/images/image-7bd85420b87fe509.png",
+ "assets/images/image-9fefc7d43e4e2991.png",
+ "assets/images/image-400d5a40a5483289.png",
+ "assets/images/image-2beb0f04415f0907.png",
+ "assets/images/image-b38e0c8d0b7d36a8.png",
+ "assets/images/image-85da16f0c7d74eb5.png",
+ "assets/images/image-6904979aaee9e3da.png",
+ "assets/images/image-b650022aa329ae8d.png",
+ "assets/images/image-b1023ee71a6c3415.png",
+ "assets/images/image-f09e0af34d513450.png",
+ "assets/images/image-a4e414e94cc2e30b.png"].forEach((src,i)=>{ASSETS["poisonCloud"+String(i+1).padStart(2,"0")]=src;});
+ASSETS.poisonBubbles="assets/images/image-72d63a4c5e2d43ff.png";
 const IMG={}; let loaded=0; const total=Object.keys(ASSETS).length;
 /* v124b: a missing or slow image no longer freezes the loading screen. A file that fails is
    swapped for a blank pixel and named in a note at the bottom left; after 20s the game starts
    with whatever has arrived. */
-const ART_BLANK='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+const ART_BLANK='assets/images/image-63ef318d96b5d0d0.png';
 function artMissing(src){ (window.ARTMISS||(window.ARTMISS=[])).push(src); console.warn('KEYWARD: art did not load:',src);
   let d=document.getElementById('art-missing');
   if(!d){ d=document.createElement('div'); d.id='art-missing';
@@ -1986,7 +1999,7 @@ function light(m,secs){ m.lit=Math.max(m.lit||0,secs*nodeElem()); m.litFx=1; m.s
    halfway through counts. Press 1 again to take it back: nothing is spent. The cooldown starts
    when it looses. Every skill takes FLAT half hearts, and a burnt / struck half goes with the
    next arrow (HP_FIN), so a one-heart enemy is finished by an arrow, never by the skill alone. */
-let HP_FIN=1.5;          /* an arrow kills anything at or below this many hearts */
+let HP_FIN=1;   /* v125: was 1.5 - half a heart of skill damage no longer deletes a typed name */          /* an arrow kills anything at or below this many hearts */
 const SK_DMG=0.5;
 const SK_OF={1:"burn",4:"burn",5:"burn",2:"freeze",6:"freeze",3:"thunder",7:"thunder"};
 const SKDEF={
@@ -3869,6 +3882,7 @@ function blightTiles(m){
   m.__blight=out; m.__blightN=n; return out;
 }
 function smokeTick(dt){
+  if(window.PoisonFog && PoisonFog.tick(dt)) return;
   /* NOT GATED ON THE SKY SWITCH, and the first version was - which is how it came to be
      reported missing. The reasoning had been "it drifts, so it belongs with the clouds", and
      that reasoning was wrong twice over. The switch is SAVED, so a player who turned the
@@ -4402,7 +4416,7 @@ function minoTick(m,dt){
   if(b.st==="walk"){
     m.z=0;
     if(m.stagger>0 || m.wind>0 || m.swing>0) return false;
-    if(b.phase<2 && m.hp<=2.01){                         /* THE HALFWAY TURN */
+    if(b.phase<2 && m.hp<=hpOf('MN')/2+.01){                         /* THE HALFWAY TURN */
       minoStart(m,b,"roar",MN.ROAR); b.phase=2; m.brace=0;
       S.shake=Math.max(S.shake,12); noise(.55,.06,240); blip(120,.5,"sawtooth",.09,70);
       for(let i=0;i<2;i++) spawnMob("T2");
@@ -4616,7 +4630,7 @@ function minoBar(){
   g.textAlign="left"; g.textBaseline="alphabetic";
   g.font='bold 11px system-ui'; g.fillStyle="#9fb0b8"; g.fillText("BOSS · "+L[0],x+12,y+17);
   g.font='bold 15px system-ui'; g.fillStyle="#f2ece0"; g.fillText("THE MINOTAUR",x+12,y+34);
-  const max=4, hw=HRT_W, gap=6, tw=max*hw+(max-1)*gap, hx=x+w-12-tw;
+  const max=hpOf('MN'), hw=HRT_W, gap=6, tw=max*hw+(max-1)*gap, hx=x+w-12-tw;
   for(let i=0;i<max;i++) heart(hx+i*(hw+gap), y+16, Math.max(0,Math.min(1,(m.hp||0)-i)));
   g.font='600 12px system-ui'; g.fillStyle=L[2]; g.fillText(L[1],x+12,y+51);
   g.restore();
@@ -4743,7 +4757,7 @@ function turtTick(m,dt){
   if(b.st==="walk"){
     m.armour=false;
     if(m.stagger>0) return false;
-    if(!b.half && m.hp<=2.01){ b.half=true; b.phase=2; turtGate(m,b); return true; }
+    if(!b.half && m.hp<=hpOf('TU')/2+.01){ b.half=true; b.phase=2; turtGate(m,b); return true; }
     if(b.dp){ b.dp=false; turtDownpour(m,b); return true; }
     b.walkT+=dt;
     if(held || m.level!==P.level) return false;
@@ -5069,7 +5083,7 @@ function turtBar(){
   g.textAlign="left"; g.textBaseline="alphabetic";
   g.font='bold 11px system-ui'; g.fillStyle="#9fb0b8"; g.fillText("BOSS · "+L[0],x+12,y+17);
   g.font='bold 15px system-ui'; g.fillStyle="#f2ece0"; g.fillText("THE TURTLE",x+12,y+34);
-  const max=3, hw=HRT_W, gap=6, tw=max*hw+(max-1)*gap, hx=x+w-12-tw;
+  const max=hpOf('TU'), hw=HRT_W, gap=6, tw=max*hw+(max-1)*gap, hx=x+w-12-tw;
   for(let i=0;i<max;i++) heart(hx+i*(hw+gap), y+16, Math.max(0,Math.min(1,(m.hp||0)-i)));
   g.font='600 12px system-ui'; g.fillStyle=L[2]; g.fillText(L[1],x+12,y+51);
   g.restore();
@@ -5642,6 +5656,11 @@ function cqTick(){
    thirteen seconds that gap was survivable. At five it would be a plaque that vanishes for no
    visible reason, so the tag now carries a drain bar - see tag(). */
 const SUP_CD=26, SUP_LIFE=5, SUP_SPD=190, SUP_REACH=30;
+/* v129.2: THE QUIVER STANDS EIGHT. Measured on v129.1, a 30 WPM typist claimed about half the
+   Quiver plaques offered (7 of 21 on I-10) - the arrow income went to the players who needed it
+   least. The Ward offer keeps SUP_LIFE: it is a rescue, and the five-second decision above is
+   about it. */
+const SUP_LIFE_ARROW=8;
 const SUP_STALL=3;   /* v65: seconds a courier may stand without moving - see supplyTick */
 
 /* ================================ THE QUIVER =====================================
@@ -5684,12 +5703,12 @@ const SUP_STALL=3;   /* v65: seconds a courier may stand without moving - see su
    a live board with no arrows has no win condition and no loss condition either, which
    is a stall and is worse than dying. So the cooldown is suspended entirely while the
    quiver is empty. */
-const QV_SPARE    = 10;    /* the free issue's margin over the stage's own body count */
+const QV_SPARE    = 4;     /* v128: was 10 - the courier now carries the margin */    /* the free issue's margin over the stage's own body count */
 const QV_ENDLESS  = 34;    /* endless has no wave table to read; this is its issue     */
 const ARR_LOW     = 5;     /* at this many left, a QUIVER plaque is offered            */
-const ARR_GIFT    = 3;     /* what one courier carries. Six refunded the deficit this
+const ARR_GIFT    = 4;     /* v128: was 3 */     /* what one courier carries. Six refunded the deficit this
                               economy exists to create - Meat and Ink, §5.             */
-const ARR_CD      = 34;    /* seconds between arrow offers - suspended at zero         */
+const ARR_CD      = 18;    /* v128: was 34 */    /* seconds between arrow offers - suspended at zero         */
 const ARR_SPD     = 260;   /* the arrow courier outruns the sprint (232)               */
 /* HOW EARLY THE SHIELD COMES UP. An arrow flies at 640 px/s, so 170px is about a
    quarter of a second of warning - long enough to read as a reaction to something
@@ -5718,7 +5737,7 @@ const stageBodies = () => {
      clothes. Half of AFX_RATE because a twin pair is one roll, not two. */
   let n = 0, marshals = 0;
   for(const wv of st.waves) for(const k in wv){
-    n += wv[k]|0;
+    { const h=Math.max(1, hpOf(k)); n += Math.ceil((wv[k]|0) * (['MN','TU','SR','SM','SK','LZ','LC','TR'].includes(k) ? h+2 : 1+.75*(h-1))); }   /* v127: 0.75 per extra heart on regular units */
     if(k === "MS") marshals += wv[k]|0;
   }
   /* HALF THE ROLL, not the whole of it. MUSTER_ROLL is the maximum a Marshal can
@@ -5729,6 +5748,7 @@ const stageBodies = () => {
      margin still on top, which is where the twins are absorbed too. */
   n += Math.ceil(marshals * MUSTER_ROLL * 0.5);
   if(S.chapter===2 && S.stage===9) n+=2; // Brood Hatch: at most two extra one-word targets.
+  if(S.chapter===7) n+=4;   /* v127: chapter VIII still ran dry */
   return n;
 };
 const stageIssue = () => S.endless ? QV_ENDLESS : stageBodies() + QV_SPARE;
@@ -5793,9 +5813,9 @@ const QV_CAP     = 60;   /* THE CEILING, and it is derived, not chosen: the larg
                             exactly one stage - the boss of Chapter VIII, the one stage
                             where a player has most reason to want the arrows they saved.
                             If the wave tables change, this moves with them. */
-const ARR_FLOOR  = 8;    /* the shortest gap between arrow offers, even at zero       */
-const ARR_EVERY  = 20;   /* arrows spent between courier offers                       */
-const ARR_NEED   = 3;    /* v66: at this many or fewer the Quiver comes as if dry      */
+const ARR_FLOOR  = 6;    /* v128: was 8 */    /* the shortest gap between arrow offers, even at zero       */
+const ARR_EVERY  = 12;   /* v128: was 20 */   /* arrows spent between courier offers                       */
+const ARR_NEED   = 5;    /* v128: was 3 */    /* v66: at this many or fewer the Quiver comes as if dry      */
 const BOSS_SP    = 2;   /* what a chapter's last stage pays, on its FIRST clear only */
 const TALLY_EVERY= 10;   /* clean kills between Tally's arrows - see the node          */
 
@@ -5960,25 +5980,25 @@ function dealChapter(ci){
    so that waiting the shell out costs exactly ONE name - which is the thing Ember buys
    back, which is how a player prices the element. */
 const TU_SHUT=2.6, TU_OPEN=2.6;
-const HP = {T3:2, T5:2, WD:1, MS:3, OG:4, MN:4, BW:2,
+const HP = {T3:3, T5:3, WD:1, MS:4, OG:5, MN:5, BW:3,   /* v125: one more heart on every multi-heart unit */
             /* FIVE, and the number IS the unit. The Lizard is the only asset in the
                folder with a Hit sheet, so what it is for is being shot repeatedly and
                showing it. A boss is 4 here (the Ogre); this is the one that deviates, on
                that argument. Five hit points is five names, because the hit-point branch
                re-picks a word on every one. */
-            LZ:5,
+            LZ:7,   /* v125 */
             /* FOUR, the default a boss takes here - what the Ogre is. The Skull does not
                deviate: its rule is the ward, not the count, and stacking both would be
                two denials on one body. */
-            SK:4,
+            SK:6,   /* v125 */
             /* THREE, and it is the one boss that goes BELOW the default of four. The
                shell already doubles the time it takes to kill; four lives behind a
                shutting gate is the same fight twice. */
-            TU:3,
+            TU:4,   /* v125 */
             /* FOUR is what a boss is here - the Ogre's number - and three of these take
                it unchanged. The TROLL is 5 and that is the one judgement left in this
                column: it is the last boss in the campaign. */
-            SR:4, LC:4, SM:4, TR:5};
+            SR:7, LC:7, SM:6, TR:8};   /* v127: Spider 7 */   /* v125: late bosses scaled to their chapter's target speed */
 /* EVERY CHAPTER NOW. The Chapter II trial was step 1 of the build order and this
    is the same table let off its leash - the budget tables in Meat-and-Ink assume
    the whole campaign carries it, and the chapter bank below is costed against it. */
@@ -6154,7 +6174,8 @@ function supplyOffer(kind){
              dead:false, doomed:false, shake:0, spd:0, sheet:"supIdle",
              radius:26, sep:30, stagger:0, lit:0, litFx:0, clang:0, wind:0, windCd:0,
              windFx:0, miss:0, hit:false, swing:0, swAng:0, shield:0, guardT:0,
-             healFx:-1, growFx:0, saved:0, chill:0, sparkFx:0, life:SUP_LIFE});
+             healFx:-1, growFx:0, saved:0, chill:0, sparkFx:0,
+             life:arrow?SUP_LIFE_ARROW:SUP_LIFE, life0:arrow?SUP_LIFE_ARROW:SUP_LIFE});
   if(arrow){ S.arrT = ARR_CD; S.offerAt = S.spent|0; }
   else S.supT = SUP_CD * (S.ward <= S.maxWard*LOW_HP ? .5 : 1);
   /* THE FIRST WARD COURIER EXPLAINS ITSELF. Raised here, after the mob exists, so the
@@ -7847,6 +7868,50 @@ function nearestFlowCell(m,e,fld){
     if(d<bd){ bd=d; b=[cx-e.x, cy-e.y]; } }
   return b;
 }
+/* v129 THE DOOR FIELD. Chapter VII fields enemies in rooms behind shut doors, and the battering
+   rule only counts a routeless body that is standing AT a door. But a routeless body steered to the
+   nearest tile that has a route - which is on the other side of the wall - so most of them pressed
+   into the wall in a corner and the door was never battered. This field is seeded from every walkable
+   tile beside a shut door, so a body with no route walks to its own door instead. The Sapper uses
+   the same field for one door, seeded from BOTH sides: before, its field was seeded from whichever
+   side of the door came first in the grid, often the sealed room, and it stood still forever. */
+let DOORF={key:'',fld:null};
+function doorSeedFlow(m,doors){
+  const dist=new Int16Array(m.w*m.h).fill(-1), q=[];
+  for(const d of doors){ if(!d||!d.cell) continue; const [cx,cy]=d.cell;
+    for(const [ox,oy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=cx+ox, ny=cy+oy, c=passable(m,nx,ny);
+      if(!c) continue; const j=ny*m.w+nx; if(dist[j]===-1){ dist[j]=0; q.push(j); } } }
+  for(let head=0; head<q.length; head++){
+    const i=q[head], x=i%m.w, y=(i/m.w)|0, a=m.grid[y][x], d=dist[i];
+    for(const [dx,dy] of DIR8){
+      const nx=x+dx, ny=y+dy, c=passable(m,nx,ny);
+      if(!c) continue;
+      const j=ny*m.w+nx; if(dist[j]!==-1) continue;
+      if(!linked(a,c)) continue;
+      if(dx&&dy && !cornerOK(m,a,c,x,y,nx,ny)) continue;
+      dist[j]=d+1; q.push(j);
+    }
+  }
+  return dist;
+}
+function shutDoorsNow(){ return (S.doors||[]).filter(d=>!d.dead&&d.cell&&W.grid[d.cell[1]]&&W.grid[d.cell[1]][d.cell[0]].shut&&!W.grid[d.cell[1]][d.cell[0]].broken); }
+function doorWalk(m,e,x,y){
+  if(S.scene!=="stage") return null;
+  const ds=shutDoorsNow(); if(!ds.length) return null;
+  const key=S.chapter+':'+S.stage+':'+m.w+'x'+m.h+':'+ds.map(d=>d.cell.join(',')).join(';');
+  if(DOORF.key!==key) DOORF={key, fld:doorSeedFlow(m,ds)};
+  const f=DOORF.fld, here=f[y*m.w+x];
+  if(here<0) return null;
+  if(here===0){
+    let best=null, bd=1e9;
+    for(const d of ds){ const dd=Math.hypot(d.x-e.x,d.y-e.y); if(dd<bd){ bd=dd; best=d; } }
+    if(!best || bd<48) return [0,0];
+    return [best.x-e.x, best.y-e.y];
+  }
+  const nxt=bestNeighbour(m,f,x,y,e); if(!nxt) return null;
+  e.hx=Math.sign(nxt[0]-x); e.hy=Math.sign(nxt[1]-y);
+  return [nxt[0]*T+T/2-e.x, nxt[1]*T+T/2-e.y];
+}
 function flowStep(m,e){
   const dxp=P.x-e.x, dyp=P.y-e.y, dp=Math.hypot(dxp,dyp);
   /* close-quarters direct steering, ONLY on the same level with a clear line.
@@ -7864,7 +7929,8 @@ function flowStep(m,e){
   if(!fld) return [dxp,dyp];
   const x=Math.floor(e.x/T), y=Math.floor(e.y/T);
   if(x<0||y<0||x>=m.w||y>=m.h) return [dxp,dyp];
-  if(fld[y*m.w+x]<0){ const n=nearestFlowCell(m,e,fld); return n||[dxp,dyp]; }
+  if(fld[y*m.w+x]<0){ const dw=doorWalk(m,e,x,y); if(dw) return dw;   /* v129: routeless bodies walk to their door */
+    const n=nearestFlowCell(m,e,fld); return n||[dxp,dyp]; }
 
   /* Walk the field forward a few tiles to get a PATH, not just a next step. */
   const path=[]; let cx=x, cy=y;
@@ -7902,7 +7968,7 @@ function flowStep(m,e){
 function goalStep(m, mb, gx, gy, cache){
   const dxl=gx-mb.x, dyl=gy-mb.y, dl=Math.hypot(dxl,dyl);
   if(mb.level===0 && dl<110 && losClear(m,mb.x,mb.y,gx,gy,mb.level)) return [dxl,dyl];
-  if(!cache.flow) cache.flow = buildFlow(m,gx,gy,0);
+  if(!cache.flow) cache.flow = (mb.sapper&&mb.doorTarget!=null&&S.doors&&S.doors[mb.doorTarget]) ? doorSeedFlow(m,[S.doors[mb.doorTarget]]) : buildFlow(m,gx,gy,0);   /* v129: both sides of the door */
   const fld=cache.flow;
   const x=Math.floor(mb.x/T), y=Math.floor(mb.y/T);
   if(x<0||y<0||x>=m.w||y>=m.h) return [dxl,dyl];
@@ -8283,7 +8349,9 @@ function enterStage(i){ trollCleanup(true); lancerCleanup(true); if(window.Orbit
     S.quiv = take;
     S.drew = take;           /* what this entry drew, for the summary to report */
   }
-  S.arrT=0; S.dryT=0; S.spent=0; S.given=0; S.burnAt=0; S.skAt={}; S.nock=false; S.edge=0; S.critN=0; S.skFx=[]; S.skUsed=0; FIRE=[]; S.skPend=null;  /* no supply in the first seconds of a stage, and
+  S.arrT=0; S.dryT=0; S.spent=0; S.given=0; S.offerAt=0; /* v129.2: offerAt is a mark on
+     S.spent's scale, so it resets with it. Carried over, a stage began owing the last stage's
+     count and the every-ARR_EVERY offer rarely fired - the courier came only when low. */ S.burnAt=0; S.skAt={}; S.nock=false; S.edge=0; S.critN=0; S.skFx=[]; S.skUsed=0; FIRE=[]; S.skPend=null;  /* no supply in the first seconds of a stage, and
                                          no echo carried in from the last one */
   S.startedAt=S.t; S.cause=""; mobs=[]; fx=[]; arrows=[]; shots=[]; flow=null; S.drownT=0; splashFx=[];
   /* ATTUNEMENT rank 1: the slot is remembered from the last stage instead of snapping back
@@ -8439,6 +8507,7 @@ function enterStage(i){ trollCleanup(true); lancerCleanup(true); if(window.Orbit
          +"else and it leaves.", 6.5);
   /* LAST IN THIS FUNCTION, so the card opens over a stage that is already built and the
      player reads it with the board behind it rather than over a black screen. */
+  if(window.PoisonFog) PoisonFog.start(W);
   raiseCard(i);
 }
 /* ================================== ENDLESS ========================================
@@ -11096,7 +11165,7 @@ function update(dt){
          the contact swing) is untouched: a hunting Snuffer is still a body other mobs shove off
          and still swings at you if you stand where it is walking. */
       let [fx2,fy2] = mb.sheep ? sheepStep(mb, dt)
-                    : (mb.snuffer && mb.snuffTarget!=null)
+                    : (mb.snuffer && mb.snuffTarget!=null && (S.lamps[mb.snuffTarget] || (mb.snuffTarget=null, false)))   /* v129.1: a lamp can be removed */
                     ? goalStep(W, mb, S.lamps[mb.snuffTarget].x,
                                       S.lamps[mb.snuffTarget].y,
                                       S.lamps[mb.snuffTarget])
@@ -11496,7 +11565,7 @@ function update(dt){
              like one. `braced` never clears - see the spawn list. */
           m.brace=0; m.braced=true;
           m.doomed=false; m.shake=.5; m.clang=.35; S.shake=3;
-          m.stagger=Math.max(m.stagger||0, HP_STAGGER);
+          m.arrowHitT=S.t; m.stagger=Math.max(m.stagger||0, window.FirstJob?.isBoss?.(m)?0.2:HP_STAGGER);   /* v125: bosses 0.2s */
           const w = pick(m.turt?"T4":m.wtier, [m.word]) || pick("T1", [m.word]);
           if(w){ m.word=w; m.wtier=tierOf(w)||m.wtier; }
           blip(240,.07,"square",.06,170); blip(660,.09,"triangle",.05,880);
@@ -12137,7 +12206,15 @@ addEventListener("keydown",e=>{
     if(k==="Backspace"){ e.preventDefault(); if(S.lock&&S.typed>0){S.typed--; blip(240,.04,"square",.05);} return; }
     /* `0`, not Shift+R. See the sprint's note: Shift is the sprint now, and the old binding
        could never fire anyway because Shift makes the browser report "R". */
-    if(k==="0"){ e.preventDefault(); enterStage(S.stage); return; }
+    /* v129.2: A RESTART IS SETTLED LIKE A LOSS, then re-entered. enterStage draws a fresh
+       quiver from the bank, so calling it straight threw away the one in hand - three restarts
+       could empty a chapter. finish(false) returns what is left plus S.kills; this is the same
+       arithmetic without the summary. Endless has no bank, and a bare enterStage would clear
+       S.endless and land in the campaign stage, so it re-enters its own arena. */
+    if(k==="0"){ e.preventDefault();
+      if(S.endless){ enterEndless(S.eArena); return; }
+      S.bank=(S.bank|0)+Math.max(0,S.quiv|0)+(S.kills|0); S.quiv=0;
+      enterStage(S.stage); return; }
     /* THE NUMPAD'S FULL STOP ENDS THE RUN WHERE YOU STAND - concede, and go straight to the
        results screen with everything you did up to that point still counted.
        READ FROM e.code, NOT e.key, and the reason is already written down twice in this file:
@@ -12847,7 +12924,7 @@ function plaques(V){
        Deliberately keyed on the TEXT, so "OPEN · 2s" and "OPEN · 1s" stay separate - they say
        different things, and the second is not a duplicate of the first. */
     if(tg) tag(tg[0],tg[1],p,x,y,
-               m.supply ? m.life/SUP_LIFE
+               m.supply ? m.life/(m.life0||SUP_LIFE)
              : m.door   ? (W.grid[m.cell[1]][m.cell[0]].batter>0
                            ? 1 - W.grid[m.cell[1]][m.cell[0]].batter/DOOR_BREAK
                            : undefined)
@@ -13648,7 +13725,7 @@ function render(){
   g.fillRect(0,0,VW,VH);
   g.save(); g.translate(V.ox,V.oy); g.scale(V.z,V.z);   /* world space from here */
   drawWater(m,V);                                       /* sea + the foam loop, under the land */
-  g.drawImage(m.canvas,0,0);
+  g.drawImage(window.PoisonFog ? PoisonFog.terrain(m) : m.canvas,0,0);
   folDrawLayer(m);                                      /* FOLIAGE PREVIEW: standing props */
   /* THE SKY GOES HERE AND NOWHERE LATER, and only over the sea. Everything below this line
      is something the player has to be able to read; see the note on the sky. */
@@ -13743,6 +13820,7 @@ function render(){
     drawDoors(m);
 
     drawDark(m);
+    if(window.PoisonFog && PoisonFog.active()) PoisonFog.draw(cam);
     if(window.ShamanDemo) ShamanDemo.ground();
     lancerReserveDraw(g); for(const lm of mobs) lancerDraw(g,lm);
     trollGround();
@@ -13813,7 +13891,7 @@ function render(){
          the thing that just happened to the body. */
       const mobSprite=(key,frame,x,y,flip)=>{
         if(!(mb.frzT>0)) mb.icePose={key,frame,dx:x-wx,dy:y-wy,flip};
-        if(mb.tier==='LZ'&&!mb.dead){
+        if(mb.tier==='LZ'&&!mb.dead&&!(window.Bosses&&Bosses.lizardDark(mb))){
           g.save();g.globalAlpha=1;const pulse=.5+.5*Math.sin(S.t*3.5);
           const glow=g.createRadialGradient(x,y-48,8,x,y-48,76);
           glow.addColorStop(0,'rgba(133,255,65,.20)');glow.addColorStop(.55,'rgba(88,235,44,.10)');glow.addColorStop(1,'rgba(70,220,30,0)');
@@ -14061,7 +14139,7 @@ function render(){
        the terrain canvas was baked before they existed. Darker and wetter than the baked
        patches on purpose: "this turned while you were reading" is different information from
        "this was poisoned when you arrived". */
-    if(W&&W.spread&&W.spread.length){
+    if(W&&W.spread&&W.spread.length && !(window.PoisonFog && PoisonFog.active())){
       const hb=(x,y)=>{ const n=Math.sin(x*57.31+y*91.7)*4375.53; return n-Math.floor(n); };
       /* the ragged silhouette matters MORE here than on a baked patch. The creep arrives one
          square at a time, so a tile-shaped fill drew a staircase of little boxes marching
@@ -14096,7 +14174,7 @@ function render(){
       }
       g.restore();
     }
-    drawSmoke(cam);        /* haze off the poisoned ground - see smokeTick()'s note */
+    if(!(window.PoisonFog && PoisonFog.active())) drawSmoke(cam); /* haze off the poisoned ground - see smokeTick()'s note */
     drawSnuffWarn();       /* the yellow countdown before a Snuffer's blackout lands - see its own note */
     /* THE STORM'S TELEGRAPH. A ring that CLOSES over STK_TELE seconds - closing, not
        flashing, because a flash tells you something is happening and a closing ring tells
@@ -14690,7 +14768,7 @@ function hud(){
     for(let v=HP_WARD;v<S.maxWard;v+=HP_WARD)
       g.fillRect(Math.round(bd.x+bd.w*v/S.maxWard), Math.round(bd.y), 1, Math.round(bd.h));
     /* v72-test-V7: the percentage beside the bar was removed on request - the bar and its notches say it */
-    if(S.scene==="stage"){ minoBar(); turtBar(); lancerBar(); }   /* v80, v81, v110 */
+    if(S.scene==="stage"){ minoBar(); turtBar(); lancerBar(); window.BossRes?.draw(); }   /* v80, v81, v110 */
     /* NO LOW-WARD PULSE, AND THIS IS A REJECTION WORTH RECORDING because the idea is a good
        one in general and wrong here specifically.
        The gamecraft HUD skill says plainly that "a low-health pulse beats the bar", and it is
@@ -16634,11 +16712,18 @@ function drawPanelBox(){
          Five of six rows now sit directly on the paper, so the unselected row's ink has to be
          BROWN. It was #e6e0d0, chosen to sit on steel, and on cream that is very nearly invisible
          - the sort of thing that looks like a rendering fault rather than a colour choice. */
-      if(on) ribbon(RIB.gold, r.x, r.y, r.w, r.h);
+      /* v129.3: THE GOLD RIBBON IS GONE TOO, on request. The note above explains why one plate
+         was kept as the marker; without it the selection is marked the way the title column
+         marks it - the row in gold ink and a breathing caret at its left edge, the same shape
+         ttRow() draws - so the screen still says "this one" in a still frame. */
       g.font='bold 19px system-ui'; g.textAlign="left";
       const mid=r.y+r.h/2+7,
-            ink = on ? "#2b1e09" : (PAPER?"#4a3a26":"#e6e0d0"),
-            off = on ? "#6b5a2c" : (PAPER?"#9c8b73":"#8d9aa1");
+            ink = on ? (PAPER?"#7a4a14":"#f0c34a") : (PAPER?"#4a3a26":"#e6e0d0"),
+            off = PAPER?"#9c8b73":"#8d9aa1";
+      const caret = lx=>{ if(!on) return;
+        const pu=Math.abs(Math.sin(S.t*3))*4, ax=lx-15-pu, cy=mid-6;
+        g.fillStyle=ink; g.beginPath(); g.moveTo(ax,cy-8); g.lineTo(ax,cy+8); g.lineTo(ax+11,cy);
+        g.closePath(); g.fill(); };
       if(r.opts){
         /* THE SAME SWITCH, ON A RIBBON. The report was about the title's panel, but this overlay
            carries the identical rows one keystroke inside a run, and "Sound FX: ON" on a plate is
@@ -16650,7 +16735,7 @@ function drawPanelBox(){
         let w=g.measureText(r.name).width+18;
         for(let i=0;i<r.opts.length;i++)
           w+=R*2+gap+g.measureText(r.opts[i]).width+(i<r.opts.length-1?pad:0);
-        let x=B.cx-w/2;
+        let x=B.cx-w/2; caret(x);
         g.fillStyle=ink; g.fillText(r.name,x,mid); x+=g.measureText(r.name).width+18;
         for(let i=0;i<r.opts.length;i++){
           const isv=i===sel, c=isv?ink:off;
@@ -16662,6 +16747,7 @@ function drawPanelBox(){
         }
       } else {
         g.textAlign="center";
+        caret(B.cx-g.measureText(r.label()).width/2);
         g.fillStyle=ink; g.fillText(r.label(),B.cx,mid);
       }
       g.textAlign="center";
@@ -17188,14 +17274,10 @@ function summary(){
 const FirstJob=window.FirstJob=(()=>{
   'use strict';
   const colors={fire:'#f59049',ice:'#8fd3e8',electric:'#eacb67',poison:'#a6d955',wind:'#a6d9f5'};
-  const retiredRanks=['focus','job_chainCast','job_twinNock','job_overcharge'];
-  const groups=[
-    ['fire',['burn','Burn','arrow',10],['flameRing','Flame Ring','instant',16],['fireWall','Fire Wall','instant',18],['meteorStorm','Meteor Storm','super',0]],
-    ['ice',['freeze','Freeze','arrow',12],['frozenGround','Frozen Ground','instant',18],['iceWall','Ice Wall','instant',20],['blizzard','Blizzard','super',0]],
-    ['electric',['thunder','Thunder','arrow',12],['lightningRod','Lightning Rod','instant',20],['thunderLance','Thunder Lance','instant',16],['tempest','Tempest','super',0]],
-    ['poison',['venomArrow','Venom Arrow','arrow',10],['toxicSpores','Toxic Spores','instant',16],['plagueMark','Plague Mark','instant',18],['miasma','Miasma','super',0]],
-    ['wind',['gustArrow','Gust Arrow','arrow',10],['tailwind','Tailwind','instant',18],['whirlwind','Whirlwind','instant',16],['cyclone','Cyclone','super',0]]
-  ];
+  const retiredRanks=['focus','job_chainCast','job_twinNock','job_overcharge','job_flameRing','job_fireWall','job_meteorStorm','job_frozenGround','job_iceWall','job_blizzard','job_lightningRod','job_thunderLance','job_tempest','job_toxicSpores','job_plagueMark','job_miasma','job_tailwind','job_whirlwind','job_cyclone'];
+  /* v125: the skill tree is the five arrow skills and their passives. The old instants and
+     supers were not on the tree any more; they are retired, and any saved ranks are refunded. */
+  const groups=[['fire',['burn','Burn','arrow',10]],['ice',['freeze','Freeze','arrow',12]],['electric',['thunder','Thunder','arrow',12]],['poison',['venomArrow','Venom Arrow','arrow',10]],['wind',['gustArrow','Gust Arrow','arrow',10]]];
   const descriptions={
     burn:'Arrow: burns enemies within 2 tiles for half a heart over 3s; opens armour. Lv 5 keeps armour open 2s longer.',
     flameRing:'Instant: lights enemies within 2 tiles and pushes them back one step. Lv 5 reaches 2.5 tiles.',
@@ -17219,7 +17301,7 @@ const FirstJob=window.FirstJob=(()=>{
     cyclone:'Super: lifts every enemy, spins them and drops them 2 / 2.5 / 3 tiles away, with 1 / 1.5 / 2s landing stun. Takes no hearts.'
   };
   // Literal approved proposal data; runtime remains self-contained in the shipped HTML.
-  const radial=[{"id":"burn","name":"Burn","group":"fire","tag":"Arrow skill","description":"Burn the target and enemies within 2 tiles for half a heart over 3 seconds and expose their armour. Burn cannot take the final heart. Radius grows 5% per additional rank.","levels":["2-tile radius · 10s cooldown","2.1-tile radius · 9.5s cooldown","2.2-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"embers","name":"Deep Embers","group":"fire","tag":"Elemental passive","description":"Slightly increase Burn damage while preserving the final heart. The same three-second damage window applies. Does not increase radius or armour exposure.","levels":["+5% Burn damage · 0.525 hearts total","+8% Burn damage · 0.54 hearts total","+10% Burn damage · 0.55 hearts total"],"max":3,"requires":["burn",3],"tuned":true},{"id":"reclaim","name":"Ember Reclaim","group":"fire","tag":"Elemental passive","description":"The first arrow kill against an enemy burned by a given Burn cast reduces Burn’s remaining cooldown. Activates at most once per cast, even if that cast burns a crowd. Shares the 20% passive cooldown-reduction cap with Momentum and Cold Focus.","levels":["−0.25s Burn cooldown · once per cast","−0.4s Burn cooldown · once per cast"],"max":2,"requires":["embers",3],"tuned":true},{"id":"freeze","name":"Freeze","group":"ice","tag":"Arrow skill","description":"Freeze the target and enemies within 2 tiles, then slow them to half speed. Deals no elemental damage. Bosses are slowed instead of frozen.","levels":["1.5s freeze + 2s slow · 12s cooldown","1.6s freeze + 2s slow · 11.5s cooldown","1.7s freeze + 2s slow · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"frost","name":"Lingering Frost","group":"ice","tag":"Elemental passive","description":"Slightly extend the slow that follows Freeze on ordinary enemies. Does not extend solid freeze or add any duration against bosses. Slows use the strongest current effect rather than stacking.","levels":["+0.15s slow duration","+0.3s slow duration","+0.5s slow duration"],"max":3,"requires":["freeze",3],"tuned":true},{"id":"focus","name":"Cold Focus","group":"ice","tag":"Elemental passive","description":"Slightly reduce Freeze’s cooldown after its normal level reduction. This reduction counts toward the shared 20% passive cooldown-reduction cap per cast, so it cannot stack beyond that cap with Momentum.","levels":["−0.25s Freeze cooldown","−0.5s Freeze cooldown"],"max":2,"requires":["frost",3],"tuned":true},{"id":"thunder","name":"Thunder","group":"electric","tag":"Arrow skill","description":"Strike the target for half a heart and jump to two nearby enemies within 3 tiles of each other, stunning each. Elemental damage preserves the final heart.","levels":["3 targets · 0.5s stun · 12s cooldown","3 targets · 0.6s stun · 11.5s cooldown","3 targets · 0.7s stun · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"fork","name":"Forked Current","group":"electric","tag":"Elemental passive","description":"Slightly increase the maximum distance between Thunder’s jumps. Does not add targets, damage or stun duration.","levels":["+0.15 tiles jump range · 3.15 total","+0.3 tiles jump range · 3.3 total","+0.5 tiles jump range · 3.5 total"],"max":3,"requires":["thunder",3],"tuned":true},{"id":"echo","name":"Static Echo","group":"electric","tag":"Elemental passive","description":"One second after Thunder hits, a harmless echo briefly slows only its original target. Deals no damage, adds no stun, cannot chain or repeat itself, and has no effect on bosses. Uses the strongest current slow.","levels":["5% slow for 1s · original target only","8% slow for 1s · original target only"],"max":2,"requires":["fork",3],"tuned":true},{"id":"venom","name":"Venom Arrow","group":"poison","tag":"Arrow skill","description":"Poison enemies within 1 tile for half a heart over 6 seconds and prevent healing. Poison preserves the final heart.","levels":["1-tile radius · 10s cooldown","1-tile radius · 9.5s cooldown","1-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"creep","name":"Creeping Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target moves slightly slower for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Uses the strongest current slow.","levels":["3% slow for 2s · original target only","5% slow for 2s · original target only","8% slow for 2s · original target only"],"max":3,"requires":["venom",3],"tuned":true},{"id":"wither","name":"Withering Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target deals slightly less attack damage for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Reapplication cannot stack the reduction.","levels":["Target deals 3% less damage for 2s","Target deals 5% less damage for 2s"],"max":2,"requires":["creep",3],"tuned":true},{"id":"gust","name":"Gust Arrow","group":"wind","tag":"Arrow skill","description":"Push the target and enemies behind it, with a half-second stagger. Deals no elemental damage. Bosses cannot be displaced.","levels":["1.5-tile push · 10s cooldown","1.5-tile push · 9.5s cooldown","1.5-tile push · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"slip","name":"Slipstream","group":"wind","tag":"Elemental passive","description":"After Gust Arrow hits an enemy, gain a small movement-speed bonus for 1.5 seconds. Activates once per cast, not on every clean name or every enemy hit. Does not stack or refresh from the same cast.","levels":["+2% movement speed for 1.5s","+3% movement speed for 1.5s","+4% movement speed for 1.5s"],"max":3,"requires":["gust",3],"tuned":true},{"id":"backdraft","name":"Backdraft","group":"wind","tag":"Elemental passive","description":"Slightly increase the push on Gust Arrow’s original target only. Enemies behind it receive only the retained arrow’s normal push. Boss displacement immunity remains.","levels":["+0.1 tiles push · original target only","+0.2 tiles push · original target only"],"max":2,"requires":["slip",3],"tuned":true}];
+  const radial=[{"id":"burn","name":"Burn","group":"fire","tag":"Arrow skill","description":"Burn the target and enemies within 2 tiles for half a heart over 3 seconds and expose their armour. Radius grows 5% per additional rank.","levels":["2-tile radius · 10s cooldown","2.1-tile radius · 9.5s cooldown","2.2-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"embers","name":"Deep Embers","group":"fire","tag":"Elemental passive","description":"Slightly increase Burn damage. The same three-second damage window applies. Does not increase radius or armour exposure.","levels":["+5% Burn damage · 0.525 hearts total","+8% Burn damage · 0.54 hearts total","+10% Burn damage · 0.55 hearts total"],"max":3,"requires":["burn",3],"tuned":true},{"id":"reclaim","name":"Ember Reclaim","group":"fire","tag":"Elemental passive","description":"The first arrow kill against an enemy burned by a given Burn cast reduces Burn’s remaining cooldown. Activates at most once per cast, even if that cast burns a crowd. Shares the 20% passive cooldown-reduction cap with Momentum and Cold Focus.","levels":["−0.25s Burn cooldown · once per cast","−0.4s Burn cooldown · once per cast"],"max":2,"requires":["embers",3],"tuned":true},{"id":"freeze","name":"Freeze","group":"ice","tag":"Arrow skill","description":"Freeze the target and enemies within 2 tiles, then slow them to half speed. Deals no elemental damage. Bosses are slowed instead of frozen.","levels":["1s freeze + 2s slow · 12s cooldown","1.1s freeze + 2s slow · 11.5s cooldown","1.2s freeze + 2s slow · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"frost","name":"Lingering Frost","group":"ice","tag":"Elemental passive","description":"Slightly extend the slow that follows Freeze on ordinary enemies. Does not extend solid freeze or add any duration against bosses. Slows use the strongest current effect rather than stacking.","levels":["+0.15s slow duration","+0.3s slow duration","+0.5s slow duration"],"max":3,"requires":["freeze",3],"tuned":true},{"id":"focus","name":"Cold Focus","group":"ice","tag":"Elemental passive","description":"Slightly reduce Freeze’s cooldown after its normal level reduction. This reduction counts toward the shared 20% passive cooldown-reduction cap per cast, so it cannot stack beyond that cap with Momentum.","levels":["−0.25s Freeze cooldown","−0.5s Freeze cooldown"],"max":2,"requires":["frost",3],"tuned":true},{"id":"thunder","name":"Thunder","group":"electric","tag":"Arrow skill","description":"Strike the target for half a heart and jump to two nearby enemies within 3 tiles of each other, stunning each.","levels":["3 targets · 0.5s stun · 12s cooldown","3 targets · 0.6s stun · 11.5s cooldown","3 targets · 0.7s stun · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"fork","name":"Forked Current","group":"electric","tag":"Elemental passive","description":"Slightly increase the maximum distance between Thunder’s jumps. Does not add targets, damage or stun duration.","levels":["+0.15 tiles jump range · 3.15 total","+0.3 tiles jump range · 3.3 total","+0.5 tiles jump range · 3.5 total"],"max":3,"requires":["thunder",3],"tuned":true},{"id":"echo","name":"Static Echo","group":"electric","tag":"Elemental passive","description":"One second after Thunder hits, a harmless echo briefly slows only its original target. Deals no damage, adds no stun, cannot chain or repeat itself, and has no effect on bosses. Uses the strongest current slow.","levels":["5% slow for 1s · original target only","8% slow for 1s · original target only"],"max":2,"requires":["fork",3],"tuned":true},{"id":"venom","name":"Venom Arrow","group":"poison","tag":"Arrow skill","description":"Poison enemies within 1 tile for half a heart over 6 seconds and prevent healing.","levels":["1-tile radius · 10s cooldown","1-tile radius · 9.5s cooldown","1-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"creep","name":"Creeping Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target moves slightly slower for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Uses the strongest current slow.","levels":["3% slow for 2s · original target only","5% slow for 2s · original target only","8% slow for 2s · original target only"],"max":3,"requires":["venom",3],"tuned":true},{"id":"wither","name":"Withering Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target deals slightly less attack damage for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Reapplication cannot stack the reduction.","levels":["Target deals 3% less damage for 2s","Target deals 5% less damage for 2s"],"max":2,"requires":["creep",3],"tuned":true},{"id":"gust","name":"Gust Arrow","group":"wind","tag":"Arrow skill","description":"Push the target and enemies behind it, with a half-second stagger. Deals no elemental damage. Bosses cannot be displaced.","levels":["1.5-tile push · 10s cooldown","1.5-tile push · 9.5s cooldown","1.5-tile push · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"slip","name":"Slipstream","group":"wind","tag":"Elemental passive","description":"After Gust Arrow hits an enemy, gain a small movement-speed bonus for 1.5 seconds. Activates once per cast, not on every clean name or every enemy hit. Does not stack or refresh from the same cast.","levels":["+2% movement speed for 1.5s","+3% movement speed for 1.5s","+4% movement speed for 1.5s"],"max":3,"requires":["gust",3],"tuned":true},{"id":"backdraft","name":"Backdraft","group":"wind","tag":"Elemental passive","description":"Slightly increase the push on Gust Arrow’s original target only. Enemies behind it receive only the retained arrow’s normal push. Boss displacement immunity remains.","levels":["+0.1 tiles push · original target only","+0.2 tiles push · original target only"],"max":2,"requires":["slip",3],"tuned":true}];
   const proposalKey=id=>({venom:'venomArrow',gust:'gustArrow'}[id]||id);
   const list=[],defs={},rects={};
   // Source circles from the approved sheet. Crop inside each rim, never its label.
@@ -17244,7 +17326,15 @@ const FirstJob=window.FirstJob=(()=>{
     slots:['burn','freeze','thunder','venomArrow','gustArrow',null,null,null],superKey:null,pend:null,intUntil:0,intName:''};
   const eligible=m=>!!m&&!m.dead&&!m.sheep&&!m.supply&&!m.door&&!m.taboo&&!m.drowned&&!!MOBDEF[m.tier]&&m.level===P.level;
   const targets=()=>mobs.filter(eligible);
-  const isBoss=m=>!!(m&&(m.boss||m.mino||m.turt||m.lancer||(m.tier==='SR'&&S.chapter===2&&!m.broodOwner)||['TR','SK','LZ'].includes(m.tier)||window.SpiritBoss?.owns(m)));
+  const isBoss=m=>!!(m&&(m.boss||m.mino||m.turt||m.lancer||(m.tier==='SR'&&S.chapter===2&&!m.broodOwner)||['TR','SK','LZ','SM','MS'].includes(m.tier)||window.SpiritBoss?.owns(m)));   /* v125: + Shaman, Marshal */
+  /* v125 RESISTANCE (option F). Each boss, and four regular units, resist one element: that
+     element's skills deal half damage, hold half as long and slow half as much. The skill still
+     works, and works in full on everything else. curEl is set around every place a skill acts. */
+  const ELEM={burn:'fire',freeze:'ice',thunder:'electric',venomArrow:'poison',gustArrow:'wind'};
+  const RESIST={MN:'wind',TU:'ice',SR:'poison',SM:'electric',SK:'ice',LZ:'fire',LC:'electric',TR:'fire',HR:'wind',HL:'fire',BW:'wind',AD:'fire'};
+  let curEl=null;
+  const resists=m=>!!(m&&curEl&&RESIST[m.tier]===curEl);
+  const resistScale=(m,el,scale)=>RESIST[m?.tier]===el?1-(1-scale)*.5:scale;
   const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const nearest=(origin=P)=>targets().sort((a,b)=>distance(a,origin)-distance(b,origin))[0]||null;
   const lvl=key=>{const d=defs[key];return d?Math.min(d.max,Math.max(0,Number(S.ranks?.[d.rankKey])||0)+(d.starter?1:0)):0;};
@@ -17252,10 +17342,40 @@ const FirstJob=window.FirstJob=(()=>{
   const active=()=>S.scene==='stage'&&!S.endless&&!S.card&&!S.shop&&!S.opt&&!S.skCard&&!(S.drownT>0);
   const pos=m=>({x:m.x,y:m.y,level:m.level});
   const ring=(p,r,col)=>{S.skFx||=[];const rgb=col==='#a6d955'?'166,217,85':col==='#a6d9f5'?'166,217,245':'255,150,70';S.skFx.push({k:'ring',x:p.x,y:p.y,r,col:rgb,t:.45,T:.45});};
-  function hurt(m,amount){if(!eligible(m))return;const hp=m.hp==null?1:m.hp;m.hp=Math.max(Math.min(1,hp),hp-amount);m.shake=Math.max(m.shake||0,.2);if(m.lancer&&m.hp<hp)lancerHit(m);}
+  function hurt(m,amount){if(!eligible(m))return;const boss=isBoss(m);if(boss&&(m.shield>0||(m.turt&&m.armour)))return;if(resists(m))amount*=.5;const hp=m.hp==null?1:m.hp;m.hp=hp-amount;
+  m.shake=Math.max(m.shake||0,.2);if(m.lancer&&m.hp<hp)lancerHit(m);
+  if((m.mino||m.turt)&&m.boss?.last){m.finDmg=(m.finDmg||0)+(hp-Math.max(0,m.hp));m.hp=Math.max(m.hp,.01);if(m.finDmg>=1){m.finDmg-=1;skillKill(m);}return;}   /* finale: a full heart of skill damage counts as one name */
+  if(m.hp<=.001)skillKill(m);}   /* v126: skills can finish any enemy, bosses included */
+  /* v126 SKILL KILL. The same kill an arrow makes, minus the arrow-only rewards. The Minotaur's
+     and the Turtle's last-heart finales still play: a skill that empties them starts the finale,
+     and during it each emptied heart counts as one of its names. */
+  function skillKill(m){
+    if(m.dead)return;
+    if((m.mino&&minoSpare(m))||(m.turt&&turtSpare(m))){m.hp=1;m.stagger=Math.max(m.stagger||0,.2);return;}
+    m.hp=0;m.dead=true;m.skillKilled=true;S.kills=(S.kills|0)+1;
+    if(S.lock===m){S.lock=null;S.typed=0;}
+    try{if(m.muster)decree(m);}catch(e){}
+    if(m.afx==="echo"&&!m.echoed)S.echo=m.word;
+    if(m.afx==="twin"&&m.twinOf){const mate=mobs.find(x=>!x.dead&&x.uid===m.twinOf);if(mate){S.twinRage=(S.twinRage|0)+1;mate.spd*=AFX.twin.rage;mate.shake=.3;}}
+    try{fx.push({k:"dust",x:m.x,y:m.y,f:0});sHit();}catch(e){}
+  }
   function stop(m,seconds,freeze=false){
     if(!eligible(m))return;
-    if(freeze&&isBoss(m)){slow(m,.5,seconds+2);return;}
+    if(resists(m))seconds*=.5;
+    /* v125 CONTROL FATIGUE (option B). A boss that is already held is not held again; each new
+       hold inside 6s lasts half as long as the last, and the third makes it UNBREAKABLE for 4s.
+       Freeze on a boss is a slow plus a 0.4s ice moment - enough to break the Reaper's spin. */
+    if(isBoss(m)){
+      if(resists(m)){if(freeze)slow(m,.5,seconds+2);return;}   /* v127: a resisted element never holds a boss */
+      if(freeze){slow(m,.5,seconds+2);seconds=Math.min(seconds,.4);
+        if(m.lancer){m.jobStop=Math.max(m.jobStop||0,S.t+seconds);iceOn(m,seconds);return;}}   /* the Reaper's counter ignores fatigue */
+      if((m.ctlImmune||0)>S.t||(m.jobStop||0)>S.t)return;
+      const recent=(m.ctlLast||-99)>S.t-6;m.ctlN=recent?(m.ctlN||0)+1:0;m.ctlLast=S.t;
+      seconds*=Math.pow(.5,m.ctlN);
+      m.jobStop=S.t+seconds;if(freeze)iceOn(m,seconds);
+      if(m.ctlN>=2){m.ctlImmune=S.t+seconds+4;m.ctlN=0;m.ctlLast=-99;toast((MOBDEF[m.tier]?.label||'The boss').toUpperCase()+' IS UNBREAKABLE · 4s',2.2);}
+      return;
+    }
     m.jobStop=Math.max(m.jobStop||0,S.t+seconds);
     if(freeze){m.jobFreeze=Math.max(m.jobFreeze||0,S.t+seconds);iceOn(m,seconds);}
   }
@@ -17264,6 +17384,7 @@ const FirstJob=window.FirstJob=(()=>{
     m.frzT=Math.max(m.frzT||0,seconds);m.stagger=Math.max(m.stagger||0,seconds);iceBurst(m.x,m.y,12,false,m.big?1.45:1);}
   function slow(m,scale,seconds){
     if(!eligible(m))return;
+    if(resists(m))scale=1-(1-scale)*.5;
     m.jobSlows||=[];m.jobSlows.push({scale,until:S.t+seconds});
   }
   const stopped=m=>(m.jobStop||0)>S.t;
@@ -17301,20 +17422,24 @@ const FirstJob=window.FirstJob=(()=>{
     S.skAt[key]-=amount;castData.used+=amount;return amount;
   }
   function spend(key){S.skAt||={};S.skAt[key]=S.t+rankCooldown(key);
-    if(defs[key]?.type==='arrow'){newCast(key);if(key==='freeze')reduceCooldown(key,[0,.25,.5][lvl('focus')]);}
+    if(defs[key]?.type==='arrow'){for(const k of J.slots)if(k&&k!==key&&defs[k]?.type==='arrow')S.skAt[k]=Math.max(S.skAt[k]||0,S.t+1.5);   /* v127: 1.5s between elemental arrows */
+      newCast(key);if(key==='freeze')reduceCooldown(key,[0,.25,.5][lvl('focus')]);}
     else S.skUsed=(S.skUsed||0)+1;
   }
   function arrowKill(m){
     const castData=m?.jobBurnCast;if(!m?.dead||!castData||castData.reclaimed||!lvl('reclaim'))return;
     castData.reclaimed=true;if(J.casts.burn===castData)reduceCooldown('burn',[0,.25,.4][lvl('reclaim')]);
   }
-  function impact(key,src,castData=null){
+  function impact(key,src,castData=null){const _o=curEl;curEl=ELEM[key]||null;try{return impact0(key,src,castData);}finally{curEl=_o;}}
+  function impact0(key,src,castData=null){
     if(!src||src.level!==P.level)return;
     const L=lvl(key)||1,origin=pos(src),near=targets();
     castData ||= J.casts[key] || newCast(key);
     if(key==='burn'){const radius=2*T*(1+.05*(L-1));for(const m of near)if(distance(m,origin)<=radius)burn(m,L,castData);ring(origin,radius,colors.fire);}
     else if(key==='freeze'){
-      for(const m of near)if(distance(m,origin)<=2*T){const hold=1.5+.1*(L-1);
+      for(const m of near)if(distance(m,origin)<=2*T){let hold=1+.1*(L-1);   /* v127: was 1.5 */
+        if(isBoss(m)){stop(m,hold,true);m.chill=Math.max(m.chill||0,(resists(m)?.75:1.5));continue;}   /* v125: bosses are slowed, as the skill says */
+        if(resists(m))hold*=.5;
         m.jobStop=Math.max(m.jobStop||0,S.t+hold);m.jobFreeze=Math.max(m.jobFreeze||0,S.t+hold);iceOn(m,hold);
         m.chill=Math.max(m.chill||0,hold+2+(L>=5?1:0)+(isBoss(m)?0:[0,.15,.3,.5][lvl('frost')]));}   /* v124: chill = the game's half speed */
       iceBurst(src.x,src.y,26);
@@ -17413,8 +17538,8 @@ const FirstJob=window.FirstJob=(()=>{
     for(const echo of J.echoes)if(S.t>=echo.at&&S.t<echo.until&&echo.level===P.level&&eligible(echo.target)&&!isBoss(echo.target))slow(echo.target,echo.scale,echo.until-S.t);
     J.echoes=J.echoes.filter(echo=>S.t<echo.at);
     for(const m of targets()){
-      if(m.jobBurn?.left>0){const d=Math.min(m.jobBurn.left,m.jobBurn.rate*dt);m.jobBurn.left-=d;hurt(m,d);}
-      if((m.jobPoisonUntil||0)>S.t-dt&&m.jobPoisonLeft>0){const elapsed=Math.min(dt,Math.max(0,m.jobPoisonUntil-(S.t-dt))),d=Math.min(m.jobPoisonLeft,m.jobPoisonRate*elapsed);m.jobPoisonLeft-=d;hurt(m,d);}
+      if(m.jobBurn?.left>0){const d=Math.min(m.jobBurn.left,m.jobBurn.rate*dt);m.jobBurn.left-=d;curEl='fire';hurt(m,d);curEl=null;}
+      if((m.jobPoisonUntil||0)>S.t-dt&&m.jobPoisonLeft>0){const elapsed=Math.min(dt,Math.max(0,m.jobPoisonUntil-(S.t-dt))),d=Math.min(m.jobPoisonLeft,m.jobPoisonRate*elapsed);m.jobPoisonLeft-=d;curEl='poison';hurt(m,d);curEl=null;}
       m.jobSlows=(m.jobSlows||[]).filter(s=>s.until>S.t);
     }
     for(const [m,mark] of J.marks){
@@ -17487,7 +17612,7 @@ const FirstJob=window.FirstJob=(()=>{
     if(!L&&d.type==='instant'){const slot=J.slots.indexOf(null);if(slot>=0)equip(key,slot);}
     saveNow();return true;
   }
-  Object.assign(J,{interrupt,casting:()=>!!J.pend&&active(),castTime:k=>CAST_T[k]||0,level:lvl,learned,eligible,cast,impact,tick,reset,equip,unequip,serialize,restore,buy,cost:key=>defs[key]&&lvl(key)<defs[key].max?1:0,cooldown,rankCooldown,reduceCooldown,arrowKill,spend,chargeNeed,poisoned,stopped,frozen,moveScale,blocks,damageScale,
+  Object.assign(J,{isBoss,resistOf:m=>RESIST[m?.tier]||null,RESIST,interrupt,casting:()=>!!J.pend&&active(),castTime:k=>CAST_T[k]||0,level:lvl,learned,eligible,cast,impact,tick,reset,equip,unequip,serialize,restore,buy,cost:key=>defs[key]&&lvl(key)<defs[key].max?1:0,cooldown,rankCooldown,reduceCooldown,arrowKill,spend,chargeNeed,poisoned,stopped,frozen,moveScale,blocks,damageScale,
     beforeMob:m=>stopped(m),walkScale:()=>active()?(J.tailUntil>S.t?1.25:1)*(J.slipUntil>S.t?1+[0,.02,.03,.04][lvl('slip')]:1):1,arrowScale:()=>active()&&J.tailUntil>S.t?1.3:1});
 
   // Register before saveLoad so new ranks are recognized. Retired ranks are refunded
@@ -17550,9 +17675,9 @@ const FirstJob=window.FirstJob=(()=>{
   function text(t,x,y,color='#cbd5da',size=12){g.fillStyle=color;g.font=size+'px system-ui';g.fillText(t,x,y);}
   function wrap(t,x,y,width,line=17){let row='';for(const word of t.split(' ')){const next=row?row+' '+word:word;if(g.measureText(next).width>width&&row){g.fillText(row,x,y);y+=line;row=word;}else row=next;}if(row)g.fillText(row,x,y);return y;}
   function hotbar(y,small=false){
-    const size=small?30:42,gap=small?18:22,width=9*size+8*gap+12,start=(VW-width)/2;
+    const size=small?30:42,gap=small?18:22,width=8*size+7*gap,start=(VW-width)/2;
     g.save();g.textAlign='center';g.textBaseline='alphabetic';
-    for(let i=0;i<9;i++){
+    for(let i=0;i<8;i++){
       const key=i===8?J.superKey:J.slots[i],d=J.defs[key],x=start+i*(size+gap)+(i===8?12:0),cy=y+size/2;
       g.fillStyle='#0b141ded';g.fillRect(x-3,y-3,size+6,size+6);
       if(d){badge(key,x,y,size);
@@ -17618,8 +17743,8 @@ const FirstJob=window.FirstJob=(()=>{
   J.key=e=>{
     if(S.scene!=='stage'||S.endless||S.card||S.skCard||S.opt||S.shop)return false;
     if(arrowOf(e)||e.ctrlKey||e.altKey||e.metaKey)return false;
-    if(e.code?.startsWith('Numpad'))return e.key>='1'&&e.key<='9';
-    if(e.key<'1'||e.key>'9')return false;
+    if(e.code?.startsWith('Numpad'))return e.key>='1'&&e.key<='8';
+    if(e.key<'1'||e.key>'8')return false;
     e.preventDefault();if(!e.repeat){const key=e.key==='9'?J.superKey:J.slots[+e.key-1];if(key)J.cast(key);else toast('Equip a skill on this key in the 1st Job page',1.6);}return true;
   };
   cv.addEventListener('click',e=>{
@@ -17629,7 +17754,7 @@ const FirstJob=window.FirstJob=(()=>{
     if(S.tsel!==1)return;
     if(x>=VW-155&&x<=VW-36&&y>=VH-104&&y<=VH-84){J.buy(chosen().key);return;}
     for(const d of J.list){const cx=28+cw*(d.col+.5),cy=150+d.row*78+24;if(Math.hypot(x-cx,y-cy)<31){S.csel=d.row*COLS+d.col;return;}}
-    if(y>=68&&y<=115){const size=30,gap=18,width=9*size+8*gap+12,start=(VW-width)/2;for(let i=0;i<9;i++){const xx=start+i*(size+gap)+(i===8?12:0);if(x>=xx&&x<=xx+size&&J.equip(chosen().key,i)){saveNow();return;}}}
+    if(y>=68&&y<=115){const size=30,gap=18,width=8*size+7*gap,start=(VW-width)/2;for(let i=0;i<8;i++){const xx=start+i*(size+gap)+(i===8?12:0);if(x>=xx&&x<=xx+size&&J.equip(chosen().key,i)){saveNow();return;}}}
   });
   cv.addEventListener('dblclick',e=>{if(S.scene==='over'&&S.shop&&S.tsel===1){const [x,y]=canvasXY(e),d=chosen(),cw=(VW-56)/COLS;if(Math.hypot(x-(28+cw*(d.col+.5)),y-(174+d.row*78))<31)J.buy(d.key);}});
   // Ground effects are drawn inside the world's existing camera transform.
@@ -17888,7 +18013,7 @@ const SkillBookUI=window.SkillBookUI=(()=>{
   function modalXY(e){const rect=cv.getBoundingClientRect();return [(e.clientX-rect.left)*VW/rect.width,(e.clientY-rect.top)*H/rect.height];}
   addEventListener('resize',()=>{if(active())modalViewport();});
   const U={radial:true,confirm:false,equipping:false,playing:false,previewKey:null,previewAt:0,pausedAt:0,note:'',noteAt:0,zoom:1,pan:{x:0,y:0}};
-  const catalogue=[{"id":"mastery","name":"Arrow Mastery","group":"basic","tag":"Arrow damage","description":"Increase the base damage of ordinary arrows by 5% per rank. This bonus does not increase elemental damage or the extra hearts from True Shot and Keen Edge.","levels":["+5% ordinary arrow damage","+10% ordinary arrow damage","+15% ordinary arrow damage"],"max":3},{"id":"vigor","name":"Vigor","group":"basic","tag":"Health","description":"Increase maximum health by 10% per rank. An upgrade also fills the health it adds.","levels":["110 maximum health","120 maximum health","130 maximum health"],"max":3},{"id":"nerve","name":"Iron Nerve","group":"basic","tag":"Survival","description":"Forgive a fatal blow once per stage, twice at Lv 3. Each rank adds 0.15 seconds of protection after being hit.","levels":["1 rescue · +0.15s hit protection","1 rescue · +0.30s hit protection","2 rescues · +0.45s hit protection"],"max":3},{"id":"crit","name":"True Shot","group":"basic","tag":"Critical arrows","description":"Critical arrows take an extra heart. Against a one-heart enemy, refund the arrow instead. Chance builds between critical hits.","levels":["About 5% critical arrows","About 10% critical arrows","About 15% critical arrows"],"max":3},{"id":"edge","name":"Keen Edge","group":"basic","tag":"Charged arrows","description":"Wounding arrows fill a meter. When full, the next qualifying arrow spends it to take an extra heart.","levels":["+10% meter per wound","+20% meter per wound","+25% meter per wound"],"max":3},{"id":"mender","name":"Mender","group":"basic","tag":"Supply healing","description":"The Supply healer restores more health. Healing always stops at your maximum.","levels":["+5 healing · 20–40 total","+10 healing · 25–45 total","+15 healing · 30–50 total"],"max":3},{"id":"fleet","name":"Fleet Foot","group":"basic","tag":"Movement","description":"Increase walking speed, including while sprinting.","levels":["+4% walking speed","+8% walking speed","+12% walking speed"],"max":3},{"id":"quiver","name":"Deep Quiver","group":"general","tag":"Ammunition","description":"Increase your maximum arrow capacity.","levels":["+1 arrow capacity","+2 arrow capacity","+3 arrow capacity"],"max":3},{"id":"flight","name":"Quick Flight","group":"general","tag":"Arrow speed","description":"Increase arrow travel speed so shots reach their targets sooner.","levels":["+10% arrow speed","+20% arrow speed","+30% arrow speed"],"max":3},{"id":"momentum","name":"Momentum","group":"general","tag":"Clean typing","description":"Completing a clean enemy name reduces the remaining cooldown of all five elemental arrows. A clean name is completed without a typing mistake. All passive cooldown reductions combined are capped at 20% of each arrow’s rank-adjusted cooldown per cast, including Cold Focus and Ember Reclaim.","levels":["−0.2s remaining cooldown per clean name","−0.4s remaining cooldown per clean name","−0.6s remaining cooldown per clean name"],"max":3},{"id":"breath","name":"Catch Your Breath","group":"general","tag":"Stage recovery","description":"Restore health when first-clearing a stage. Replays do not grant this healing.","levels":["Restore 4 health","Restore 6 health","Restore 8 health"],"max":3},{"id":"stride","name":"Last Stride","group":"general","tag":"Low-health movement","description":"Gain movement speed while below 30% maximum health.","levels":["+5% movement speed","+10% movement speed","+15% movement speed"],"max":3},{"id":"scavenger","name":"Scavenger","group":"general","tag":"Arrow pickups","description":"Arrow pickups restore additional ammunition, up to your quiver capacity.","levels":["+1 arrow per pickup","+2 arrows per pickup","+3 arrows per pickup"],"max":3},{"id":"aim","name":"Steady Aim","group":"general","tag":"Critical arrows","description":"After standing still for one second, gain additional critical chance until you move. Values are percentage points.","levels":["+3 percentage points critical chance","+6 percentage points critical chance","+9 percentage points critical chance"],"max":3,"added":true},{"id":"longword","name":"Long Word","group":"general","tag":"Typing recovery","description":"An arrow kill against an enemy with a name of seven or more letters restores health, up to your maximum.","levels":["Restore 1 health per qualifying kill","Restore 2 health per qualifying kill","Restore 3 health per qualifying kill"],"max":3,"added":true},{"id":"reserve","name":"Emergency Reserve","group":"general","tag":"Emergency ammunition","description":"The first time your health falls below 30% each stage, recover arrows up to your quiver capacity. Activates once per stage.","levels":["Recover 1 arrow","Recover 2 arrows","Recover 3 arrows"],"max":3,"added":true},{"id":"supply","name":"Supply Guard","group":"general","tag":"Supply protection","description":"Using a Supply grants damage reduction against the next hit within eight seconds. Holds one charge and cannot stack.","levels":["10% reduction against the next hit","20% reduction against the next hit","30% reduction against the next hit"],"max":3,"added":true},{"id":"armour","name":"Light Armour","group":"general","tag":"Direct defence","description":"Reduce damage from direct enemy attacks. Environmental damage is unaffected.","levels":["2% less direct attack damage","4% less direct attack damage","6% less direct attack damage"],"max":3,"added":true},{"id":"read","name":"Read Ahead","group":"general","tag":"Keen Edge synergy","description":"The first wounding arrow against each enemy adds extra percentage points to your Keen Edge meter. Has no effect until Keen Edge is learned.","levels":["+5 percentage points to the meter","+10 percentage points to the meter","+15 percentage points to the meter"],"max":3,"added":true},{"id":"burn","name":"Burn","group":"fire","tag":"Arrow skill","description":"Burn the target and enemies within 2 tiles for half a heart over 3 seconds and expose their armour. Burn cannot take the final heart. Radius grows 5% per additional rank.","levels":["2-tile radius · 10s cooldown","2.1-tile radius · 9.5s cooldown","2.2-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"embers","name":"Deep Embers","group":"fire","tag":"Elemental passive","description":"Slightly increase Burn damage while preserving the final heart. The same three-second damage window applies. Does not increase radius or armour exposure.","levels":["+5% Burn damage · 0.525 hearts total","+8% Burn damage · 0.54 hearts total","+10% Burn damage · 0.55 hearts total"],"max":3,"requires":["burn",3],"tuned":true},{"id":"reclaim","name":"Ember Reclaim","group":"fire","tag":"Elemental passive","description":"The first arrow kill against an enemy burned by a given Burn cast reduces Burn’s remaining cooldown. Activates at most once per cast, even if that cast burns a crowd. Shares the 20% passive cooldown-reduction cap with Momentum and Cold Focus.","levels":["−0.25s Burn cooldown · once per cast","−0.4s Burn cooldown · once per cast"],"max":2,"requires":["embers",3],"tuned":true},{"id":"freeze","name":"Freeze","group":"ice","tag":"Arrow skill","description":"Freeze the target and enemies within 2 tiles, then slow them to half speed. Deals no elemental damage. Bosses are slowed instead of frozen.","levels":["1.5s freeze + 2s slow · 12s cooldown","1.6s freeze + 2s slow · 11.5s cooldown","1.7s freeze + 2s slow · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"frost","name":"Lingering Frost","group":"ice","tag":"Elemental passive","description":"Slightly extend the slow that follows Freeze on ordinary enemies. Does not extend solid freeze or add any duration against bosses. Slows use the strongest current effect rather than stacking.","levels":["+0.15s slow duration","+0.3s slow duration","+0.5s slow duration"],"max":3,"requires":["freeze",3],"tuned":true},{"id":"focus","name":"Cold Focus","group":"ice","tag":"Elemental passive","description":"Slightly reduce Freeze’s cooldown after its normal level reduction. This reduction counts toward the shared 20% passive cooldown-reduction cap per cast, so it cannot stack beyond that cap with Momentum.","levels":["−0.25s Freeze cooldown","−0.5s Freeze cooldown"],"max":2,"requires":["frost",3],"tuned":true},{"id":"thunder","name":"Thunder","group":"electric","tag":"Arrow skill","description":"Strike the target for half a heart and jump to two nearby enemies within 3 tiles of each other, stunning each. Elemental damage preserves the final heart.","levels":["3 targets · 0.5s stun · 12s cooldown","3 targets · 0.6s stun · 11.5s cooldown","3 targets · 0.7s stun · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"fork","name":"Forked Current","group":"electric","tag":"Elemental passive","description":"Slightly increase the maximum distance between Thunder’s jumps. Does not add targets, damage or stun duration.","levels":["+0.15 tiles jump range · 3.15 total","+0.3 tiles jump range · 3.3 total","+0.5 tiles jump range · 3.5 total"],"max":3,"requires":["thunder",3],"tuned":true},{"id":"echo","name":"Static Echo","group":"electric","tag":"Elemental passive","description":"One second after Thunder hits, a harmless echo briefly slows only its original target. Deals no damage, adds no stun, cannot chain or repeat itself, and has no effect on bosses. Uses the strongest current slow.","levels":["5% slow for 1s · original target only","8% slow for 1s · original target only"],"max":2,"requires":["fork",3],"tuned":true},{"id":"venom","name":"Venom Arrow","group":"poison","tag":"Arrow skill","description":"Poison enemies within 1 tile for half a heart over 6 seconds and prevent healing. Poison preserves the final heart.","levels":["1-tile radius · 10s cooldown","1-tile radius · 9.5s cooldown","1-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"creep","name":"Creeping Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target moves slightly slower for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Uses the strongest current slow.","levels":["3% slow for 2s · original target only","5% slow for 2s · original target only","8% slow for 2s · original target only"],"max":3,"requires":["venom",3],"tuned":true},{"id":"wither","name":"Withering Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target deals slightly less attack damage for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Reapplication cannot stack the reduction.","levels":["Target deals 3% less damage for 2s","Target deals 5% less damage for 2s"],"max":2,"requires":["creep",3],"tuned":true},{"id":"gust","name":"Gust Arrow","group":"wind","tag":"Arrow skill","description":"Push the target and enemies behind it, with a half-second stagger. Deals no elemental damage. Bosses cannot be displaced.","levels":["1.5-tile push · 10s cooldown","1.5-tile push · 9.5s cooldown","1.5-tile push · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"slip","name":"Slipstream","group":"wind","tag":"Elemental passive","description":"After Gust Arrow hits an enemy, gain a small movement-speed bonus for 1.5 seconds. Activates once per cast, not on every clean name or every enemy hit. Does not stack or refresh from the same cast.","levels":["+2% movement speed for 1.5s","+3% movement speed for 1.5s","+4% movement speed for 1.5s"],"max":3,"requires":["gust",3],"tuned":true},{"id":"backdraft","name":"Backdraft","group":"wind","tag":"Elemental passive","description":"Slightly increase the push on Gust Arrow’s original target only. Enemies behind it receive only the retained arrow’s normal push. Boss displacement immunity remains.","levels":["+0.1 tiles push · original target only","+0.2 tiles push · original target only"],"max":2,"requires":["slip",3],"tuned":true}];
+  const catalogue=[{"id":"mastery","name":"Arrow Mastery","group":"basic","tag":"Arrow damage","description":"Increase the base damage of ordinary arrows by 5% per rank. This bonus does not increase elemental damage or the extra hearts from True Shot and Keen Edge.","levels":["+5% ordinary arrow damage","+10% ordinary arrow damage","+15% ordinary arrow damage"],"max":3},{"id":"vigor","name":"Vigor","group":"basic","tag":"Health","description":"Increase maximum health by 10% per rank. An upgrade also fills the health it adds.","levels":["110 maximum health","120 maximum health","130 maximum health"],"max":3},{"id":"nerve","name":"Iron Nerve","group":"basic","tag":"Survival","description":"Forgive a fatal blow once per stage, twice at Lv 3. Each rank adds 0.15 seconds of protection after being hit.","levels":["1 rescue · +0.15s hit protection","1 rescue · +0.30s hit protection","2 rescues · +0.45s hit protection"],"max":3},{"id":"crit","name":"True Shot","group":"basic","tag":"Critical arrows","description":"Critical arrows take an extra heart. Against a one-heart enemy, refund the arrow instead. Chance builds between critical hits.","levels":["About 5% critical arrows","About 10% critical arrows","About 15% critical arrows"],"max":3},{"id":"edge","name":"Keen Edge","group":"basic","tag":"Charged arrows","description":"Wounding arrows fill a meter. When full, the next qualifying arrow spends it to take an extra heart.","levels":["+10% meter per wound","+20% meter per wound","+25% meter per wound"],"max":3},{"id":"mender","name":"Mender","group":"basic","tag":"Supply healing","description":"The Supply healer restores more health. Healing always stops at your maximum.","levels":["+5 healing · 20–40 total","+10 healing · 25–45 total","+15 healing · 30–50 total"],"max":3},{"id":"fleet","name":"Fleet Foot","group":"basic","tag":"Movement","description":"Increase walking speed, including while sprinting.","levels":["+4% walking speed","+8% walking speed","+12% walking speed"],"max":3},{"id":"quiver","name":"Deep Quiver","group":"general","tag":"Ammunition","description":"Increase your maximum arrow capacity.","levels":["+1 arrow capacity","+2 arrow capacity","+3 arrow capacity"],"max":3},{"id":"flight","name":"Quick Flight","group":"general","tag":"Arrow speed","description":"Increase arrow travel speed so shots reach their targets sooner.","levels":["+10% arrow speed","+20% arrow speed","+30% arrow speed"],"max":3},{"id":"momentum","name":"Momentum","group":"general","tag":"Clean typing","description":"Completing a clean enemy name reduces the remaining cooldown of all five elemental arrows. A clean name is completed without a typing mistake. All passive cooldown reductions combined are capped at 20% of each arrow’s rank-adjusted cooldown per cast, including Cold Focus and Ember Reclaim.","levels":["−0.2s remaining cooldown per clean name","−0.4s remaining cooldown per clean name","−0.6s remaining cooldown per clean name"],"max":3},{"id":"breath","name":"Catch Your Breath","group":"general","tag":"Stage recovery","description":"Restore health when first-clearing a stage. Replays do not grant this healing.","levels":["Restore 4 health","Restore 6 health","Restore 8 health"],"max":3},{"id":"stride","name":"Last Stride","group":"general","tag":"Low-health movement","description":"Gain movement speed while below 30% maximum health.","levels":["+5% movement speed","+10% movement speed","+15% movement speed"],"max":3},{"id":"scavenger","name":"Scavenger","group":"general","tag":"Arrow pickups","description":"Arrow pickups restore additional ammunition, up to your quiver capacity.","levels":["+1 arrow per pickup","+2 arrows per pickup","+3 arrows per pickup"],"max":3},{"id":"aim","name":"Steady Aim","group":"general","tag":"Critical arrows","description":"After standing still for one second, gain additional critical chance until you move. Values are percentage points.","levels":["+3 percentage points critical chance","+6 percentage points critical chance","+9 percentage points critical chance"],"max":3,"added":true},{"id":"longword","name":"Long Word","group":"general","tag":"Typing recovery","description":"An arrow kill against an enemy with a name of seven or more letters restores health, up to your maximum.","levels":["Restore 1 health per qualifying kill","Restore 2 health per qualifying kill","Restore 3 health per qualifying kill"],"max":3,"added":true},{"id":"reserve","name":"Emergency Reserve","group":"general","tag":"Emergency ammunition","description":"The first time your health falls below 30% each stage, recover arrows up to your quiver capacity. Activates once per stage.","levels":["Recover 1 arrow","Recover 2 arrows","Recover 3 arrows"],"max":3,"added":true},{"id":"supply","name":"Supply Guard","group":"general","tag":"Supply protection","description":"Using a Supply grants damage reduction against the next hit within eight seconds. Holds one charge and cannot stack.","levels":["10% reduction against the next hit","20% reduction against the next hit","30% reduction against the next hit"],"max":3,"added":true},{"id":"armour","name":"Light Armour","group":"general","tag":"Direct defence","description":"Reduce damage from direct enemy attacks. Environmental damage is unaffected.","levels":["2% less direct attack damage","4% less direct attack damage","6% less direct attack damage"],"max":3,"added":true},{"id":"read","name":"Read Ahead","group":"general","tag":"Keen Edge synergy","description":"The first wounding arrow against each enemy adds extra percentage points to your Keen Edge meter. Has no effect until Keen Edge is learned.","levels":["+5 percentage points to the meter","+10 percentage points to the meter","+15 percentage points to the meter"],"max":3,"added":true},{"id":"burn","name":"Burn","group":"fire","tag":"Arrow skill","description":"Burn the target and enemies within 2 tiles for half a heart over 3 seconds and expose their armour. Radius grows 5% per additional rank.","levels":["2-tile radius · 10s cooldown","2.1-tile radius · 9.5s cooldown","2.2-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"embers","name":"Deep Embers","group":"fire","tag":"Elemental passive","description":"Slightly increase Burn damage. The same three-second damage window applies. Does not increase radius or armour exposure.","levels":["+5% Burn damage · 0.525 hearts total","+8% Burn damage · 0.54 hearts total","+10% Burn damage · 0.55 hearts total"],"max":3,"requires":["burn",3],"tuned":true},{"id":"reclaim","name":"Ember Reclaim","group":"fire","tag":"Elemental passive","description":"The first arrow kill against an enemy burned by a given Burn cast reduces Burn’s remaining cooldown. Activates at most once per cast, even if that cast burns a crowd. Shares the 20% passive cooldown-reduction cap with Momentum and Cold Focus.","levels":["−0.25s Burn cooldown · once per cast","−0.4s Burn cooldown · once per cast"],"max":2,"requires":["embers",3],"tuned":true},{"id":"freeze","name":"Freeze","group":"ice","tag":"Arrow skill","description":"Freeze the target and enemies within 2 tiles, then slow them to half speed. Deals no elemental damage. Bosses are slowed instead of frozen.","levels":["1s freeze + 2s slow · 12s cooldown","1.1s freeze + 2s slow · 11.5s cooldown","1.2s freeze + 2s slow · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"frost","name":"Lingering Frost","group":"ice","tag":"Elemental passive","description":"Slightly extend the slow that follows Freeze on ordinary enemies. Does not extend solid freeze or add any duration against bosses. Slows use the strongest current effect rather than stacking.","levels":["+0.15s slow duration","+0.3s slow duration","+0.5s slow duration"],"max":3,"requires":["freeze",3],"tuned":true},{"id":"focus","name":"Cold Focus","group":"ice","tag":"Elemental passive","description":"Slightly reduce Freeze’s cooldown after its normal level reduction. This reduction counts toward the shared 20% passive cooldown-reduction cap per cast, so it cannot stack beyond that cap with Momentum.","levels":["−0.25s Freeze cooldown","−0.5s Freeze cooldown"],"max":2,"requires":["frost",3],"tuned":true},{"id":"thunder","name":"Thunder","group":"electric","tag":"Arrow skill","description":"Strike the target for half a heart and jump to two nearby enemies within 3 tiles of each other, stunning each.","levels":["3 targets · 0.5s stun · 12s cooldown","3 targets · 0.6s stun · 11.5s cooldown","3 targets · 0.7s stun · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"fork","name":"Forked Current","group":"electric","tag":"Elemental passive","description":"Slightly increase the maximum distance between Thunder’s jumps. Does not add targets, damage or stun duration.","levels":["+0.15 tiles jump range · 3.15 total","+0.3 tiles jump range · 3.3 total","+0.5 tiles jump range · 3.5 total"],"max":3,"requires":["thunder",3],"tuned":true},{"id":"echo","name":"Static Echo","group":"electric","tag":"Elemental passive","description":"One second after Thunder hits, a harmless echo briefly slows only its original target. Deals no damage, adds no stun, cannot chain or repeat itself, and has no effect on bosses. Uses the strongest current slow.","levels":["5% slow for 1s · original target only","8% slow for 1s · original target only"],"max":2,"requires":["fork",3],"tuned":true},{"id":"venom","name":"Venom Arrow","group":"poison","tag":"Arrow skill","description":"Poison enemies within 1 tile for half a heart over 6 seconds and prevent healing.","levels":["1-tile radius · 10s cooldown","1-tile radius · 9.5s cooldown","1-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"creep","name":"Creeping Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target moves slightly slower for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Uses the strongest current slow.","levels":["3% slow for 2s · original target only","5% slow for 2s · original target only","8% slow for 2s · original target only"],"max":3,"requires":["venom",3],"tuned":true},{"id":"wither","name":"Withering Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target deals slightly less attack damage for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Reapplication cannot stack the reduction.","levels":["Target deals 3% less damage for 2s","Target deals 5% less damage for 2s"],"max":2,"requires":["creep",3],"tuned":true},{"id":"gust","name":"Gust Arrow","group":"wind","tag":"Arrow skill","description":"Push the target and enemies behind it, with a half-second stagger. Deals no elemental damage. Bosses cannot be displaced.","levels":["1.5-tile push · 10s cooldown","1.5-tile push · 9.5s cooldown","1.5-tile push · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"slip","name":"Slipstream","group":"wind","tag":"Elemental passive","description":"After Gust Arrow hits an enemy, gain a small movement-speed bonus for 1.5 seconds. Activates once per cast, not on every clean name or every enemy hit. Does not stack or refresh from the same cast.","levels":["+2% movement speed for 1.5s","+3% movement speed for 1.5s","+4% movement speed for 1.5s"],"max":3,"requires":["gust",3],"tuned":true},{"id":"backdraft","name":"Backdraft","group":"wind","tag":"Elemental passive","description":"Slightly increase the push on Gust Arrow’s original target only. Enemies behind it receive only the retained arrow’s normal push. Boss displacement immunity remains.","levels":["+0.1 tiles push · original target only","+0.2 tiles push · original target only"],"max":2,"requires":["slip",3],"tuned":true}];
   const branches=[{"id":"survival","name":"SURVIVAL","subtitle":"ENDURE & RECOVER","angle":-90,"color":"#b3c298","ids":["vigor","nerve","mender","breath","stride","armour"]},{"id":"fire","name":"FIRE","subtitle":"BURN & EXPOSE","angle":-45,"color":"#c79b73","ids":["burn","embers","reclaim"]},{"id":"ice","name":"ICE","subtitle":"FREEZE & SLOW","angle":0,"color":"#9fbec5","ids":["freeze","frost","focus"]},{"id":"electric","name":"ELECTRIC","subtitle":"STUN & REACH","angle":45,"color":"#cbb578","ids":["thunder","fork","echo"]},{"id":"poison","name":"POISON","subtitle":"DENY & WEAKEN","angle":90,"color":"#a3b477","ids":["venom","creep","wither"]},{"id":"wind","name":"WIND","subtitle":"PUSH & MOVE","angle":135,"color":"#a8b2c5","ids":["gust","slip","backdraft"]},{"id":"readiness","name":"READINESS","subtitle":"MOVE & RESUPPLY","angle":180,"color":"#bab58e","ids":["fleet","quiver","momentum","scavenger","reserve","supply"]},{"id":"precision","name":"PRECISION","subtitle":"AIM & COMMIT","angle":225,"color":"#c4b899","ids":["crit","edge","flight","aim","longword","read"]}];
   const glyphs={"mastery":"M4 20L20 4M12 4h8v8M4 14l6 6M2 18l4 4","vigor":"M12 21S3 15 3 9a5 5 0 019-3 5 5 0 019 3c0 6-9 12-9 12z","nerve":"M12 2l8 4v6c0 4-3 7-8 10-5-3-8-6-8-10V6l8-4zm0 5v10m-4-5h8","mender":"M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z","breath":"M4 13q4-8 8 0t8 0M4 18q4-8 8 0t8 0M12 3v5m-3-3 3 3 3-3","stride":"M3 16l5-3 4 3 4-5 5 2M4 7h4m-2-2v4","armour":"M8 3h8l5 5-4 3v10H7V11L3 8l5-5zm2 0v5h4V3","crit":"M12 2v4m0 12v4M2 12h4m12 0h4M12 6a6 6 0 110 12 6 6 0 010-12zm0 4v4m-2-2h4","edge":"M5 20L19 4l-4 10-7 7M4 15l5 5m-7 2 4-4","flight":"M3 19L21 5M14 4l7 1-2 7M3 7h6M1 11h5","aim":"M12 3a9 9 0 110 18 9 9 0 010-18zm0 5a4 4 0 110 8 4 4 0 010-8zm0 3v2m-1-1h2","longword":"M4 4h16v16H4V4zm4 4h8M8 12h8m-8 4h5","read":"M3 5q5-2 9 1 4-3 9-1v14q-5-2-9 1-4-3-9-1V5zm9 1v14","fleet":"M3 17l6-2 3-8 4 5 5 1-1 5H3v-1zm6-2 6 3M11 3h5","quiver":"M6 8h12l-2 13H8L6 8zm3 0V2m3 6V1m3 7V3M7 14h10","momentum":"M12 3a9 9 0 11-8 5M3 3v6h6m3-3v6l4 2","scavenger":"M5 8h14l2 13H3L5 8zm3 0V5q4-5 8 0v3m-4 4v6m-3-3h6","reserve":"M6 3h12v18H6V3zm3 5h6m-6 4h6m-6 4h6","supply":"M12 2l8 4v6c0 4-3 7-8 10-5-3-8-6-8-10V6l8-4zm0 6v8m-4-4h8","fire":"M13 2c2 6-3 7 0 10 1-2 3-3 4-3 5 8 0 13-5 13S1 17 6 10c0 4 3 5 3 2 0-3 3-6 4-10z","ice":"M12 2v20M3 7l18 10M3 17L21 7M8 4l4 4 4-4M8 20l4-4 4 4","electric":"M14 2L5 14h7l-2 8 9-13h-7l2-7z","poison":"M9 3h6m-5 0v6L4 19q-1 2 2 2h12q3 0 2-2L14 9V3M7 15h10M9 18h1m4-1h1","wind":"M3 7h12q5 0 4-3t-4 0M3 12h16q5 0 2 4t-4 0M3 17h8q4 0 2 4"};
   const gameKey=id=>['burn','freeze','thunder','venom','gust','embers','reclaim','frost','focus','fork','echo','creep','wither','slip','backdraft'].includes(id)?'job_'+({venom:'venomArrow',gust:'gustArrow'}[id]||id):id;
@@ -17955,10 +18080,10 @@ const SkillBookUI=window.SkillBookUI=(()=>{
       return {key,sk,x:cx+(p.x+p.size/2-fixed.cx)*graphScale-size/2,y:cy+(p.y+p.size/2-fixed.cy)*graphScale-size/2,size};
     });
     const branchLabels=fixed.labels.map(b=>({...b,x:cx+(b.x-fixed.cx)*graphScale,y:cy+(b.y-fixed.cy)*graphScale}));
-    const slotSize=Math.min(35,(main.w-54)/9),slotGap=(main.w-9*slotSize)/8;
+    const slotSize=Math.min(35,(main.w-54)/8),slotGap=(main.w-8*slotSize)/7;
     return {main,detail,nodes,branchLabels,cx,cy,scale,scaleX,graphScale,
       tabs:[],
-      slots:Array.from({length:9},(_,i)=>({x:main.x+i*(slotSize+slotGap),y:H-59,w:slotSize,h:slotSize,index:i})),
+      slots:Array.from({length:8},(_,i)=>({x:main.x+i*(slotSize+slotGap),y:H-59,w:slotSize,h:slotSize,index:i})),
       equip:{x:detail.x+14,y:H-99,w:(detail.w-34)/2,h:30},unequip:{x:detail.x+20+(detail.w-34)/2,y:H-99,w:(detail.w-34)/2,h:30},
       upgrade:{x:detail.x+14,y:H-58,w:detail.w-104,h:35},refund:{x:VW-96,y:H-58,w:64,h:35},
       preview:{x:detail.x+14,y:76,w:detail.w-28,h:Math.min(300,Math.max(164,H*.28))},replay:{x:detail.x+22,y:84,w:22,h:22},
@@ -18049,7 +18174,7 @@ const SkillBookUI=window.SkillBookUI=(()=>{
   }
 
   function loadout(L){
-    text(U.equipping?'CHOOSE A SLOT · 1–8':'EQUIPPED SKILLS',L.main.x,H-65,U.equipping?C.gold:C.muted,8);text('1–8 ACTIVE · 9 SUPER',L.main.x+L.main.w,H-65,C.muted,8,'right');
+    text(U.equipping?'CHOOSE A SLOT · 1–8':'EQUIPPED SKILLS',L.main.x,H-65,U.equipping?C.gold:C.muted,8);text('KEYS 1–8',L.main.x+L.main.w,H-65,C.muted,8,'right');
     L.slots.forEach((b,i)=>{
       const key=i===8?FirstJob.superKey:FirstJob.slots[i],sk=key?SKILL['job_'+key]:null;
       box({x:b.x-3,y:b.y-3,w:b.w+6,h:b.h+6},'#101810b0',U.equipping?'#e6ce8c':i===8?'#a89a6099':'#78826266');
@@ -18187,7 +18312,7 @@ const SkillBookUI=window.SkillBookUI=(()=>{
     else if(k==='u')unequipSelected();
     else if(k==='p')togglePreview();
     else if(k==='r'&&spSpent()>0){U.equipping=false;S.unbHeld=false;S.unbT=0;U.confirm=true;}
-    else if(k>='1'&&k<='9')equip(+k-1);
+    else if(k>='1'&&k<='8')equip(+k-1);
     else if(k==='backspace')refund();
     else if(k==='enter'||k===' '){buy();S.unbHeld=false;S.unbT=0;}
     return true;
@@ -18214,7 +18339,7 @@ const SkillBookUI=window.SkillBookUI=(()=>{
     if(inside(x,y,L.preview))togglePreview();
   }
   cv.addEventListener('click',pointer,true);cv.addEventListener('dblclick',pointer,true);
-  const oldShop=openShop;openShop=()=>{oldShop();U.equipping=false;U.confirm=false;U.previewKey=null;U.playing=false;U.note='';U.zoom=1;U.pan={x:0,y:0};S.tsel=0;S.csel=0;S.unbHeld=false;S.unbT=0;modalViewport();};
+  const oldShop=openShop;openShop=()=>{oldShop();U.equipping=false;U.confirm=false;U.previewKey=null;U.playing=false;U.note='';U.zoom=1.75;U.pan={x:0,y:0};S.tsel=0;   /* v125: opens zoomed in; Fit shows the whole tree */S.csel=0;S.unbHeld=false;S.unbT=0;modalViewport();};
   // The full-screen book owns its frame. The map need not draw behind an opaque menu.
   const oldRender=render;render=()=>{if(active()&&loaded>=total){draw();return;}restoreViewport();return oldRender();};
   BasicSkills.layout=()=>layout().nodes.map(n=>({...n,...BasicSkills.defs[n.key]}));
@@ -18763,7 +18888,9 @@ function sapperTick(dt){
         if(d.dead || claimed.has(i)) continue;
         const c = W.grid[d.cell[1]][d.cell[0]];
         if(!c.shut || c.broken) continue;      /* an open door needs no sapping */
-        const dd = (d.x-mb.x)**2 + (d.y-mb.y)**2;
+        const gxs=Math.floor(mb.x/T), gys=Math.floor(mb.y/T), dfl=doorSeedFlow(W,[d]);
+        const dd = (gxs>=0&&gys>=0&&gxs<W.w&&gys<W.h) ? dfl[gys*W.w+gxs] : -1;   /* v129: by walking distance, and only doors it can reach */
+        if(dd < 0) continue;
         if(dd < bd){ bd = dd; best = i; }
       }
       if(best < 0) continue;                   /* nothing shut: it walks at you */
