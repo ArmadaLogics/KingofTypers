@@ -1,6 +1,6 @@
 
 /* Chapter VIII Troll: finite, terrain-validated ground attacks. */
-const TROLL={states:new Map(),allyBuffs:new Map(),damageBuffs:new Map(),WIND:1.8,CENTER:72,OUTER:192,RATE:160,WIDTH:14,RECOVERY:3,RALLY:3,RUN:175,MELEE:140,CHASE_WARN:1,CHASE_BURST:3.5,BREATH:1,BUFF_RADIUS:320,BUFF_SECONDS:6,BUFF_SPEED:1.35,FURY_DAMAGE:1.25,FURY_OPEN:12,FURY_COOLDOWN:18};
+const TROLL={states:new Map(),allyBuffs:new Map(),damageBuffs:new Map(),WIND:1.8,CENTER:72,OUTER:192,RATE:160,WIDTH:14,RECOVERY:3,RALLY:3,RUN:175,MELEE:140,CHASE_WARN:1,CHASE_BURST:3.5,BREATH:1,BUFF_RADIUS:320,BUFF_SECONDS:6,BUFF_SPEED:1.35,FURY_DAMAGE:1.25,FURY_OPEN:5,FURY_COOLDOWN:18};
 function trollEligible(m){return !!m&&m.tier==='TR'&&S.chapter===7&&!S.endless&&!m.dead;}
 function trollBuffTarget(m){return !!m&&!m.dead&&!m.door&&!m.sheep&&!m.supply&&m.tier!=='TR'&&!!MOBDEF[m.tier]&&m.spd>0;}
 // Damage remains boosted when an attacker plants its feet and temporarily sets speed to zero.
@@ -60,13 +60,13 @@ function trollChase(m,d,dt){
 }
 function trollRecover(d){d.recoverFrom=d.phase;d.phase='recover';d.t=0;d.zones=[];}
 function trollPursuitPhase(m,d,phase){d.phase=phase;d.t=0;d.anchor={x:m.x,y:m.y};d.safePath=[];d.bursts=[];m.dirx=m.diry=0;if(d.chase){d.chase.flow=null;d.chase.left=0;d.chase.recenter=null;d.chase.jam=0;}}
-function trollArrowHit(m){if(!trollEligible(m))return;const d=trollState(m);if(m.hp<=2.5&&!d.rallyUsed)d.rallyQueued=true;if(d.phase==='rally'||d.phase==='fury'){if(d.phase==='fury')d.furyResult='Interrupted';else d.rallyResult='Interrupted';d.haste=false;trollRecover(d);}d.lastHp=m.hp;}
+function trollArrowHit(m){if(!trollEligible(m))return;const d=trollState(m);if(m.hp<=hpOf('TR')/2&&!d.rallyUsed)d.rallyQueued=true;if(d.phase==='rally'||d.phase==='fury'){if(d.phase==='fury')d.furyResult='Interrupted';else d.rallyResult='Interrupted';d.haste=false;trollRecover(d);}d.lastHp=m.hp;}
 function trollLock(m){if(!trollEligible(m))return false;const d=trollState(m);return d.phase==='slamWind'&&d.t>=1.3||d.phase==='slamWave'&&d.t<.6;}
 function trollDamage(m,d,skill){if(d.hit||S.iframe>0||P.level!==m.level||!trollFloor(P.x,P.y,m.level))return false;d.hit=true;S.flash=.4;S.shake=5;S.iframe=nodeIframe();loseWard('Troll '+skill,35,m);sWard();return true;}
 function trollWaveHit(m,d,previous,current){const r=Math.hypot(P.x-m.x,P.y-m.y);if(r<previous-27||r>current+27||!trollRay(m,P.x,P.y))return;const angle=Math.atan2(P.y-m.y,P.x-m.x),safe=trollAngle(angle,d.gap)<d.gapHalf-Math.asin(Math.min(1,13/Math.max(r,13)));if(!safe)trollDamage(m,d,'Drumbeat Slam');}
 function trollTick(m,dt){
  if(!trollEligible(m))return false;const d=trollState(m);m.wind=m.swing=0;m.hit=false;
- if(m.hp<=2.5&&!d.rallyUsed)d.rallyQueued=true;
+ if(m.hp<=hpOf('TR')/2&&!d.rallyUsed)d.rallyQueued=true;
  const staggered=m.stagger>0;if(staggered)m.stagger=Math.max(0,m.stagger-dt);
  if(m.frzT>0||m.stun>0||staggered||supFrozen())return true;
  const step=dt*(m.chill>0?.5:1),before=d.t;d.t+=step;d.furyWait=Math.max(0,d.furyWait-step);d.bursts=d.bursts.filter(b=>(b.age+=step)<(b.kind==='charge'?.36:.45));
@@ -172,13 +172,13 @@ const broodStorage={getItem:k=>(BROOD_TEST||(location.hash==='#cleave-test'||loc
    Terrain is built at runtime from ASCII using the verified Tiny Swords
    tile rules (see TILEMAP_ANALYSIS.md). Art: Tiny Swords by Pixel Frog.
    =========================================================================== */
-const ASSETS = {"f_tree4":"assets/images/image-ac9094dba8939210.png","f_stump1":"assets/images/image-7fc1ca1a45489c5d.png","f_stump2":"assets/images/image-3b870fd5e164d2b7.png","f_stump3":"assets/images/image-2621197d2e69e249.png","f_stump4":"assets/images/image-d7ce36460157a387.png","f_bush3":"assets/images/image-34b4312fe94ec9e8.png","f_bush4":"assets/images/image-b5334fb3d9cc49e4.png","f_rock3":"assets/images/image-a121425512ad1cf3.png","f_rock4":"assets/images/image-a1830f25a6189e50.png","f_wrock3":"assets/images/image-46514c0759f84490.png","f_wrock4":"assets/images/image-592bb0f38cfe9209.png","f_wood":"assets/images/image-f5016c0f87e75ff2.png","f_meat":"assets/images/image-24fd5ac60edbeeb0.png","f_tool1":"assets/images/image-b869900566be865d.png","f_tool3":"assets/images/image-5c90929cc59273b9.png","f_bkBar":"assets/images/image-491d6b8c6a0c1303.png","f_bkArc":"assets/images/image-29644d4f9fb553b6.png","f_bkTow":"assets/images/image-53ac8b0faca703ad.png","f_torch":"assets/images/image-bcdc3f7d95cee56b.png","mnWalk":"assets/images/image-8fff310cb492be9c.png","mnAtk":"assets/images/image-e202c98379a25876.png","mnGuard":"assets/images/image-4abd29ad435d71b9.png","srRun":"assets/images/image-139ba02888bc6a42.png","srAtk":"assets/images/image-1e4c9345b4cbe8fd.png","lcRun":"assets/images/image-bfa741149c164d7d.png","lcAtk":"assets/images/image-90d35539b0099c00.png","trRun":"assets/images/image-d0eb963a5f48a9d6.png","trWind":"assets/images/image-334eeae9c0d03529.png","trAtk":"assets/images/image-099ed6ad71ef4eb7.png","trRec":"assets/images/image-1312def025f005bf.png","smRun":"assets/images/image-504b70f5e9702512.png","smAtk":"assets/images/image-6e63b16719e4bb34.png","smShot":"assets/images/image-0222c73ce7fa19b5.png","smBoom":"assets/images/image-6bc1e1f073659f39.png","tuRun":"assets/images/image-c09289f540a89ff2.png","tuAtk":"assets/images/image-6a2ff921a23c3c0a.png","tuIn":"assets/images/image-f08389f0fa560fd0.png","tuOut":"assets/images/image-0aa14fbe6c8163c2.png","skRun":"assets/images/image-a000599431e82104.png","skIdle":"assets/images/image-b83e8f2c949c9c07.png","skAtk":"assets/images/image-00d3a04d2a2043cb.png","skGuard":"assets/images/image-8e5e5090ba59e575.png","lzRun":"assets/images/image-402ad14003526a17.png","lzIdle":"assets/images/image-76875a3393b5ff50.png","lzAtk":"assets/images/image-a835d5c05b7ef96a.png","lzHit":"assets/images/image-cc737ac76d5cec2c.png","adShoot":"assets/images/image-95a20b83a182f7a9.png","bwRun":"assets/images/image-fe8190ba0cdccb11.png","bwDefE":"assets/images/image-a90fec9f1449153d.png","bwDefNE":"assets/images/image-61d0ca16bf336ede.png","bwDefN":"assets/images/image-025252781652d243.png","bwDefSE":"assets/images/image-1d6e263c50216516.png","bwDefS":"assets/images/image-19cef7353fe8d47d.png","bwAtkE":"assets/images/image-92659531da3712c9.png","bwAtkNE":"assets/images/image-2cbceaab97b91bab.png","bwAtkN":"assets/images/image-27dc44ce3b45fdbd.png","bwAtkSE":"assets/images/image-d71065f3422a05a2.png","bwAtkS":"assets/images/image-906fb5b570471942.png","hrRun":"assets/images/image-8afd4854e310f03a.png","hrAxe":"assets/images/image-2586ca3023d67a7a.png","hdRun":"assets/images/image-df65c42d3e3471cd.png","hdAtk":"assets/images/image-e8dd03a5e876bec1.png","lnRun":"assets/images/image-864301850a30ee50.png","scRun":"assets/images/image-658bedc69214f35c.png","scCast":"assets/images/image-9484e3ec1f377562.png","lvAxe":"assets/images/image-22e49a8d8a105a18.png","sdAtk":"assets/images/image-c5af4971db48daa1.png","spRun":"assets/images/image-2d56acb69bca4b9e.png","spCast":"assets/images/image-0f349cccad2b15f3.png","msRun":"assets/images/image-5d4bd46fb00e50e7.png","msCast":"assets/images/image-c08b0af44d998a9f.png","lvRun":"assets/images/image-49ab72a7b0535d1b.png","lsRun":"assets/images/image-c172c3416fd1e5ff.png","sdRun":"assets/images/image-70dd3045debd80f1.png","arIdle":"assets/images/image-c9c3839c64914cab.png","arRun":"assets/images/image-cf078bd2a3d1f347.png","arShoot":"assets/images/image-45fdd25467fbd820.png","arrow":"assets/images/image-937678d634917277.png","pawnRun":"assets/images/image-dfdbd7e2b9482e69.png","pawnIdle":"assets/images/image-c4e07a082ba29d9c.png","pawnAxe":"assets/images/image-2cd1d4f1a6f4871b.png","vtRun":"assets/images/image-06f1912d32230c89.png","vtAtk":"assets/images/image-4b7250c8442ac670.png","avRun":"assets/images/image-5a2cde8294955feb.png","avAtk":"assets/images/image-5160ca4a64a641f4.png","vtGuard":"assets/images/image-eeb66eb21dd8dd4a.png","avGuard":"assets/images/image-2081b4e9671f31ba.png","warGuard":"assets/images/image-5d19f204d3a799ed.png","warRun":"assets/images/image-74b9d13a4b57f75a.png","warAtk":"assets/images/image-05df9fa665b8c216.png","monkRun":"assets/images/image-bb0463538790fe2e.png","monkHeal":"assets/images/image-03eea16ba5309842.png","hlRun":"assets/images/image-4b75155c0f718233.png","hlHeal":"assets/images/image-d49cdb581fc4b793.png","heal":"assets/images/image-2635dd7445d573e8.png","tm1":"assets/images/image-3ae8f00b92b4ecd4.png","tm2":"assets/images/image-b20650ee20c77dce.png","tm3":"assets/images/image-558588391e6dd91c.png","tm4":"assets/images/image-944f8fe48d87f602.png","tm5":"assets/images/image-327ac5a34d6210fb.png","foam":"assets/images/image-aba91e12e08d108c.png","shadow":"assets/images/image-20094ec53d6929b1.png","face":"assets/images/image-c470b39bae283289.png","barBig":"assets/images/image-a1053c7b5176b80d.png","barBigFill":"assets/images/image-1eee58410178874f.png","barSm":"assets/images/image-d5191f8a82b98e70.png","cardFrame":"assets/images/image-9f3f91846c7ae90b.png","cardRod":"assets/images/image-f4c9632ae40f7d4f.png","paper":"assets/images/image-4a91bbde509af741.png","ribbon":"assets/images/image-d5463691b52e90ce.png","special":"assets/images/image-c7704ad5a6944677.png","coin":"assets/images/image-15ceb4311d996419.png","xmark":"assets/images/image-108fbef50181ac31.png","skillIcon":"assets/images/image-d18d5311a8277881.png","settingsIcon":"assets/images/image-6bf8e1c8441eeeaf.png","dust":"assets/images/image-32715925b71d3a43.png","boom":"assets/images/image-2753ea93daf72759.png","splash":"assets/images/image-06743825027d5512.png","tree1":"assets/images/image-ee3f285f99284298.png","tree2":"assets/images/image-62de877a4732bee9.png","tree3":"assets/images/image-e2317a54bb801e52.png","bush1":"assets/images/image-38ea6583e856d467.png","bush2":"assets/images/image-273a528e5400257f.png","rock1":"assets/images/image-de9f1d954577003e.png","rock2":"assets/images/image-75afe7539d9fb2bf.png","wrock1":"assets/images/image-83d1a8925a9294c4.png","wrock2":"assets/images/image-ad0fbdbceec0ee8e.png","house":"assets/images/image-f68fbce236ca663e.png","tower":"assets/images/image-ac0f01128d951c9d.png","castle":"assets/images/image-6d5f01f6043b591a.png","sheep":"assets/images/image-ba3b743bdd5d851c.png","supWood":"assets/images/image-a8eab0bcf077b3b0.png","supRun":"assets/images/image-4770f3a79e0b918c.png",
+const ASSETS = {"bmBoltCast":"assets/bosses/blightmother/bolt-cast.png","bmBoltLaunch":"assets/bosses/blightmother/bolt-launch.png","bmBoltFlight":"assets/bosses/blightmother/bolt-flight.png","bmBoltImpact":"assets/bosses/blightmother/bolt-impact.png","bmMeteorFall":"assets/bosses/blightmother/meteor-fall.png","bmMeteorImpact":"assets/bosses/blightmother/meteor-impact.png","bmFloat":"assets/bosses/blightmother/float.png","bmCast":"assets/bosses/blightmother/cast.png","f_tree4":"assets/images/image-ac9094dba8939210.png","f_stump1":"assets/images/image-7fc1ca1a45489c5d.png","f_stump2":"assets/images/image-3b870fd5e164d2b7.png","f_stump3":"assets/images/image-2621197d2e69e249.png","f_stump4":"assets/images/image-d7ce36460157a387.png","f_bush3":"assets/images/image-34b4312fe94ec9e8.png","f_bush4":"assets/images/image-b5334fb3d9cc49e4.png","f_rock3":"assets/images/image-a121425512ad1cf3.png","f_rock4":"assets/images/image-a1830f25a6189e50.png","f_wrock3":"assets/images/image-46514c0759f84490.png","f_wrock4":"assets/images/image-592bb0f38cfe9209.png","f_wood":"assets/images/image-f5016c0f87e75ff2.png","f_meat":"assets/images/image-24fd5ac60edbeeb0.png","f_tool1":"assets/images/image-b869900566be865d.png","f_tool3":"assets/images/image-5c90929cc59273b9.png","f_bkBar":"assets/images/image-491d6b8c6a0c1303.png","f_bkArc":"assets/images/image-29644d4f9fb553b6.png","f_bkTow":"assets/images/image-53ac8b0faca703ad.png","f_torch":"assets/images/image-bcdc3f7d95cee56b.png","mnWalk":"assets/images/image-8fff310cb492be9c.png","mnAtk":"assets/images/image-e202c98379a25876.png","mnGuard":"assets/images/image-4abd29ad435d71b9.png","srRun":"assets/images/image-139ba02888bc6a42.png","srAtk":"assets/images/image-1e4c9345b4cbe8fd.png","lcRun":"assets/images/image-bfa741149c164d7d.png","lcAtk":"assets/images/image-90d35539b0099c00.png","trRun":"assets/images/image-d0eb963a5f48a9d6.png","trWind":"assets/images/image-334eeae9c0d03529.png","trAtk":"assets/images/image-099ed6ad71ef4eb7.png","trRec":"assets/images/image-1312def025f005bf.png","smRun":"assets/images/image-504b70f5e9702512.png","smAtk":"assets/images/image-6e63b16719e4bb34.png","smShot":"assets/images/image-0222c73ce7fa19b5.png","smBoom":"assets/images/image-6bc1e1f073659f39.png","tuRun":"assets/images/image-c09289f540a89ff2.png","tuAtk":"assets/images/image-6a2ff921a23c3c0a.png","tuIn":"assets/images/image-f08389f0fa560fd0.png","tuOut":"assets/images/image-0aa14fbe6c8163c2.png","skRun":"assets/images/image-a000599431e82104.png","skIdle":"assets/images/image-b83e8f2c949c9c07.png","skAtk":"assets/images/image-00d3a04d2a2043cb.png","skGuard":"assets/images/image-8e5e5090ba59e575.png","lzRun":"assets/images/image-402ad14003526a17.png","lzIdle":"assets/images/image-76875a3393b5ff50.png","lzAtk":"assets/images/image-a835d5c05b7ef96a.png","lzHit":"assets/images/image-cc737ac76d5cec2c.png","adShoot":"assets/images/image-95a20b83a182f7a9.png","bwRun":"assets/images/image-fe8190ba0cdccb11.png","bwDefE":"assets/images/image-a90fec9f1449153d.png","bwDefNE":"assets/images/image-61d0ca16bf336ede.png","bwDefN":"assets/images/image-025252781652d243.png","bwDefSE":"assets/images/image-1d6e263c50216516.png","bwDefS":"assets/images/image-19cef7353fe8d47d.png","bwAtkE":"assets/images/image-92659531da3712c9.png","bwAtkNE":"assets/images/image-2cbceaab97b91bab.png","bwAtkN":"assets/images/image-27dc44ce3b45fdbd.png","bwAtkSE":"assets/images/image-d71065f3422a05a2.png","bwAtkS":"assets/images/image-906fb5b570471942.png","hrRun":"assets/images/image-8afd4854e310f03a.png","hrAxe":"assets/images/image-2586ca3023d67a7a.png","hdRun":"assets/images/image-df65c42d3e3471cd.png","hdAtk":"assets/images/image-e8dd03a5e876bec1.png","lnRun":"assets/images/image-864301850a30ee50.png","scRun":"assets/images/image-658bedc69214f35c.png","scCast":"assets/images/image-9484e3ec1f377562.png","lvAxe":"assets/images/image-22e49a8d8a105a18.png","sdAtk":"assets/images/image-c5af4971db48daa1.png","spRun":"assets/images/image-2d56acb69bca4b9e.png","spCast":"assets/images/image-0f349cccad2b15f3.png","msRun":"assets/images/image-5d4bd46fb00e50e7.png","msCast":"assets/images/image-c08b0af44d998a9f.png","lvRun":"assets/images/image-49ab72a7b0535d1b.png","lsRun":"assets/images/image-c172c3416fd1e5ff.png","sdRun":"assets/images/image-70dd3045debd80f1.png","arIdle":"assets/images/image-c9c3839c64914cab.png","arRun":"assets/images/image-cf078bd2a3d1f347.png","arShoot":"assets/images/image-45fdd25467fbd820.png","arrow":"assets/images/image-937678d634917277.png","pawnRun":"assets/images/image-dfdbd7e2b9482e69.png","pawnIdle":"assets/images/image-c4e07a082ba29d9c.png","pawnAxe":"assets/images/image-2cd1d4f1a6f4871b.png","vtRun":"assets/images/image-06f1912d32230c89.png","vtAtk":"assets/images/image-4b7250c8442ac670.png","avRun":"assets/images/image-5a2cde8294955feb.png","avAtk":"assets/images/image-5160ca4a64a641f4.png","vtGuard":"assets/images/image-eeb66eb21dd8dd4a.png","avGuard":"assets/images/image-2081b4e9671f31ba.png","warGuard":"assets/images/image-5d19f204d3a799ed.png","warRun":"assets/images/image-74b9d13a4b57f75a.png","warAtk":"assets/images/image-05df9fa665b8c216.png","monkRun":"assets/images/image-bb0463538790fe2e.png","monkHeal":"assets/images/image-03eea16ba5309842.png","hlRun":"assets/images/image-4b75155c0f718233.png","hlHeal":"assets/images/image-d49cdb581fc4b793.png","heal":"assets/images/image-2635dd7445d573e8.png","tm1":"assets/images/image-3ae8f00b92b4ecd4.png","tm2":"assets/images/image-b20650ee20c77dce.png","tm3":"assets/images/image-558588391e6dd91c.png","tm4":"assets/images/image-944f8fe48d87f602.png","tm5":"assets/images/image-327ac5a34d6210fb.png","foam":"assets/images/image-aba91e12e08d108c.png","shadow":"assets/images/image-20094ec53d6929b1.png","face":"assets/images/image-c470b39bae283289.png","barBig":"assets/images/image-a1053c7b5176b80d.png","barBigFill":"assets/images/image-1eee58410178874f.png","barSm":"assets/images/image-d5191f8a82b98e70.png","cardFrame":"assets/images/image-9f3f91846c7ae90b.png","cardRod":"assets/images/image-f4c9632ae40f7d4f.png","paper":"assets/images/image-4a91bbde509af741.png","ribbon":"assets/images/image-d5463691b52e90ce.png","special":"assets/images/image-c7704ad5a6944677.png","coin":"assets/images/image-15ceb4311d996419.png","xmark":"assets/images/image-108fbef50181ac31.png","skillIcon":"assets/images/image-d18d5311a8277881.png","settingsIcon":"assets/images/image-6bf8e1c8441eeeaf.png","dust":"assets/images/image-32715925b71d3a43.png","boom":"assets/images/image-2753ea93daf72759.png","splash":"assets/images/image-06743825027d5512.png","tree1":"assets/images/image-ee3f285f99284298.png","tree2":"assets/images/image-62de877a4732bee9.png","tree3":"assets/images/image-e2317a54bb801e52.png","bush1":"assets/images/image-38ea6583e856d467.png","bush2":"assets/images/image-273a528e5400257f.png","rock1":"assets/images/image-de9f1d954577003e.png","rock2":"assets/images/image-75afe7539d9fb2bf.png","wrock1":"assets/images/image-83d1a8925a9294c4.png","wrock2":"assets/images/image-ad0fbdbceec0ee8e.png","house":"assets/images/image-f68fbce236ca663e.png","tower":"assets/images/image-ac0f01128d951c9d.png","castle":"assets/images/image-6d5f01f6043b591a.png","sheep":"assets/images/image-ba3b743bdd5d851c.png","supWood":"assets/images/image-a8eab0bcf077b3b0.png","supRun":"assets/images/image-4770f3a79e0b918c.png",
   "supIdle":"assets/images/image-d112940ace383abf.png","cloud1":"assets/images/image-8355f1e0fdbb57b8.png","cloud2":"assets/images/image-e0c91115e0f243c8.png","cloud3":"assets/images/image-569b18b99f80c047.png","cloud4":"assets/images/image-899d2d917af3e459.png","cloud5":"assets/images/image-8d5da63be25d1f6a.png","cloud6":"assets/images/image-d332d560133051d0.png","ogreRun":"assets/images/image-60538820819aefb3.png","ogreIdle":"assets/images/image-aa89cb4443ac161e.png","logo":"assets/images/image-dedf0c046ec01f35.webp","hxRun":"assets/images/image-d53bf2596287a21b.png","hxCast":"assets/images/image-68d666f8848848d3.png","wdRun":"assets/images/image-026733adbe5c4780.png","wdCast":"assets/images/image-0dc329f86f37ce24.png","adRun":"assets/images/image-154f5faf77baffc5.png","adArrow":"assets/images/image-3036595265612f86.png","snRun":"assets/images/image-70e9adbb6fb9f586.png","snCast":"assets/images/image-559a5f9ec2a2024b.png"}, MAPS = {"chapters":[{"key":"I","name":"The Green March","sea":null,"stages":[{"name":"s01","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~..................~","~..................~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["     w w     w      ","w                   ","           To       ","  T       r     r   ","                T   ","         P  b       ","w      b       o    ","w       T      r    ","           r  b     ","            T       ","w                   ","     w  w     w     "],"lo":1,"hi":3,"lanes":[[1,5],[18,5]]},{"name":"s02","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~.......####.......~","~.......####.......~","~.......####.......~","~......../.........~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":[" w      w      w    ","w                  w","w T            b    ","w                   ","                   w","      P r           ","                   w","                    ","   o   r  T    T    ","                 r  ","                    "," w w        w    ww "],"lo":1,"hi":3,"lanes":[[4,1],[15,10]]},{"name":"s03","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~...###......###...~","~...###......###...~","~...###......###...~","~..../......../....~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["                 w  ","                    ","w               T  w","       T        r   ","                    ","   T   T P         w","                r  w","           b        ","       rb           ","   T                ","w                  w","           w w      "],"lo":1,"hi":3,"lanes":[[1,8],[18,8],[9,1]]},{"name":"s04","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~.....########.....~","~.....########.....~","~.....########.....~","~......../.........~","~..................~","~.~~............~~.~","~.~~............~~.~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["           w  ww    ","                    ","            r       ","w               T   ","            b       ","         ob    b    ","           b        ","w    T              ","         P          ","  w         bT      ","                    ","          w w       "],"lo":1,"hi":3,"lanes":[[2,1],[17,1],[9,10]]},{"name":"s05","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..#####....#####..~","~..#####....#####..~","~..../......../....~","~..................~","~........~~........~","~........~~........~","~........~~........~","~........~~........~","~~~~~~~~~~~~~~~~~~~~"],"d":[" w w          w   w ","                    ","           r  o     ","       b  b         ","      T      T      ","         P      T   ","                o   ","      o  w          ","    o    w     b   w","   T                ","                    ","    w        w      "],"lo":1,"hi":2,"lanes":[[1,6],[18,6],[9,1]]},{"name":"s06","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~...##........##...~","~...##........##...~","~.../........./....~","~..................~","~..................~","~.....##....##.....~","~.....##....##.....~","~...../...../......~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["          w         ","                    ","            T       ","  r       r   T    w","                   w","    b    P    b     ","w     bT            ","w  T         r      ","       T   b       w","w             T     ","                    ","      w             "],"lo":1,"hi":3,"lanes":[[1,5],[18,5],[1,10],[18,10]]},{"name":"s07","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..####......####..~","~..####......####..~","~..####......####..~","~..../......../....~","~..................~","~.~~~~~~....~~~~~~.~","~.~~~~~~....~~~~~~.~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["      w w      w  w ","w                   ","w      T           w","w T       o         ","                    ","  b      P      T   ","w                   ","    w   r   w w     ","w     w             ","                    ","                    ","                    "],"lo":1,"hi":2,"lanes":[[9,1],[9,10],[1,10],[18,10]]},{"name":"s08","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..##############..~","~..##############..~","~..##############..~","~......../.........~","~..................~","~..................~","~..................~","~........~~........~","~........~~........~","~~~~~~~~~~~~~~~~~~~~"],"d":["     w            w ","                   w","      o   T         ","                r   ","            b       ","        o Tr        ","w                   ","w  P               w","     rb         b   ","            b      w","w                   ","      w       ww    "],"lo":1,"hi":3,"lanes":[[2,1],[17,1],[4,10],[15,10]]},{"name":"s09","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~...############...~","~...############...~","~...############...~","~......../.........~","~..................~","~...###......###...~","~...###......###...~","~..../......../....~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":[" w      ww    w     ","                    ","               T    ","       r            ","                    ","                    ","       r            ","         P r        ","                    ","                    ","                   w","           ww  w    "],"lo":1,"hi":3,"lanes":[[1,6],[18,6],[2,1],[17,1]]},{"name":"s10","t":["~~~~~~~~~~~~~~~~~~~~","~###............###~","~###............###~","~./............../.~","~..................~","~..................~","~..................~","~..................~","~..................~","~..................~","~.......~~~~.......~","~~~~~~~~~~~~~~~~~~~~"],"d":["                    ","                    ","         rr         ","                    ","                    ","      r      r      ","         P          ","   b            b   ","      r      r      "," r                r "," rrr     w      rrr ","                    "],"lo":1,"hi":2,"lanes":[[1,5],[18,5],[6,1],[13,1],[5,10],[14,10]]}],"over":{"name":"over","t":["~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~.................###..~~~~~~~~~~~~~~~","~~~...####..........###..............~~~","~~~...####.........../.....#####.....~~~","~~~..../......#####........#####.....~~~","~~~.......###.#####........#####.....~~~","~~~.......###.../............/...###.~~~","~~~......../......~~~............###.~~~","~~~..............~~~~~...........###.~~~","~~~~.............~~~~~............/..~~~","~~~~..............~~~................~~~","~~~~.................................~~~","~~~~......~.................#####...~~~~","~~~~.....~~~................#####...~~~~","~~~~.....~~~................../.....~~~~","~~~~.....~~~...~~~~~~~~~............~~~~","~~~~~~~~~~~~~~~~~~~~~~~~............~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"],"d":["                                        ","                                        ","                                        ","                     S   w  w           ","       Tr     r                         ","      b               T  b T            ","   r TT        b                        ","      T                  bT             ","        Tr               b    r  T      ","          T    b b w    b               ","           bT    w              rr   w  ","              T                    r    ","      H        T       o                ","         H       o       r              ","   w                                    ","      H        T              C         ","             oT                         ","        b                   T           ","                                        ","                                   w    ","                                        ","                                        "],"lo":1,"hi":3,"road":[[4,4],[4,5],[4,6],[4,7],[4,8],[4,9],[4,10],[5,10],[6,10],[7,10],[7,11],[8,11],[9,11],[10,11],[11,5],[11,11],[12,5],[12,11],[13,5],[13,6],[13,7],[13,8],[13,9],[13,10],[13,11],[13,12],[13,13],[13,14],[14,5],[15,5],[16,5],[17,5],[18,5],[19,5],[19,6],[19,7],[20,7],[20,8],[21,8],[22,8],[22,9],[22,10],[22,11],[22,12],[22,13],[22,14],[22,15],[23,10],[24,10],[25,10],[26,9],[26,10],[27,9],[28,9],[29,9],[30,9],[30,17],[31,9],[31,17],[32,5],[32,6],[32,7],[32,8],[32,9],[32,17],[33,5],[33,6],[33,7],[33,17],[34,7],[34,13],[34,14],[34,15],[34,16],[34,17],[35,7],[35,13],[36,7],[36,8],[36,9],[36,10],[36,11],[36,12],[36,13]]},"nodes":[[4,4],[7,10],[13,14],[11,5],[20,7],[22,15],[26,10],[33,5],[35,13],[30,17]]},{"key":"II","name":"The Ashen Reach","sea":"#2c6a70","stages":[{"name":"s11","t":["~~~~~~~~~~~~~~~~~~~~","~........~~........~","~........~~........~","~........~~........~","~..................~","~..................~","~........~~........~","~........~~........~","~..................~","~..................~","~........~~........~","~~~~~~~~~~~~~~~~~~~~"],"d":["    ww  w      w    ","                    ","      o     r  r    ","     o    w         ","w  bo               ","             T     w","       P       o    ","  b                w","  b    o  r     o   ","        b  r     r  ","                    ","       w          w "],"lo":4,"hi":4,"sea":"#2c6a70","lanes":[[1,5],[18,5],[4,1],[15,10]]},{"name":"s12","t":["~~~~~~~~~~~~~~~~~~~~","~.......~~~~.......~","~.......~~~~.......~","~.......~~~~.......~","~.......~~~~.......~","~..................~","~..................~","~.......~~~~.......~","~.......~~~~.......~","~.......~~~~.......~","~.......~~~~.......~","~~~~~~~~~~~~~~~~~~~~"],"d":["    w               ","                    ","    T       o       ","      r w   r       ","          w  o      ","      P    b        ","w  b                ","    o        o o    ","           w        ","w                   ","           w        ","               w    "],"lo":4,"hi":4,"sea":"#2c6a70","lanes":[[1,3],[18,3],[1,9],[18,9]]},{"name":"s13","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..####......####..~","~..####......####..~","~..####......####..~","~..../......../....~","~........~~........~","~........~~........~","~........~~........~","~........~~........~","~~~~~~~~~~~~~~~~~~~~"],"d":["     w  ww      w   ","                    ","           o    r   ","             bo r   ","                 b  ","w o   r  P          ","w   r               ","         ww   o     ","          w         ","        r           ","w         w         ","            w       "],"lo":4,"hi":4,"sea":"#2c6a70","lanes":[[9,1],[4,10],[15,10]]},{"name":"s14","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~.....~~~~~~~~.....~","~.....~......~.....~","~.....~......~.....~","~..................~","~..................~","~.....~......~.....~","~.....~......~.....~","~.....~~~~~~~~.....~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["           ww   w w ","                    ","     r  ww w        ","  TTT        w b o  ","            ow T b w","    r  r P  r       ","       b      ro    ","           r w      ","                    ","                    ","w                   ","      w    www      "],"lo":4,"hi":4,"sea":"#2c6a70","lanes":[[2,1],[17,1],[2,10],[17,10]]},{"name":"s15","t":["~~~~~~~~~~~~~~~~~~~~","~~~~~..........~~~~~","~~~~~..........~~~~~","~......######......~","~......######......~","~......######......~","~......######......~","~......../.........~","~..................~","~~~~~..........~~~~~","~~~~~..........~~~~~","~~~~~~~~~~~~~~~~~~~~"],"d":["       w    w       ","    w               "," w                  ","      o             ","            o       ","     r             w","     o             w","     T              ","              r     "," w       P    r  w  ","    w               ","          w         "],"lo":4,"hi":4,"sea":"#2c6a70","lanes":[[1,5],[18,5],[9,1],[9,10]]},{"name":"s16","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~~~~~..........~~~~~","~~~~~..........~~~~~","~..................~","~..................~","~~~~~..........~~~~~","~~~~~..........~~~~~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["      w       ww    ","                    ","                 r w","  w        r  b     ","           r        ","         P b     r  ","w     r            w","    w    o     w    ","           r   ww   ","      r     r       ","                   w","  ww w w       w w  "],"lo":4,"hi":4,"sea":"#2c6a70","lanes":[[9,1],[9,10],[2,1],[17,10]]},{"name":"s17","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..#####....#####..~","~..#####....#####..~","~..#####....#####..~","~...../....../.....~","~.......####.......~","~.......####.......~","~~~....../.......~~~","~~~..............~~~","~~~..............~~~","~~~~~~~~~~~~~~~~~~~~"],"d":["  w  w    w   w  w  ","                    ","            o       ","w            T      ","       o r    r     ","          rb    o   ","                    ","                    ","     P       o      ","       r o          ","                    ","   w         w      "],"lo":4,"hi":4,"sea":"#2c6a70","lanes":[[5,10],[14,10],[9,1],[1,6],[18,6]]},{"name":"s18","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..##############..~","~..##############..~","~..##############..~","~......../.........~","~..................~","~..................~","~......~~..~~......~","~......~~..~~......~","~......~~..~~......~","~~~~~~~~~~~~~~~~~~~~"],"d":[" ww  w     w        ","                    ","                   w","  r                w","w    r   T T        ","w          o       w","w                  w","   P               w","      r             ","        w  w        ","        w           ","      w             "],"lo":4,"hi":4,"sea":"#2c6a70","lanes":[[2,1],[17,1],[5,10],[14,10]]},{"name":"s19","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~...####....####...~","~...####....####...~","~...####....####...~","~...../....../.....~","~~~~............~~~~","~~~~....####....~~~~","~~~~....####....~~~~","~......../.........~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["                  w ","                   w","       o   r  r     ","w   b    P   r      ","  r                 ","w   b               ","  w       b         ","          or  b     ","            r    ww ","       o            ","                   w"," w       w w  w  w  "],"lo":4,"hi":4,"sea":"#2c6a70","lanes":[[1,10],[18,10],[9,1],[2,10],[17,10]]},{"name":"s20","t":["~~~~~~~~~~~~~~~~~~~~","~...############...~","~...############...~","~......../.........~","~..................~","~..~~..........~~..~","~..~~..........~~..~","~..~~..........~~..~","~..................~","~..................~","~.......~~~~.......~","~~~~~~~~~~~~~~~~~~~~"],"d":["                    ","                    ","  r              r  ","                    "," b                b ","                    ","   w            w   ","         P          ","                    ","  r              r  ","         w          ","                    "],"lo":4,"hi":4,"sea":"#2c6a70","lanes":[[1,3],[18,3],[1,9],[18,9],[6,10],[13,10]]}],"over":{"name":"reach","t":["~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~...........~~~.........####.~~~~~~","~~~~~~......####.~~~.....########.~~~~~~","~~~~..####..####.........########..~~~~~","~~~~..####.../............./.../...~~~~~","~~~~.../...........................~~~~~","~~~.............................####.~~~","~~~.............~~~~~~~~........####.~~~","~~~~~~..........~~~~~~~~........../..~~~","~~~~~~.####.....~~~~~~~~.............~~~","~~~....####.....~~~~~~~~.............~~~","~~~....../......~~~~~~~~~~..#######.~~~~","~~~~~..........~~~~~~~~~~~..#######.~~~~","~~~~~..........~~~~~~~~~~~..#######.~~~~","~~~~~..........~~~~~~~~~~~..../.....~~~~","~~~~~..........~~~~~~~~~~~..........~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"],"d":["                                        ","                                        ","                        w      w        ","                     b    r       w     ","        o                 or   r        ","             o          o   r           ","           o          o            w    ","                                        ","               o           S    o r     ","            o                      T    ","                                        ","    w  r   o                       r    ","       o                o               ","           T                            ","       T                  T         w   ","           H                   C   T    ","       H                                ","                         w              ","      w    w                            ","                                        ","                                        ","                                        "],"lo":4,"hi":4,"sea":"#2c6a70","road":[[4,8],[4,9],[5,8],[5,9],[5,12],[5,13],[6,8],[6,9],[6,10],[6,11],[6,12],[7,9],[8,9],[9,8],[9,9],[10,4],[10,5],[10,6],[10,7],[10,8],[11,7],[12,7],[13,7],[13,8],[13,9],[13,10],[13,11],[13,12],[14,7],[14,8],[14,9],[14,10],[14,11],[14,12],[15,7],[16,7],[17,7],[18,7],[19,7],[20,5],[20,6],[20,7],[20,8],[21,8],[22,8],[23,8],[24,8],[24,9],[25,9],[26,9],[27,9],[27,10],[27,11],[27,12],[27,13],[27,14],[27,15],[27,16],[27,17],[28,9],[28,17],[29,9],[29,17],[30,9],[30,17],[31,17]]},"nodes":[[5,13],[4,8],[9,9],[10,4],[13,7],[14,12],[20,5],[24,8],[30,9],[31,17]]},{"key":"III","name":"The Blighted Span","sea":"#3a5a52","placeholder_terrain":false,"stages":[{"name":"s3_1","t":["~~~~~~~~~~~~~~~~~~~~","~.........~~~~~~~~~~","~.........~~~~~~~~~~","~.........~~~~~~~~~~","~.........~~~~~~~~~~","~.........~~~~~~~~~~","~..................~","~..................~","~..%%..............~","~..%%..............~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["    w               ","w                   ","w                   ","w  b  b             ","       o o          ","   T            w   ","      b   T   T     ","    r          o   w","       P            ","              To   w","                    "," w  w  w  w  w      "],"lo":5,"hi":5,"sea":"#3a5a52","lanes":[[5,1],[10,10]]},{"name":"s3_2","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..%%..............~","~..%%..............~","~..................~","~.........~~~~~~~~~~","~.........~~~~~~~~~~","~.........~~~~~~~~~~","~.........~~~~~~~~~~","~.........~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~"],"d":["  w      w  w       ","w                  w","  r                 ","       P     bo     ","               r   w","     b              ","w      o      w     ","   r    T           ","                    ","                    ","                    ","     w              "],"lo":5,"hi":5,"sea":"#3a5a52","lanes":[[10,1],[5,10]]},{"name":"s3_3","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~....%%............~","~....%%............~","~~~~~~~......~~~~~~~","~~~~~~~......~~~~~~~","~~~~~~~......~~~~~~~","~~~~~~~......~~~~~~~","~~~~~~~......~~~~~~~","~~~~~~~......~~~~~~~","~~~~~~~~~~~~~~~~~~~~"],"d":[" w     w   w w    w ","w                   ","w              o    ","w   o    P         w","              o     ","                    ","           or       ","      w    T w      ","                    ","      w T           ","      w             ","        ww          "],"lo":5,"hi":5,"sea":"#3a5a52","lanes":[[10,1],[10,10]]},{"name":"s3_4","t":["~~~~~~~~~~~~~~~~~~~~","~.....~~~~~~~~.....~","~......~~~~~~......~","~.......~~~~.......~","~........~~........~","~..................~","~....%%............~","~....%%............~","~~~~............~~~~","~~~~............~~~~","~~~~............~~~~","~~~~~~~~~~~~~~~~~~~~"],"d":["                    ","                    ","w      w    w       ","   T                ","     r      o    T w","   Tr        o      ","         P r       w","  r    r            ","  w   o      Tr w   ","     r      b       ","                    ","    w w w  w        "],"lo":5,"hi":5,"sea":"#3a5a52","lanes":[[3,1],[10,10],[1,4]]},{"name":"s3_5","t":["~~~~~~~~~~~~~~~~~~~~","~~~~~~........~~~~~~","~~~~~~........~~~~~~","~~~~~~........~~~~~~","~..................~","~....%%......%%....~","~....%%......%%....~","~..................~","~~~~~~........~~~~~~","~~~~~~........~~~~~~","~~~~~~........~~~~~~","~~~~~~~~~~~~~~~~~~~~"],"d":["        ww www      ","                    ","                    ","  w           w   w ","    o         o     ","w  rb    P     o    ","            T       ","          o         ","     w              ","       T    b       ","                    ","                    "],"lo":5,"hi":5,"sea":"#3a5a52","lanes":[[10,1],[10,10],[1,6]]},{"name":"s3_6","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..%%.......%%.....~","~..%%.......%%.....~","~....~~~~~~~~~~....~","~....~~~~~~~~~~....~","~....~~~~~~~~~~....~","~....~~~~~~~~~~....~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["                  w ","                    ","       P            ","                    ","                    ","                    ","w   bw        w    w","                o   ","     r   ro        w","        b           ","                    "," w          w  ww   "],"lo":5,"hi":5,"sea":"#3a5a52","lanes":[[10,1],[10,10],[1,6]]},{"name":"s3_7","t":["~~~~~~~~~~~~~~~~~~~~","~......~~~~~~......~","~......~~~~~~......~","~......~~~~~~......~","~......~~~~~~......~","~....%%%...........~","~....%%%.....%%%...~","~....%%%.....%%%...~","~......~~~~~~%%%...~","~......~~~~~~......~","~......~~~~~~......~","~~~~~~~~~~~~~~~~~~~~"],"obj":{"kind":"hold","secs":22,"x":1120,"y":160,"tile":[17,2]},"d":["              ww w  ","w           w       ","w            b      ","                    ","           w        ","                r  w","         P  r       ","                b   ","    b               ","w           w      w","                    ","  w w        w      "],"lo":5,"hi":5,"sea":"#3a5a52","lanes":[[4,1],[4,10],[1,6],[18,6]]},{"name":"s3_8","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~~........~~...~","~...~~........~~...~","~........~~........~","~.....%%%~~.%%%....~","~.....%%%...%%%....~","~.....%%%...%%%....~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["             ww     ","w                  w","                    ","    T               ","      o  P  b w     ","           o       w","w  T                ","w          r        ","  r      r          ","    T               ","                    ","    w         w     "],"lo":5,"hi":5,"sea":"#3a5a52","lanes":[[10,1],[10,10],[1,6],[18,6]]},{"name":"s3_9","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~.....~","~~~~~~~~~~~~~~.....~","~..................~","~...........%%%....~","~...........%%%....~","~...........%%%....~","~~~~~~~~~~~~~~~~~~~~"],"obj":{"kind":"silence","key":"HL"},"d":["       w    w       ","                   w","             b      ","   o                ","        T  o T      ","     w         P    ","  w        w        ","   r  r     r       ","                 T  ","                    ","                    ","                    "],"lo":5,"hi":5,"sea":"#3a5a52","lanes":[[10,1],[10,10],[1,3],[18,6]]},{"name":"s3_10","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..%%%%%%..%%%%%%..~","~..%%..........%%..~","~..%%..........%%..~","~..................~","~..................~","~..%%..........%%..~","~..%%%%%%..%%%%%%..~","~..................~","~.......~~~~.......~","~~~~~~~~~~~~~~~~~~~~"],"d":["                    "," b                b ","                    ","                    ","                    ","       r            ","         P  r       ","                    ","                    "," T                T ","         w          ","                    "],"lo":5,"hi":5,"sea":"#3a5a52","lanes":[[9,1],[1,5],[18,5],[1,10],[18,10]]}],"over":{"name":"the-blighted-span","t":["~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~.................###..~~~~~~~~~~~~~~~","~~~...####..........###..............~~~","~~~...####.........../.....#####.....~~~","~~~..../......#####........#####.....~~~","~~~.......###.#####........#####.....~~~","~~~.......###.../............/...###.~~~","~~~......../......~~~............###.~~~","~~~..............~~~~~...........###.~~~","~~~~.............~~~~~............/..~~~","~~~~..............~~~................~~~","~~~~.................................~~~","~~~~......~.................#####...~~~~","~~~~.....~~~................#####...~~~~","~~~~.....~~~................../.....~~~~","~~~~.....~~~...~~~~~~~~~............~~~~","~~~~~~~~~~~~~~~~~~~~~~~~............~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"],"d":["                                        ","                                        ","                                        ","                     S   w  w           ","       Tr     r                         ","      b               T  b T            ","   r TT        b                        ","      T                  bT             ","        Tr               b    r  T      ","          T    b b w    b               ","           bT    w              rr   w  ","              T                    r    ","      H        T       o                ","         H       o       r              ","   w                                    ","      H        T              C         ","             oT                         ","        b                   T           ","                                        ","                                   w    ","                                        ","                                        "],"lo":5,"hi":5,"sea":"#3a5a52","road":[[4,4],[4,5],[4,6],[4,7],[4,8],[4,9],[4,10],[5,10],[6,10],[7,10],[7,11],[8,11],[9,11],[10,11],[11,5],[11,11],[12,5],[12,11],[13,5],[13,6],[13,7],[13,8],[13,9],[13,10],[13,11],[13,12],[13,13],[13,14],[14,5],[15,5],[16,5],[17,5],[18,5],[19,5],[19,6],[19,7],[20,7],[20,8],[21,8],[22,8],[22,9],[22,10],[22,11],[22,12],[22,13],[22,14],[22,15],[23,10],[24,10],[25,10],[26,9],[26,10],[27,9],[28,9],[29,9],[30,9],[30,17],[31,9],[31,17],[32,5],[32,6],[32,7],[32,8],[32,9],[32,17],[33,5],[33,6],[33,7],[33,17],[34,7],[34,13],[34,14],[34,15],[34,16],[34,17],[35,7],[35,13],[36,7],[36,8],[36,9],[36,10],[36,11],[36,12],[36,13]]},"nodes":[[4,4],[7,10],[13,14],[11,5],[20,7],[22,15],[26,10],[33,5],[35,13],[30,17]]},{"key":"IV","name":"The Stormward","sea":"#27384f","placeholder_terrain":false,"stages":[{"name":"s4_1","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~.........~","~~~~~~~~~~.........~","~~~~~~~~~~.........~","~~~~~~~~~~.........~","~~~~~~~~~~.........~","~~~~~~~~~~~~~~~~~~~~"],"d":["           w        ","                    ","w  b             r  ","            P       ","   o     r    rr    ","    T       T       ","  ww     w          ","         w         w","          b bT      ","         w          ","         w          ","            w    w  "],"lo":2,"hi":3,"sea":"#27384f","lanes":[[10,1],[14,10]],"storm":7.0},{"name":"s4_2","t":["~~~~~~~~~~~~~~~~~~~~","~~~~~..........~~~~~","~~~~............~~~~","~~~..............~~~","~~................~~","~..................~","~..................~","~~................~~","~~~..............~~~","~~~~............~~~~","~~~~~..........~~~~~","~~~~~~~~~~~~~~~~~~~~"],"d":["     w     w  w     ","               w    ","                    ","  w      r          "," w                w ","   or    P o b  o  w","              T     ","       r    T       ","    b      o  r     ","                    ","                    ","       w  w         "],"lo":2,"hi":3,"sea":"#27384f","lanes":[[10,1],[10,10]],"storm":6.7},{"name":"s4_3","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~...~~~~~~~~~~~~...~","~...~~~~~~~~~~~~...~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["  w       w         ","                    ","            r  o o  ","w    P     o       w","   T    bT   o     w","w             w  o  ","       w w  w       ","w     r      o      ","w                   ","   T                ","w                   ","      w   w     ww  "],"lo":2,"hi":3,"sea":"#27384f","lanes":[[10,1],[10,10]],"storm":6.4},{"name":"s4_4","t":["~~~~~~~~~~~~~~~~~~~~","~..........~~~~~~~~~","~..........~~~~~~~~~","~..........~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~..........~~~~~~~~~","~..........~~~~~~~~~","~..........~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~"],"d":["      w             ","                    ","    r               ","w  r      r   w     ","  ro                ","        P  o T  r  w","               r    ","            o   or  ","w      r r    w     ","                    ","                    ","     w              "],"lo":2,"hi":3,"sea":"#27384f","lanes":[[6,1],[6,10],[1,6]],"storm":6.1},{"name":"s4_5","t":["~~~~~~~~~~~~~~~~~~~~","~.....~~...........~","~.....~~...........~","~.....~~...........~","~.....~~...........~","~.....~~....~~.....~","~.....~~....~~.....~","~...........~~.....~","~...........~~.....~","~...........~~.....~","~...........~~.....~","~~~~~~~~~~~~~~~~~~~~"],"d":[" www       ww   w   ","w                   ","          o         ","      w To o        ","              r     ","      w  P         w","w           ww r    ","                    ","        o r w  T    ","                    ","w                  w"," w ww          w    "],"lo":2,"hi":3,"sea":"#27384f","lanes":[[13,1],[6,10],[1,6]],"storm":5.8},{"name":"s4_6","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~.....~~~~~~~~~~~~~~","~.....~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"obj":{"kind":"hold","secs":26,"x":1120,"y":608,"tile":[17,9]},"d":["   w      w   ww    ","                    ","    r               ","          T     b   ","w T                 ","    P w    ww  ww   ","       w  ww w      ","w  o         r      ","        bb         w","      r         or  ","                   w","    w w ww   w    w "],"lo":2,"hi":3,"sea":"#27384f","lanes":[[10,1],[10,10],[1,6]],"storm":5.5},{"name":"s4_7","t":["~~~~~~~~~~~~~~~~~~~~","~~~~~~~......~~~~~~~","~~~~~~~......~~~~~~~","~~~~~~~......~~~~~~~","~~~~~~~......~~~~~~~","~~~~~~~......~~~~~~~","~~~~~~~......~~~~~~~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["       w   w        ","                    ","       b            ","                    ","                    ","        Tr          ","     w       w  w w ","w r    r            ","     T   P  r  r   w","                   w","w                   ","   www     w    w   "],"lo":2,"hi":3,"sea":"#27384f","lanes":[[10,1],[10,10],[1,9],[18,9]],"storm":5.2},{"name":"s4_8","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~....~...~...~.....~","~....~...~...~.....~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"obj":{"kind":"silence","key":"HX"},"d":[" w              w w ","                    ","w                   ","   b      T      r  ","                   w","    r o    P w      ","w             oT    ","       T       r    ","  b   rT o       r  ","    r r             ","w                  w","    w      w ww w   "],"lo":2,"hi":3,"sea":"#27384f","lanes":[[10,1],[10,10],[1,6],[18,6]],"storm":4.9},{"name":"s4_9","t":["~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~.........~","~~~~~~~~~~.........~","~~~~~~~~~~.........~","~~~~~~~~~~.........~","~~~~~~~~~~.........~","~..................~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["             w      ","                    ","                   w","         w          ","          r         ","   w  w w      o   w","  r         o       ","     r              ","            P    r  ","                    ","                   w","   w w         ww   "],"lo":2,"hi":3,"sea":"#27384f","lanes":[[14,1],[10,10],[1,8],[18,6]],"storm":4.6},{"name":"s4_10","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~~~..~~~~..~~~~..~~~","~~~..~~~~..~~~~..~~~","~..................~","~..................~","~..................~","~.......~~~~.......~","~~~~~~~~~~~~~~~~~~~~"],"d":["                    ","                    ","      r      r      ","                    ","                    ","       w          w "," w          w       ","                    "," T       P        T ","      r      r      ","         w          ","                    "],"lo":2,"hi":3,"sea":"#27384f","lanes":[[9,1],[1,2],[18,2],[1,9],[18,9]],"storm":4.3}],"over":{"name":"the-stormward","t":["~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~...........~~~.........####.~~~~~~","~~~~~~......####.~~~.....########.~~~~~~","~~~~..####..####.........########..~~~~~","~~~~..####.../............./.../...~~~~~","~~~~.../...........................~~~~~","~~~.............................####.~~~","~~~.............~~~~~~~~........####.~~~","~~~~~~..........~~~~~~~~........../..~~~","~~~~~~.####.....~~~~~~~~.............~~~","~~~....####.....~~~~~~~~.............~~~","~~~....../......~~~~~~~~~~..#######.~~~~","~~~~~..........~~~~~~~~~~~..#######.~~~~","~~~~~..........~~~~~~~~~~~..#######.~~~~","~~~~~..........~~~~~~~~~~~..../.....~~~~","~~~~~..........~~~~~~~~~~~..........~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"],"d":["                                        ","                                        ","                        w      w        ","                     b    r       w     ","        o                 or   r        ","             o          o   r           ","           o          o            w    ","                                        ","               o           S    o r     ","            o                      T    ","                                        ","    w  r   o                       r    ","       o                o               ","           T                            ","       T                  T         w   ","           H                   C   T    ","       H                                ","                         w              ","      w    w                            ","                                        ","                                        ","                                        "],"lo":2,"hi":3,"sea":"#27384f","road":[[4,8],[4,9],[5,8],[5,9],[5,12],[5,13],[6,8],[6,9],[6,10],[6,11],[6,12],[7,9],[8,9],[9,8],[9,9],[10,4],[10,5],[10,6],[10,7],[10,8],[11,7],[12,7],[13,7],[13,8],[13,9],[13,10],[13,11],[13,12],[14,7],[14,8],[14,9],[14,10],[14,11],[14,12],[15,7],[16,7],[17,7],[18,7],[19,7],[20,5],[20,6],[20,7],[20,8],[21,8],[22,8],[23,8],[24,8],[24,9],[25,9],[26,9],[27,9],[27,10],[27,11],[27,12],[27,13],[27,14],[27,15],[27,16],[27,17],[28,9],[28,17],[29,9],[29,17],[30,9],[30,17],[31,17]]},"nodes":[[5,13],[4,8],[9,9],[10,4],[13,7],[14,12],[20,5],[24,8],[30,9],[31,17]]},{"key":"V","name":"The Lamplit Vaults","sea":"#131a24","placeholder_terrain":false,"stages":[{"name":"s5_1","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~..................~","~..................~","~........~~........~","~.......~~~~.......~","~......~~~~~~......~","~.....~~~~~~~~.....~","~~~~~~~~~~~~~~~~~~~~"],"d":[" w            w     ","                    ","w  r          or    ","w        o o   r   w","     o              ","    r or P     r    ","           o        ","      r  w   r      ","  r         r  r    ","       w            ","w                   ","   w                "],"lo":3,"hi":3,"sea":"#131a24","lanes":[[10,1],[3,10]],"lamps":[[8,4],[16,8],[2,8],[13,2],[2,2],[3,5]]},{"name":"s5_2","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~~~~~~~~~~~~...~","~..................~","~..................~","~...~~~~~~~~~~~~...~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["   w                ","                    ","    o           r   ","             r      ","                    ","  P        o        ","w    o              ","  r            w    ","             r  o   ","  r                 ","                    ","               w    "],"lo":3,"hi":3,"sea":"#131a24","lanes":[[10,1],[10,10]],"lamps":[[2,4],[16,9],[11,2],[6,9],[16,2]],"gutter":8.96},{"name":"s5_3","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~......~~~~~.......~","~....~~~~~~~~~.....~","~....~~~~~~~~~.....~","~......~~~~~.......~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["  w        ww w     ","                    ","           P        ","                    ","w              r    ","w                   ","                    ","              o     ","                 o  ","               oo   ","                    ","   w    w       w   "],"lo":3,"hi":3,"sea":"#131a24","lanes":[[10,1],[10,10]],"lamps":[[10,2],[7,9],[16,6],[2,3]],"gutter":8.54},{"name":"s5_4","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~~~~~..........~","~...~~~~~...~~~....~","~...~~~~~...~~~....~","~...~~~~~..........~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":[" w    w   w  w      ","                    ","  o         r  r    ","             r  oo  ","  o  w          o   ","          P         ","w  r             r  ","    w    or         ","      r          o  ","                    ","                    ","  w                 "],"lo":3,"hi":3,"sea":"#131a24","lanes":[[10,1],[10,10],[1,6]],"lamps":[[10,4],[2,6],[16,8],[6,9]],"gutter":8.12},{"name":"s5_5","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~........~~........~","~....~~~~~~~~~~....~","~....~~~~~~~~~~....~","~........~~........~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["             ww w   ","                    ","                    ","       P            ","               rr  w","                    ","     w              ","            o o     ","                    ","w           r       ","                    ","               w    "],"lo":3,"hi":3,"sea":"#131a24","lanes":[[10,1],[10,10],[1,6]],"lamps":[[6,2],[12,8],[2,8],[16,2]],"gutter":7.7,"obj":{"kind":"silence","key":"SC"}},{"name":"s5_6","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~..........~...~","~...~...~~~~...~...~","~...~...~~~~...~...~","~...~..........~...~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["       ww  w        ","                    ","                    ","    o  o P  o       ","                    ","           w        ","            r       ","             o w    ","    o               ","        r           ","                    ","  w        w   w    "],"lo":3,"hi":3,"sea":"#131a24","lanes":[[10,1],[10,10],[1,6]],"lamps":[[8,2],[16,9],[2,8],[8,8]],"gutter":7.28},{"name":"s5_7","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~....~....~....~","~...~....~....~....~","~...~....~....~....~","~...~....~....~....~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["     w           w  ","                    ","                    ","      rr     r      ","      r  w          ","w          P o      ","   r ro        o   w","               o    ","    oo    r         ","             rr r  w","                    ","  w              w  "],"lo":3,"hi":3,"sea":"#131a24","lanes":[[10,1],[10,10],[1,6],[18,6]],"lamps":[[11,4],[2,6],[16,6]],"gutter":6.86},{"name":"s5_8","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~~~~...........~","~...~..........~...~","~...~..........~...~","~...........~~~~...~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["             w  ww  ","                    ","                    ","            o   r   ","   r             o  ","         P          ","w     r             ","        r           ","          r         ","            oo     w","                    ","                    "],"lo":3,"hi":3,"sea":"#131a24","lanes":[[10,1],[10,10],[1,6],[18,6]],"lamps":[[8,6],[16,2],[2,2]],"gutter":6.44,"obj":{"kind":"silence","key":"LN"}},{"name":"s5_9","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~...~~..~~..~~..~~.~","~...~~..~~..~~..~~.~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["                    ","                    ","       r            ","         P          ","   o            rr  ","   o     w         w","          r     w   ","   r       r       w","  r o r        r    ","                 r  ","                    ","                    "],"lo":3,"hi":3,"sea":"#131a24","lanes":[[10,1],[10,10],[1,6],[18,6]],"lamps":[[8,2],[16,8],[2,8]],"gutter":6.02},{"name":"s5_10","t":["~~~~~~~~~~~~~~~~~~~~","~~~.############.~~~","~~~....../.......~~~","~..................~","~~~..............~~~","~..................~","~..................~","~~~..............~~~","~..................~","~..................~","~.......~~~~.......~","~~~~~~~~~~~~~~~~~~~~"],"d":["                    ","                    ","                    ","       r    r       ","     r        r     ","                    ","                    ","     r   P    r     ","                    ","                    ","         w          ","                    "],"lo":3,"hi":3,"sea":"#131a24","lanes":[[1,3],[18,3],[1,8],[18,8]],"lamps":[[9.5,5.5],[2,9],[17,9]],"gutter":5.6}],"over":{"name":"the-lamplit-vaults","t":["~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~................#####........~~~~~~~","~~~~..####..#####...#####...####.~~~~~~~","~~~~..####..#####...../.....####....~~~~","~~~..../...../.............../.......~~~","~~~...........~~~~~~~~~~~~...........~~~","~~~...........~~~~~~~~~~~~...........~~~","~~~.........~~~~~~~~~~~~~~~..........~~~","~~~.........~~~~~~~~~~~~~~~..........~~~","~~~...####.~~~~~~~~~~~~~~~~~..#####..~~~","~~~~~.####.~~~~~~~~~~~~~~~~~..#####..~~~","~~~~~../....~~~~~~~~~~~~~~~...../....~~~","~~~..........~~~~~~~~~~~~~~..........~~~","~~~.............~~~~~~~..............~~~","~~~..................................~~~","~~~~...............................~~~~~","~~~~~..............................~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"],"d":["                                        ","                                        ","          ww            w   w           ","                                        ","       ro                         w     ","   w        r                           ","        r                     r         ","                 w      w          r    ","                              ro r      ","             w                          ","                                        ","                                        ","                                        ","                           o            ","  w                             C       ","            T              r         w  ","                                        ","       H          r   S            ww   ","           H                            ","                              w         ","                                        ","                                        "],"lo":3,"hi":3,"sea":"#131a24","road":[[4,6],[4,7],[4,8],[4,9],[4,10],[4,11],[4,15],[4,16],[5,11],[5,12],[5,13],[5,14],[5,15],[5,16],[6,16],[7,16],[8,16],[9,16],[10,3],[10,4],[10,5],[10,6],[10,7],[10,8],[10,9],[10,10],[10,11],[10,12],[10,13],[10,14],[10,15],[10,16],[10,17],[11,3],[11,16],[11,17],[12,3],[12,16],[12,17],[13,3],[13,16],[13,17],[14,3],[15,3],[16,3],[17,3],[18,3],[18,4],[18,5],[18,6],[19,6],[20,6],[21,6],[22,6],[23,6],[23,16],[24,6],[24,16],[25,6],[25,16],[26,3],[26,4],[26,5],[26,6],[26,16],[27,3],[27,16],[28,3],[28,9],[28,10],[28,11],[28,12],[28,13],[28,14],[28,15],[28,16],[29,3],[29,9],[29,16],[30,3],[30,9],[30,16],[31,3],[31,9],[31,16],[32,3],[32,4],[32,5],[32,6],[32,7],[32,8],[32,9],[32,16],[33,6]]},"nodes":[[4,6],[4,15],[13,17],[10,10],[18,5],[26,4],[33,6],[28,9],[23,16],[32,16]]},{"key":"VI","name":"The Guttered Vaults","sea":"#0b0f16","placeholder_terrain":false,"dim":0.92,"stages":[{"name":"s6_1","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~..................~","~..................~","~........~~........~","~.......~~~~.......~","~......~~~~~~......~","~.....~~~~~~~~.....~","~~~~~~~~~~~~~~~~~~~~"],"d":["   w                ","                    ","w                   ","  r         r       ","     o              ","    r    P          ","   rrorr        r   ","            o r  r w","            r  o o  ","                    ","                    ","                w   "],"lo":3,"hi":3,"sea":"#0b0f16","lanes":[[10,1],[3,10]],"lamps":[[8,4],[16,8],[2,8],[13,2]]},{"name":"s6_2","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~~~~~~~~~~~~...~","~..................~","~..................~","~...~~~~~~~~~~~~...~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["    ww   w          ","                    ","                    ","         o         w","                    ","  P ro      r       ","w        r          ","   rww w         o  ","  r o          oro  ","  r                 ","                    ","                    "],"lo":3,"hi":3,"sea":"#0b0f16","lanes":[[10,1],[10,10]],"lamps":[[2,4],[16,9],[11,2]],"gutter":8.96},{"name":"s6_3","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~......~~~~~.......~","~....~~~~~~~~~.....~","~....~~~~~~~~~.....~","~......~~~~~.......~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["     ww             ","w                   ","     o     P o      ","                    ","   r o     w        ","                    ","   or w            w","    o o w  w        ","    r            r  ","   r rr      r r    ","                    ","                 w  "],"lo":3,"hi":3,"sea":"#0b0f16","lanes":[[10,1],[10,10]],"lamps":[[10,2],[7,9],[16,6]],"gutter":8.54},{"name":"s6_4","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~~~~~..........~","~...~~~~~...~~~....~","~...~~~~~...~~~....~","~...~~~~~..........~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["                    ","                    ","   o   o         o w","w      o  r         ","       w        r   ","        w P www     ","    w               ","   r        o   o   ","   o       r  or   w","  o           r     ","                    ","  w          ww   w "],"lo":3,"hi":3,"sea":"#0b0f16","lanes":[[10,1],[10,10],[1,6]],"lamps":[[10,4],[2,6],[16,8]],"gutter":8.12},{"name":"s6_5","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~........~~........~","~....~~~~~~~~~~....~","~....~~~~~~~~~~....~","~........~~........~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":[" w        www       ","                    ","                    ","   o   P      r     ","             r  r   ","w              r o  ","               r    ","    r               ","w   o r             ","      o      r      ","                    ","      w      ww     "],"lo":3,"hi":3,"sea":"#0b0f16","lanes":[[10,1],[10,10],[1,6]],"lamps":[[6,2],[12,8]],"gutter":7.7,"obj":{"kind":"silence","key":"SN"}},{"name":"s6_6","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~..........~...~","~...~...~~~~...~...~","~...~...~~~~...~...~","~...~..........~...~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["    w               ","                    ","w r                 ","   oo    P          ","     rr          o  ","   r               w","         w     w   w","        ro          ","         ro         ","  r         r   o   ","                    ","                  w "],"lo":3,"hi":3,"sea":"#0b0f16","lanes":[[10,1],[10,10],[1,6]],"lamps":[[8,2],[16,9]],"gutter":7.28},{"name":"s6_7","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~....~....~....~","~...~....~....~....~","~...~....~....~....~","~...~....~....~....~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["         w  w     w ","                    ","                    ","                   w","               r    ","           P  w     ","w                   ","      ro            ","                   w","                   w","                    ","          w         "],"lo":3,"hi":3,"sea":"#0b0f16","lanes":[[10,1],[10,10],[1,6],[18,6]],"lamps":[[11,4],[2,6]],"gutter":6.86},{"name":"s6_8","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~...~~~~...........~","~...~..........~...~","~...~..........~...~","~...........~~~~...~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["   ww      w  ww    ","                    ","  r                 ","              r     ","           r  r     ","         P          ","   ow o             ","   r   o            ","         r      oo  ","w            r   o  ","w                   ","         w  w  w    "],"lo":3,"hi":3,"sea":"#0b0f16","lanes":[[10,1],[10,10],[1,6],[18,6]],"lamps":[[8,6],[16,2]],"gutter":6.44},{"name":"s6_9","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~..................~","~...~~..~~..~~..~~.~","~...~~..~~..~~..~~.~","~..................~","~..................~","~..................~","~..................~","~~~~~~~~~~~~~~~~~~~~"],"d":["           w        ","                    ","  rr                ","         P ro    r  ","                 o w","   r       r  r     ","        ww          ","     r r    r  o    ","              r     ","   ro               ","                    ","               w  w "],"lo":3,"hi":3,"sea":"#0b0f16","lanes":[[10,1],[10,10],[1,6],[18,6]],"lamps":[[8,2],[16,8]],"gutter":6.02},{"name":"s6_10","t":["~~~~~~~~~~~~~~~~~~~~","~..................~","~..................~","~..................~","~.....~~~~~~~~.....~","~.....~~~~~~~~.....~","~.....~~~~~~~~.....~","~.....~~~~~~~~.....~","~..................~","~..................~","~.......~~~~.......~","~~~~~~~~~~~~~~~~~~~~"],"d":["                    ","                    ","   r            r   ","                    ","       w            ","                    ","                    ","            w       ","                    ","   r     P      r   ","         w          ","                    "],"lo":3,"hi":3,"sea":"#0b0f16","lanes":[[1,1],[18,1],[1,10],[18,10]],"lamps":[[9,2],[9,9],[3,5],[16,6]],"gutter":5.6}],"over":{"name":"the-guttered-vaults","t":["~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~................#####........~~~~~~~","~~~~..####..#####...#####...####.~~~~~~~","~~~~..####..#####...../.....####....~~~~","~~~..../...../.............../.......~~~","~~~...........~~~~~~~~~~~~...........~~~","~~~...........~~~~~~~~~~~~...........~~~","~~~.........~~~~~~~~~~~~~~~..........~~~","~~~.........~~~~~~~~~~~~~~~..........~~~","~~~...####.~~~~~~~~~~~~~~~~~..#####..~~~","~~~~~.####.~~~~~~~~~~~~~~~~~..#####..~~~","~~~~~../....~~~~~~~~~~~~~~~...../....~~~","~~~..........~~~~~~~~~~~~~~..........~~~","~~~.............~~~~~~~..............~~~","~~~..................................~~~","~~~~...............................~~~~~","~~~~~..............................~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"],"d":["                                        ","                                        ","          ww            w   w           ","                                        ","       ro                         w     ","   w        r                           ","        r                     r         ","                 w      w          r    ","                              ro r      ","             w                          ","                                        ","                                        ","                                        ","                           o            ","  w                             C       ","            T              r         w  ","                                        ","       H          r   S            ww   ","           H                            ","                              w         ","                                        ","                                        "],"lo":3,"hi":3,"sea":"#0b0f16","road":[[4,6],[4,7],[4,8],[4,9],[4,10],[4,11],[4,15],[4,16],[5,11],[5,12],[5,13],[5,14],[5,15],[5,16],[6,16],[7,16],[8,16],[9,16],[10,3],[10,4],[10,5],[10,6],[10,7],[10,8],[10,9],[10,10],[10,11],[10,12],[10,13],[10,14],[10,15],[10,16],[10,17],[11,3],[11,16],[11,17],[12,3],[12,16],[12,17],[13,3],[13,16],[13,17],[14,3],[15,3],[16,3],[17,3],[18,3],[18,4],[18,5],[18,6],[19,6],[20,6],[21,6],[22,6],[23,6],[23,16],[24,6],[24,16],[25,6],[25,16],[26,3],[26,4],[26,5],[26,6],[26,16],[27,3],[27,16],[28,3],[28,9],[28,10],[28,11],[28,12],[28,13],[28,14],[28,15],[28,16],[29,3],[29,9],[29,16],[30,3],[30,9],[30,16],[31,3],[31,9],[31,16],[32,3],[32,4],[32,5],[32,6],[32,7],[32,8],[32,9],[32,16],[33,6]]},"nodes":[[4,6],[4,15],[13,17],[10,10],[18,5],[26,4],[33,6],[28,9],[23,16],[32,16]]}]}, WORDS = {"T1":["ash","axe","bog","bow","crow","dam","den","elk","fen","feud","fire","fog","gore","hex","hilt","hood","horn","hut","ice","iron","jar","keg","lure","maw","mire","mist","moss","mud","net","oak","oath","orc","ore","owl","pit","pyre","raid","rat","roar","ruin","rust","rye","sap","silt","sir","sod","soot","spur","tar","thaw","toe","urn","vow","war","wisp","yew"],"T2":["ashen","bane","bard","bile","boar","bolt","bone","brute","burrow","char","clot","coffin","crypt","dirge","dirt","dusk","ember","fang","feral","forge","frost","gale","ghoul","girth","grim","hail","harrow","helm","hide","hovel","husk","keel","lash","limb","loam","mace","malt","marrow","maul","moat","mourn","nettle","noble","nook","oaken","ogre","omen","pact","pike","prowl","rage","rasp","reed","relic","rift","rune","scar","sear","shed","shroud","sinew","slag","snarl","sorrow","spar","spirit","sulfur","throne","toll","tomb","tower","tusk","vale","veil","vigil","wane","ward","wither","wolf","wrath","yoke","zeal"],"T3":["banner","barrow","beacon","behead","bishop","blight","bloods","briar","bridle","broken","candle","carrion","cavern","chapel","cinder","cleave","cudgel","cursed","dagger","dismal","dragon","dreads","embers","famine","ferrous","fester","fetter","gambit","gargle","glaive","gloom","goblet","grieve","grotto","hallow","hatchet","heresy","hunger","knight","lament","lantern","legion","malice","mangle","mantle","martyr","menace","midnight","morbid","ossuary","outcast","pallid","parapet","pauper","pestle","phantom","pillage","plague","poison","portal","potion","purge","quiver","raven","reaper","render","sallow","scepter","scorch","scoured","scourge","sentry","serpent","shackle","shatter","squire","stigma","summon","svelte","tallow","tannery","tarnish","tempest","tendril","thicket","thistle","thorned","tinder","torment","tourney","trench","tyrant","usurper","vandal","vassal","vestige","vulture","warden","warrant","wrought"],"T4":["battlement","blasphemy","brazen","catacombs","gallows","graven","haunted","hollow","javelin","kestrel","mongrel","mundane","murder","pilgrim","quarrel","rampart","ransack","ravage","remnant","revenant","sabbath","savage","skirmish","slaughter","smolder","specter","squalid","stalwart","starve","stricken","talisman","thunder","trample","tremble","trophy","tumult","unclean","undead","valiant","vanquish","venomous","viceroy","villain","warband","warlock","wastrel","weathered","whetstone","wretched","yearling"],"T5":["apothecary","bloodthirsty","chandelier","disemboweled","insurrection","necromancer","obliteration","pestilence","retribution","sarcophagus","subjugation","supplication","thaumaturgy","unforgiving","unhallowed","vengeance","wolfsbane","zealotry"],"T6":["conflagration","desecration","excommunicate","exsanguinate","malevolence","pandemonium","quartermaster","reconnaissance"]}, DSPEC = {"tree1":[192,256,8,15,37,51,119,190],"tree2":[192,256,8,7,43,5,106,244],"tree3":[192,192,8,22,51,24,90,146],"bush1":[128,128,8,49,31,33,67,46],"bush2":[128,128,8,44,23,25,78,59],"rock1":[64,64,1,13,15,25,32,26],"rock2":[64,64,1,12,14,23,39,29],"wrock1":[64,64,16,16,17,25,29,23],"wrock2":[64,64,16,16,15,23,36,25],"house":[128,192,1,19,8,16,112,157],"castle":[320,256,1,7,4,41,312,208],"tower":[128,256,1,26,4,46,120,184],"tree4":[192, 192, 8, 24, 56, 46, 80, 122],"stump1":[192, 256, 1, 16, 75, 200, 48, 40],"stump2":[192, 256, 1, 11, 73, 210, 43, 35],"stump3":[192, 256, 1, 24, 85, 197, 24, 35],"stump4":[192, 256, 1, 28, 86, 202, 26, 26],"bush3":[128, 128, 8, 52, 41, 42, 46, 34],"bush4":[128, 128, 8, 49, 40, 37, 46, 42],"rock3":[64, 64, 1, 11, 7, 17, 50, 36],"rock4":[64, 64, 1, 8, 2, 14, 59, 42],"wrock3":[64, 64, 16, 14, 7, 17, 50, 33],"wrock4":[64, 64, 16, 12, 6, 14, 51, 38],"wood":[64, 64, 1, 18, 9, 18, 47, 28],"meat":[64, 64, 1, 12, 9, 16, 47, 36],"tool1":[64, 64, 1, 19, 20, 17, 28, 28],"tool3":[64, 64, 1, 22, 23, 22, 19, 20],"bkBar":[192, 256, 1, 11, 4, 58, 184, 187],"bkArc":[192, 256, 1, 16, 3, 61, 183, 179],"bkTow":[128, 256, 1, 26, 4, 46, 120, 184],"torch":[64, 128, 4, 9, 22, 10, 19, 109]};
 /* WHICH BUILD IS THIS? Stamped by pack_ch1.py at pack time, shown on the title screen
    and in the settings footer. Three rounds of "are you sure this is fixed?" went by with
    no way for either side to tell whether the file being played was the file being
    fixed - a browser will happily serve a cached 1MB local file after a plain reload. */
-const BUILD = "v120 = Troll skills build + boss maps (Last Ground rev 3) - 2026-10-19";
+const BUILD = "v131.11 Quiver Supplier · 2026-10-25";
 /* THE BAR THAT CARRIED THIS IS GONE, so there is nothing left to stamp - and the question it
    answered has two other answers that survive: the title screen's own credit line prints the
    build next to the art credit, and F1's readout opens with `BUILD <stamp>` on every screen.
@@ -287,11 +287,25 @@ ASSETS.firstJobAtlas='assets/images/image-7b46c2ad7a2727bc.png';
 /* BASIC SKILLS ATLAS */
 ASSETS.basicSkillAtlas='assets/images/image-e45ffce079e9e278.png';
 /* END BASIC SKILLS ATLAS */
+/* v129.4: native preloading includes the approved poison art. */
+["assets/images/image-7bd85420b87fe509.png",
+ "assets/images/image-9fefc7d43e4e2991.png",
+ "assets/images/image-400d5a40a5483289.png",
+ "assets/images/image-2beb0f04415f0907.png",
+ "assets/images/image-b38e0c8d0b7d36a8.png",
+ "assets/images/image-85da16f0c7d74eb5.png",
+ "assets/images/image-6904979aaee9e3da.png",
+ "assets/images/image-b650022aa329ae8d.png",
+ "assets/images/image-b1023ee71a6c3415.png",
+ "assets/images/image-f09e0af34d513450.png",
+ "assets/images/image-a4e414e94cc2e30b.png"].forEach((src,i)=>{ASSETS["poisonCloud"+String(i+1).padStart(2,"0")]=src;});
+ASSETS.poisonBubbles="assets/images/image-72d63a4c5e2d43ff.png";
+ASSETS.fletchIdle="assets/images/fletcher-idle-d4841c9c05bae447.png";
 const IMG={}; let loaded=0; const total=Object.keys(ASSETS).length;
 /* v124b: a missing or slow image no longer freezes the loading screen. A file that fails is
    swapped for a blank pixel and named in a note at the bottom left; after 20s the game starts
    with whatever has arrived. */
-const ART_BLANK='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+const ART_BLANK='assets/images/image-63ef318d96b5d0d0.png';
 function artMissing(src){ (window.ARTMISS||(window.ARTMISS=[])).push(src); console.warn('KEYWARD: art did not load:',src);
   let d=document.getElementById('art-missing');
   if(!d){ d=document.createElement('div'); d.id='art-missing';
@@ -301,9 +315,8 @@ function artMissing(src){ (window.ARTMISS||(window.ARTMISS=[])).push(src); conso
 for(const k in ASSETS){ const im=new Image(); let done=false; const fin=()=>{ if(!done){ done=true; loaded++; } };
   im.onload=fin; im.onerror=()=>{ artMissing(ASSETS[k]); im.onerror=null; im.onload=fin; im.src=ART_BLANK; };
   im.src=ASSETS[k]; IMG[k]=im; }
-/* v124b: opened by double-clicking index.html? Browsers block the art tools there (file://).
-   Say so on screen instead of failing quietly: PLAY.cmd serves the folder properly. */
-if(location.protocol==='file:'){ const n=document.createElement('div'); n.id='file-note';
+/* The split folder needs a local server for file:// media; embedded exports do not. */
+if(location.protocol==='file:'&&Object.values(ASSETS).some(src=>!src.startsWith('data:'))){ const n=document.createElement('div'); n.id='file-note';
   n.textContent='Opened from a file: some art may not load. Double-click PLAY.cmd in the KEYWARD-Web folder to play.';
   Object.assign(n.style,{position:'fixed',left:'50%',top:'12px',transform:'translateX(-50%)',zIndex:10001,padding:'8px 12px',background:'#14232aee',color:'#e7dcc2',font:'13px system-ui'});
   (document.body||document.documentElement).appendChild(n); }
@@ -316,7 +329,7 @@ const SHEET={
   /* THE ALMONER: the pack's YELLOW pawn, carrying meat. Yellow because red is every
      enemy in this game and blue is the archer - a third faction colour is the only way a
      unit running AT you can read as help at a glance. foot:57, measured, not guessed. */
-  supRun:{fs:192,n:6,foot:57}, supIdle:{fs:192,n:8,foot:57},
+  supRun:{fs:192,n:6,foot:57}, supIdle:{fs:192,n:8,foot:57}, fletchIdle:{fs:192,n:8,foot:57},
   /* THE ARROW COURIER, carrying shafts rather than meat. Same 1152x192 sheet, same
      six frames, and every frame bottoms out on source row 134 - which is the row
      supRun bottoms out on in this build, measured - so foot:57 carries over and the
@@ -407,6 +420,8 @@ const SHEET={
      check that its bake did not shift anything.
      smShot and smBoom take foot 0 - they are not bodies standing on ground, they are a
      thing in the air and a thing happening, drawn from their own centres. */
+  bmBoltCast:{fs:192,n:9,foot:81},
+  bmFloat:{fs:192,n:16,foot:81}, bmCast:{fs:192,n:9,foot:81},
   srRun:{fs:224,n:5,foot:47},    srAtk:{fs:224,n:8,foot:47},
   lcRun:{fs:288,n:6,foot:47},    lcAtk:{fs:288,n:8,foot:47},
   /* THE TROLL AT x0.625 - the first downscale in the project, and NEAREST because a
@@ -1508,14 +1523,40 @@ async function pullWords(tag){
 { const add=(k,ws)=>{ const have=new Set(WORDS[k]); for(const w of ws) if(!have.has(w) && tierOf(w)===k){ WORDS[k].push(w); have.add(w); } };
   add("T5", ["abomination", "adversary", "ambuscade", "annihilation", "assassination", "banishment", "barbarian", "battleground", "benediction", "benevolence", "blacksmith", "bloodletting", "brotherhood", "cannonade", "catastrophe", "cathedral", "chancellor", "chivalrous", "cloudburst", "commandment", "conscription", "constellation", "contraband", "crossbowman", "decapitate", "demolition", "desolation", "destruction", "dismemberment", "drawbridge", "dreadnought", "earthquake", "embankment", "encampment", "enchantress", "enlightenment", "excruciating", "executioner", "expedition", "fortification", "frostbitten", "guillotine", "hellhound", "highwayman", "homunculus", "immolation", "incantation", "incineration", "indulgence", "infestation", "inquisition", "interloper", "invocation", "juggernaut", "lamentation", "lycanthrope", "magistrate", "malediction", "masquerade", "mausoleum", "metamorphosis", "mischievous", "mortification", "mountaineer", "munitions", "necropolis", "persecution", "pilgrimage", "plunderer", "portcullis", "premonition", "quarantine", "ramshackle", "ransacked", "reckoning", "redemption", "resurrection", "revelation", "revolution", "scriptorium", "shipwreck", "skirmisher", "sorceress", "sovereignty", "spellbound", "stronghold", "subterfuge", "superstition", "tabernacle", "torchbearer", "tribulation", "underworld", "vanquished", "villainous", "vindication", "witchcraft", "wraithlike"]);
   add("T6", ["cartographer", "condemnation", "defenestration", "deliverance", "devastation", "extermination", "gravedigger", "illumination", "incarceration", "phantasmagoria", "thunderstorm", "consecration", "counterattack", "disintegration", "fortuneteller", "headquarters", "indestructible", "mountainside", "nightwatchman", "perseverance", "reconciliation", "thunderclap", "unbreakable", "unquenchable", "embezzlement", "determination"]); }
+
+/* v130.1: MORE SHIPPED NAMES. Every pool is redrawn at each stage start (a fetched pool, or the
+   built-in one when the fetch fails), so a stage drew at random from the whole tier with no memory of
+   the last stage. With 34-115 names per tier, 36-46% of a chapter's names were repeats. These are
+   themed names put through tierOf(), so a word only lands in the tier its difficulty says. */
+{ const add=(k,ws)=>{ const have=new Set(WORDS[k]); for(const w of ws) if(!have.has(w) && tierOf(w)===k){ WORDS[k].push(w); have.add(w); } };
+  add("T1", ["dais", "fief", "imp", "inn", "lute", "lyre", "moor", "tome", "elm", "howl", "oar", "rook", "shod", "weld", "ale", "awl", "bat", "bay", "cob", "cog", "cub", "dew", "ewe", "fir", "gem", "hag", "hay", "hog", "ink", "jay", "lye", "mat", "mug", "nag", "nib", "oat", "pew", "pod", "ram", "rod", "rue", "sty", "tin", "vat", "wax", "wren"]);
+  add("T2", ["abbey", "altar", "baron", "bugle", "cairn", "cask", "chasm", "clan", "coffer", "comet", "copse", "crag", "crest", "crown", "dell", "dirk", "drake", "drum", "earl", "effigy", "envoy", "ferry", "flail", "flint", "gable", "giant", "gorge", "harpy", "hawk", "heath", "hermit", "hostel", "idol", "keep", "ladle", "lark", "levy", "lord", "manor", "marsh", "mason", "monk", "mule", "nomad", "plow", "priest", "ridge", "rogue", "sage", "serf", "shield", "shrine", "siege", "sigil", "snare", "spear", "spire", "sword", "thane", "tithe", "torch", "turret", "viper", "wraith", "claw", "clay", "coal", "cult", "flax", "glen", "gnat", "grub", "hive", "jest", "knot", "mead", "mole", "pelt", "scab", "silk", "thorn", "wasp", "wick", "lamb"]);
+  add("T3", ["amulet", "anvil", "archer", "archway", "armory", "armour", "axeman", "badger", "bailiff", "bandit", "bastion", "blade", "bogland", "bonfire", "bowman", "brook", "buckler", "bulwark", "caldron", "canyon", "cellar", "chamber", "chariot", "chisel", "cleric", "clover", "cobbler", "combat", "coronet", "corsair", "coven", "cutlass", "damsel", "deacon", "demon", "drover", "duchess", "dungeon", "dwarf", "elder", "elixir", "emblem", "emissary", "ermine", "farrier", "fealty", "fennel", "flagon", "fletcher", "footpad", "foundry", "friar", "garrison", "glade", "gnoll", "goblin", "gorget", "halberd", "hamlet", "harbor", "hauberk", "haven", "helmet", "herald", "hilltop", "horseman", "hound", "icicle", "incense", "inkwell", "jester", "knave", "lance", "ledger", "lichen", "maiden", "meadow", "mortar", "musket", "oracle", "orchard", "outlaw", "outpost", "paladin", "peasant", "pennant", "pewter", "prince", "prophet", "quarry", "ranger", "regent", "rookery", "sabre", "saddle", "satchel", "scribe", "scroll", "shaman", "skald", "smithy", "stable", "steed", "tankard", "tavern", "templar", "thatch", "troll", "valley", "vault", "venom", "village", "vizier", "warrior", "waystone", "wildwood", "woodsman", "wyvern", "yeoman", "armourer", "tanner", "tapster", "thornwood", "wildfire"]);
+  add("T4", ["acolyte", "alchemy", "almanac", "arbalest", "arrowhead", "banquet", "barbican", "bellows", "berserker", "bestiary", "bootmaker", "bramble", "breach", "brigand", "buttress", "castellan", "catapult", "cauldron", "cavalry", "centaur", "chalice", "chaplain", "chieftain", "citadel", "claymore", "cloister", "coinpurse", "colossus", "courtyard", "covenant", "crucible", "culvert", "decree", "dervish", "falconer", "fortress", "frostbite", "furnace", "gambeson", "gatehouse", "gauntlet", "gazebo", "gryphon", "guildhall", "harvest", "highland", "homestead", "huntsman", "jousting", "kingdom", "labyrinth", "larder", "lawgiver", "lighthouse", "longbow", "lookout", "marauder", "mercenary", "merchant", "minstrel", "monastery", "palisade", "parchment", "phalanx", "pikeman", "pillory", "reliquary", "sanctum", "scabbard", "scholar", "sorcerer", "steward", "stockade", "tapestry", "tracker", "treasury", "trebuchet", "verger", "vestry", "vineyard", "warlord", "watchtower", "windmill", "wizard", "zealot", "archdruid", "ballista", "centurion", "chronicler", "crossroads", "dragonfly", "earthwork", "falchion", "flagellant", "gatekeeper", "goldsmith", "halfling", "harbinger", "herbalist", "horseshoe", "hourglass", "mapmaker", "moonstone", "nightshade", "outrider", "ringmaster", "sanctuary", "seneschal", "shieldwall", "slingshot", "spearhead", "stonemason", "swordsman", "timberland", "townsfolk", "vagabond", "warhammer", "watchman", "waterwheel", "whirlwind", "woodcutter", "wordsmith", "battlecry", "bloodmoon", "frostwyrm", "heartwood", "hobgoblin", "innkeeper", "knighthood", "nightmares", "ravenous", "scrivener", "shipwright", "torchlight", "treasurer", "troubadour", "vanguard", "warmonger", "watchfire", "whispering", "windswept", "tournament", "wilderness", "exorcism", "exquisite", "vexation", "quicksand", "quagmire", "quixotic", "blackwood", "snowdrift", "stockpile", "zephyr", "jackals", "jousters", "exchequer"]);
+  add("T5", ["avalanche", "blackguard", "blizzard", "bloodhound", "broadsword", "chainmail", "conjurer", "firebrand", "wolfhound", "apprentice", "barricade", "blacksmithing", "bladesmith", "boatswain", "bonecrusher", "commandery", "drawstring", "fishmonger", "glassblower", "gravestone", "greatsword", "gunpowder", "ironmonger", "kingsguard", "leatherwork", "lodestone", "longsword", "lumberjack", "marketplace", "moneylender", "peacekeeper", "scarecrow", "silversmith", "spellcaster", "stormcaller", "bridgekeeper", "candlemaker", "cartwright", "clocktower", "dragonscale", "dragonslayer", "executioners", "gravekeeper", "kingmaker", "lionheart", "masterwork", "mercenaries", "moonlighter", "nightingale", "overgrowth", "palisades", "pathfinder", "quicksilver", "shadowmancer", "silverware", "skullcrusher", "spellbinder", "stormbringer", "swordmaster", "thunderhead", "weathervane", "wildflower", "witchhunter", "woodpecker", "brotherhoods", "grandmaster", "hallucination", "indomitable", "interrogation", "labyrinthine", "machinations", "misadventure", "northernmost", "philosopher", "quarrelsome", "sacrilegious", "treacherous", "unstoppable", "vainglorious", "whereabouts", "jackknife", "jabberwocky", "bewitchment", "equivocation", "zigzagging", "jackanapes", "rambunctious", "skullduggery", "backswing", "breakneck", "jawbreaker", "kingsblood", "lumberjacks", "pickpocket", "quickening", "sacrificial", "seaworthy", "spellcraft", "swashbuckler", "switchback", "knucklebone"]);
+  add("T6", ["underbrush", "cartographers", "fortifications", "necromancers", "thunderbolts", "unconquerable", "uninhabited", "quarterstaff", "thunderstruck", "quartermasters"]);
+}
+/* v130.1: WORD MEMORY. Each word keeps the serial of its last use, across stages and sessions
+   (localStorage). A refilled bag is ordered oldest-used first with some jitter, so a name only comes
+   back after most of its tier has been seen, instead of at random. */
+const WAGE=(()=>{try{return JSON.parse(localStorage.getItem('kw_wordage')||'{}')||{};}catch(e){return {};}})();
+let WSER=0; for(const k in WAGE) if(WAGE[k]>WSER) WSER=WAGE[k];
+let wageDirty=false;
+function wageSave(){ if(!wageDirty) return; wageDirty=false; try{localStorage.setItem('kw_wordage',JSON.stringify(WAGE));}catch(e){} }
+function wageMark(w){ WAGE[w]=++WSER; wageDirty=true; }
+function lruOrder(list){
+  const ranked=list.slice().sort((a,b)=>(WAGE[a]||0)-(WAGE[b]||0));
+  const spread=Math.max(3,Math.round(ranked.length*.2));
+  return ranked.map((w,i)=>[w,i+Math.random()*spread]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
+}
 function refill(t){
   const pool=POOL[t]||[];
   /* v94: only names not yet used this stage go back in the bag (usedW is cleared at every
      stage start). Before, an empty bag was refilled with the WHOLE pool, so a small tier
      handed out the same names over and over. */
   bag[t]=pool.filter(w=>!usedW.has(w) && fair(w));   /* v99: the R18 gate, on shipped words as well */
-  for(let i=bag[t].length-1;i>0;i--){ const j=(Math.random()*(i+1))|0;
-    [bag[t][i],bag[t][j]]=[bag[t][j],bag[t][i]]; }
+  bag[t]=lruOrder(bag[t]);   /* v130.1: oldest-used first, was a plain shuffle */
+  wageSave();
 }
 /* First letters MUST be unique among live enemies or locking is ambiguous.
    The old version scanned only its own tier's bag and, when every remaining
@@ -1548,7 +1589,7 @@ function pick(tier,avoid){
   const order=[TIERS[home]];
   for(let d=1;d<=home;d++) order.push(TIERS[home-d]);
 
-  const take=w=>{ usedW.add(w); return w; };
+  const take=w=>{ usedW.add(w); wageMark(w); return w; };
   /* v94: NO REPEATS INSIDE A STAGE. First every tier is searched for a name not yet used
      this stage - its own tier first, then the nearest ones - and only when every name
      with a free first letter has been used does a name come round a second time. */
@@ -1564,7 +1605,7 @@ function pick(tier,avoid){
   for(const t of order){                            /* everything used: repeat, own tier first */
     const pool=POOL[t]; if(!pool||!pool.length) continue;
     const c=pool.filter(w=>!taken.has(w[0]) && fair(w));
-    if(c.length) return take(c[(Math.random()*c.length)|0]);
+    if(c.length) return take(lruOrder(c)[0]);   /* v130.1: the one seen longest ago */
   }
   /* v114: and never from a harder tier at all. If every name with a free first letter in this
      tier and the easier ones is on the board, the caller waits a beat (a spawn), keeps the old
@@ -1668,8 +1709,7 @@ const CHDEF=[
    {n:"XXVII  the rot",       waves:[{T3:4,HX:1,HR:1},{T3:3,T5:1,HR:3}]},
    {n:"XXVIII  the causeway", waves:[{T3:4,T5:1,HX:1},{T3:2,T5:1,HR:3,HL:1}]},
    {n:"XXIX  the last mile",  waves:[{T3:4,HR:2,T4:1},{T3:3,T5:1,HR:3,HL:1}]},
-   {n:"XXX  THE BLIGHT",      waves:[{T3:4,T5:1,HR:2},{T3:3,T5:2,HR:3,HL:1},
-                                     {T3:2,T5:1,HR:1,SR:1}], boss:true},
+   {n:"XXX  THE BLIGHTMOTHER",waves:[{T3:4,T5:1,HR:2},{T3:3,T5:2,HR:3,HL:1},{T3:2,T5:1,HR:1,BM:1}],boss:true},
  ]},
  /* ------------------------------------------------------------------- CHAPTER IV
     The Stormward. Spark, and the Herald that Spark exists to delete.
@@ -1986,7 +2026,7 @@ function light(m,secs){ m.lit=Math.max(m.lit||0,secs*nodeElem()); m.litFx=1; m.s
    halfway through counts. Press 1 again to take it back: nothing is spent. The cooldown starts
    when it looses. Every skill takes FLAT half hearts, and a burnt / struck half goes with the
    next arrow (HP_FIN), so a one-heart enemy is finished by an arrow, never by the skill alone. */
-let HP_FIN=1.5;          /* an arrow kills anything at or below this many hearts */
+let HP_FIN=1;   /* v125: was 1.5 - half a heart of skill damage no longer deletes a typed name */          /* an arrow kills anything at or below this many hearts */
 const SK_DMG=0.5;
 const SK_OF={1:"burn",4:"burn",5:"burn",2:"freeze",6:"freeze",3:"thunder",7:"thunder"};
 const SKDEF={
@@ -3176,6 +3216,7 @@ const MOBDEF={
      Frost is what buys the distance rather than the unit being simply unbeatable.
      NO BLIGHT TRAIL YET - see bosses4.py. The speed is the rule and it ships; the trail
      was the tell and it does not. `fast` carries the plaque tag that stands in for it. */
+  BM:{sheet:"bmFloat",atk:"bmCast",spd:40,label:"Blightmother",mark:true,big:true,words:["T4","T3"],radius:38,sep:54},
   SR:{sheet:"srRun", atk:"srAtk", fast:true, spd:116, label:"Spider", mark:true, big:true,
       words:["T4","T3"], radius:38, sep:46},
   /* THE LANCER - Chapter VII, and the only unit in the game that hits from outside its
@@ -3286,7 +3327,7 @@ const BESTIARY={
   HL:{ch:"I",  rule:"UNDOES A KILL, and the enemy stands up with a name ONE TIER HARDER. Twice, "
                    +"across two allies. Ember does not stop it.",
        counter:"Kill the Healer first, or spend both heals. It never saves itself."},
-  HR:{ch:"III", rule:"NOTHING SPECIAL, AND THAT IS THE POINT — the fastest body after the Spider. "
+  HR:{ch:"III", rule:"NOTHING SPECIAL, AND THAT IS THE POINT — one of the fastest ordinary enemies. "
                     +"You cannot read, type and retreat from two of them.",
        counter:"FREEZE (3). Frozen, then slower than a Footman for two seconds."},
   HD:{ch:"IV", rule:"A T6 NAME on an ordinary body: Ogre-length words on something that dies "
@@ -3324,7 +3365,9 @@ const BESTIARY={
      "a unit added to MOBDEF without a row here fails at BOOT, loudly". It did -
      `BESTIARY: no row for LZ` - before a single frame drew. Two lines, like every
      other row: what it does, and what you do about it. */
-  SR:{ch:"III · XXX", /* 116, NOT 96. The Open Window asked for 96 and v41 measured that to be SLOWER than
+  BM:{ch:"III · XXX",rule:"CASTS BOUNCING POISON, AIMED BOLTS AND METEORS between occasional poison fields. The glob locks each landing, then aims again for its next hop (three hops maximum). Dodge the bolt and bouncing glob; leave the marked meteor circle. A three-second countdown warns before the four-second arena field.",
+      counter:"Type during the warning. Freeze delays the cast; killing her clears it. Clouds and the field share one exposure clock: at base resistance, damage starts after 2.4 seconds and repeats every 1.4 seconds. The last heart takes three names."},
+  SR:{ch:"Endless", /* 116, NOT 96. The Open Window asked for 96 and v41 measured that to be SLOWER than
      the Harrier standing beside it in III-XXX's own boss wave. The number was corrected
      in the build and not here, so the Library has been a chapter out of date - and the
      card below traces to the Library, which is how a stale number reaches a new screen. */
@@ -3345,9 +3388,8 @@ const BESTIARY={
        counter:"Sprint or turn when the ring fills, type while it catches its breath, use the green Slam gap, and interrupt either buff cast with an arrow. "
               +"Only Slam briefly blocks a new name; a name already started always survives."},
   TU:{ch:"II · XX", rule:"ITS SHELL IS ITS TELL. Open, it bites up close and spits water from "
-                       +"afar; shut, it slides and bowls over its own side. Miss it and it ends belly up.",
-       counter:"Wait, or press 1 — Burn opens it early. Waiting costs one name, which "
-              +"is exactly what the Burn would have bought."},
+                       +"afar; shut, it slides and bowls over its own side. Its FREEZING DOWNPOUR drops three waves of icy water balls across the arena.",
+       counter:"Burn opens its shell early. Move between Downpour's warning circles into a dry spot. The falling water balls briefly freeze movement, but you can still type."},
   SK:{ch:"V · L", rule:"WARDED WHILE ANYTHING ELSE LIVES. Every arrow rings off it "
                       +"for as long as one other enemy is standing.",
        counter:"Clear the room around it. The ward is not on a clock and there is nothing "
@@ -3380,7 +3422,7 @@ const BESTIARY={
 };
 /* the order the library lists them in: the order a player MEETS them, not MOBDEF's order and
    not alphabetical. A library sorted by first sight reads as a record of the campaign. */
-const LIB_ORDER=["T1","T2","T3","T4","MN","WD","HX","HL","T5","HR","BW","OG","HD","LN","SC","AD","TU","SR","SM","SK","SN","SP","LZ","LC","MS","TR","LV","LS","SD"];
+const LIB_ORDER=["T1","T2","T3","T4","MN","WD","HX","HL","T5","HR","BW","OG","HD","LN","SC","AD","TU","BM","SR","SM","SK","SN","SP","LZ","LC","MS","TR","LV","LS","SD"];
 /* THE CHECK, at boot, beside the two that already run over the waves. It is here rather than in
    a test file for the reason the wave validators are: a missing row is not a wrong pixel, it is
    a unit the player can meet and never look up, and the cost of finding that in a test run a
@@ -3507,7 +3549,7 @@ function saveNow(){
          as points would hand those players most of the tree. Dropped the way `stock`
          was dropped, which needed no version bump: an unknown field is not read. */
       v:3, chapter:S.chapter,
-      prog:S.prog.map(x=>({cleared:x.cleared, unlocked:x.unlocked,
+      fj131:1, sp131:1, prog:S.prog.map(x=>({cleared:x.cleared, unlocked:x.unlocked,
                            rec:(x.rec||[]).map(r=>r&&{wpm:r.wpm|0, stk:r.stk|0, by:r.by||""})})),
       ledger:(S.ledger||[]).map(r=>({w:r.w, t:r.t, d:r.d|0, f:r.f|0})),
       mute:S.mute, net:NET.on, taught:S.taught, seen:S.seen, tele:TELE, sky:S.sky, run:S.run, wlen:S.wlen|0, pace:S.pace|0,
@@ -3667,6 +3709,21 @@ function saveLoad(){
   if(d.tabs&&typeof d.tabs==="object")
     for(const t of TREE) if(d.tabs[t.key]) S.tabs[t.key]=1;
   S.sp=Math.max(0, Math.min(999, d.sp|0));
+  /* v131.1: the five arrow skills used to be a free Lv 1. A save from before keeps its levels:
+     the free level becomes a rank, and the point that pays for it is added, so the points
+     left to spend do not change. A new game starts with no skills. */
+  if(!d.sp131 && Array.isArray(d.prog)){
+    /* v131.2: from 21 Oct to now only stages III, VI, VIII and the boss paid. Every cleared
+       stage pays again, and the boss pays 3, so a save gets the difference it is owed. */
+    let owed=0;
+    for(const x of d.prog){ const c=Math.min(NSTAGE,(x&&x.cleared)|0);
+      for(let s=0;s<c;s++) owed+=stageSkillReward(s)-(s===NSTAGE-1?2:[2,5,7].includes(s)?1:0); }
+    if(owed>0) S.sp=Math.min(999,(S.sp|0)+owed);
+  }
+  if(!d.fj131 && (d.prog||[]).some(x=>x && (x.cleared|0)>0)){
+    for(const k of ['job_burn','job_freeze','job_thunder','job_venomArrow','job_gustArrow']){
+      S.ranks[k]=Math.min(3,(S.ranks[k]|0)+1); S.sp=Math.min(999,(S.sp|0)+1); }
+  }
   /* MIGRATION. The flat six-node shop that came before this stored nodes:{fletch:1,...}. Each
      of those nodes is now the FULL ladder of its successor skill - Fletching gave the whole
      25%, not a fifth of it - so an old save converts to max ranks, and the points it never
@@ -3869,6 +3926,7 @@ function blightTiles(m){
   m.__blight=out; m.__blightN=n; return out;
 }
 function smokeTick(dt){
+  if(window.PoisonFog && PoisonFog.tick(dt)) return;
   /* NOT GATED ON THE SKY SWITCH, and the first version was - which is how it came to be
      reported missing. The reasoning had been "it drifts, so it belongs with the clouds", and
      that reasoning was wrong twice over. The switch is SAVED, so a player who turned the
@@ -4320,7 +4378,7 @@ const DMG={
   /* the line */
   LS:15, HD:15, T3:18, AD:18, SD:18, WD:20, T5:20, BW:20,
   /* the chapter bosses */
-  SR:20, LC:24, MS:24, MN:25, TU:25, SK:26, LZ:26, OG:30, TR:35,
+  BM:20, SR:20, LC:24, MS:24, MN:25, TU:25, SK:26, LZ:26, OG:30, TR:35,
 };
 const DMG_HAZ={ throw:20, blight:10, storm:20, letgo:15 };
 /* A HEAVY BLOW KNOCKS YOU CLEAR: half a second more grace after any hit of 24 or more, so a
@@ -4345,7 +4403,7 @@ const MN={
   HALF:46,                       /* half the lane's width, and the rush's hit radius */
   RUSH_DMG:30, SHOVE:54,
   DAZE:2.5, TURN:1.2, ROAR:1.5,
-  CROUCH:.5, AIR:1.2, RING_LOCK:.8, RING_IN:72, RING_OUT:116, LEAP_H:150,
+  CROUCH:.5, AIR:1.2, RING_LOCK:.8, RING_IN:104, RING_OUT:160, LEAP_H:150,   /* v131.6: was 72 / 116 */
   LEAP_DMG:30, EDGE_DMG:10, STUCK:1.0, LEAP_CD:8, LEAP_MIN:2*64, LEAP_MAX:7*64,
   ENRAGE:.75, LAST_N:3, CONE:100*Math.PI/180, CONE_R:84,
 };
@@ -4402,7 +4460,7 @@ function minoTick(m,dt){
   if(b.st==="walk"){
     m.z=0;
     if(m.stagger>0 || m.wind>0 || m.swing>0) return false;
-    if(b.phase<2 && m.hp<=2.01){                         /* THE HALFWAY TURN */
+    if(b.phase<2 && m.hp<=hpOf('MN')/2+.01){                         /* THE HALFWAY TURN */
       minoStart(m,b,"roar",MN.ROAR); b.phase=2; m.brace=0;
       S.shake=Math.max(S.shake,12); noise(.55,.06,240); blip(120,.5,"sawtooth",.09,70);
       for(let i=0;i<2;i++) spawnMob("T2");
@@ -4515,9 +4573,9 @@ function minoTick(m,dt){
         const c=cellAt(W,m.x,m.y); if(c && c.walk && c.t!=="stair") m.level=c.level;
         if(!c || !c.walk) rescue(W,m);
         S.shake=Math.max(S.shake,15); fx.push({k:"boom",x:m.x,y:m.y,f:0});
-        for(let i=0;i<6;i++){ const a=i*Math.PI/3; fx.push({k:"dust",x:m.x+Math.cos(a)*50,y:m.y+Math.sin(a)*22,f:Math.random()}); }
+        for(let i=0;i<8;i++){ const a=i*Math.PI/4; fx.push({k:"dust",x:m.x+Math.cos(a)*MN.RING_IN*.8,y:m.y+Math.sin(a)*MN.RING_IN*.36,f:Math.random()}); }
         blip(60,.4,"sawtooth",.12,35);
-        const d=Math.hypot(P.x-m.x,P.y-m.y);
+        const d=Math.hypot(P.x-m.x,(P.y-m.y)*2);   /* v131.6: the same oval the ring is drawn as (it is drawn at half height) */
         const dmg = d<MN.RING_IN ? MN.LEAP_DMG : d<MN.RING_OUT ? MN.EDGE_DMG : 0;
         if(dmg && S.iframe<=0 && P.level===m.level){
           S.flash=.5;
@@ -4616,7 +4674,7 @@ function minoBar(){
   g.textAlign="left"; g.textBaseline="alphabetic";
   g.font='bold 11px system-ui'; g.fillStyle="#9fb0b8"; g.fillText("BOSS · "+L[0],x+12,y+17);
   g.font='bold 15px system-ui'; g.fillStyle="#f2ece0"; g.fillText("THE MINOTAUR",x+12,y+34);
-  const max=4, hw=HRT_W, gap=6, tw=max*hw+(max-1)*gap, hx=x+w-12-tw;
+  const max=hpOf('MN'), hw=HRT_W, gap=6, tw=max*hw+(max-1)*gap, hx=x+w-12-tw;
   for(let i=0;i<max;i++) heart(hx+i*(hw+gap), y+16, Math.max(0,Math.min(1,(m.hp||0)-i)));
   g.font='600 12px system-ui'; g.fillStyle=L[2]; g.fillText(L[1],x+12,y+51);
   g.restore();
@@ -4678,7 +4736,7 @@ function turtLast(m,b,newName){
   b.last=true; b.lastN=TT.LAST_N; m.hp=1; b.dp=true;
   if(newName){ const w=pick("T3",[m.word])||pick("T4",[m.word]); if(w){ m.word=w; m.wtier=tierOf(w)||"T3"; } }
   S.shake=Math.max(S.shake,8); blip(140,.3,"sawtooth",.08,80);
-  toast("ITS LAST HEART — three names, and it calls the Downpour again.",3.4);
+  toast("ITS LAST HEART — three names, and it calls the freezing Downpour again.",3.4);
 }
 function turtSpare(m){
   const b=m.boss; if(!b) return false;
@@ -4717,14 +4775,13 @@ function turtGate(m,b){
   if(wd && st){ wd.x=st[0]*T+T/2; wd.y=(st[1]+1)*T+T/2-8; wd.level=0; }
   if(wd){ wd.gateWd=true; (S.tw||(S.tw=twNew())).gateWd=wd; }
   S.shake=Math.max(S.shake,10); blip(110,.5,"sawtooth",.08,60); noise(.4,.05,300);
-  toast("THE GATE OPENS — a Warden walks out, and the Turtle calls the DOWNPOUR.",3.4);
+  toast("THE GATE OPENS — a Warden walks out, and the Turtle calls a FREEZING DOWNPOUR.",3.4);
 }
-function turtDownpour(m,b){
-  const tw=S.tw||(S.tw=twNew());
+function turtWaterBall(m,b){
   turtSt(b,"suWind",TT.SU_WIND); m.armour=false;
-  tw.rain={per:TT.SU_PER[b.last?1:0], waves:TT.SU_WAVES, t:-TT.SU_WIND-TT.SU_GEY, plan:[], hits:0, dim:0, streaks:[], owner:m};
+  TurtleBall.start(m);
   blip(200,.3,"sine",.07,420);
-  teach("tudown","DOWNPOUR — rings fall all over the map. Each wave leaves a dry spot: walk to it.");
+  teach("tuball","FREEZING DOWNPOUR — three waves of water balls fall across the map. Find the dry spots; a hit freezes movement briefly, but you can still type.");
 }
 function turtTick(m,dt){
   const b = m.boss || (m.boss={st:"walk",t:0,t0:0,phase:1,last:false,lastN:0,half:false,walkT:0,hist:[],dp:false});
@@ -4743,8 +4800,8 @@ function turtTick(m,dt){
   if(b.st==="walk"){
     m.armour=false;
     if(m.stagger>0) return false;
-    if(!b.half && m.hp<=2.01){ b.half=true; b.phase=2; turtGate(m,b); return true; }
-    if(b.dp){ b.dp=false; turtDownpour(m,b); return true; }
+    if(!b.half && m.hp<=hpOf('TU')/2+.01){ b.half=true; b.phase=2; turtGate(m,b); return true; }
+    if(b.dp){ b.dp=false; turtWaterBall(m,b); return true; }
     b.walkT+=dt;
     if(held || m.level!==P.level) return false;
     const due=TT.WALK[b.last?2:b.phase-1];
@@ -4825,7 +4882,7 @@ function turtTick(m,dt){
     case "hide": m.armour=true;
       if(m.lit>0){ m.armour=false; turtSt(b,"walk",0); m.shellFx=SHEET.tuOut.n/FPS; return true; }
       if(b.t<=0){ m.armour=false; m.shellFx=SHEET.tuOut.n/FPS; turtSt(b,"walk",0); } return true;
-    case "gate": m.armour=true; if(b.t<=0){ m.armour=false; turtDownpour(m,b); } return true;
+    case "gate": m.armour=true; if(b.t<=0){ m.armour=false; turtWaterBall(m,b); } return true;
     case "suWind": { m.armour=false; const mo=turtMouth(m,false);
       if(Math.random()<dt*34){ let s0=null; for(let k=0;k<8 && !s0;k++){ const a=rnd2(0,6.283), r=rnd2(260,520), x=m.x+Math.cos(a)*r, y=m.y+Math.sin(a)*r*.7; const c=cellAt(W,x,y); if(c && c.t==="water") s0=[x,y]; }
         if(s0) twAdd({k:"pull",x0:s0[0],y0:s0[1],cx:(s0[0]+mo.x)/2+rnd2(-60,60),cy:Math.min(s0[1],mo.y)-rnd2(60,140),x1:mo.x,y1:mo.y,t:rnd2(.45,.7),T:.7,s:rnd2(3,5)}); }
@@ -4873,11 +4930,10 @@ function twLand(ball){
   twSplash(x,y,ball.kind==="spit");
   for(const o of mobs){ if(o.dead || o.turt || skImmune(o)) continue;
     if(Math.hypot(o.x-x,(o.y-y)*1.4)<TT.RING) { o.stun=Math.max(o.stun||0,.8); o.shake=Math.max(o.shake||0,.3); } }
+  if(ball.kind==="rain"){ TurtleBall.impact(ball); return; }
   if(Math.hypot(P.x-x,P.y-y)<TT.RING+6 && S.iframe<=0){
     if(ball.kind==="spit"){ S.flash=.45;
       if(loseWard("the Turtle's water spit", TT.SPIT_DMG,ball.owner)) return; S.iframe=nodeIframe(); }
-    else { const rn=S.tw.rain; if(rn && rn.hits<TT.SU_CAP){ rn.hits++; S.flash=.4;
-      if(loseWard("the Downpour", TT.SU_DMG,rn.owner)) return; S.iframe=.6; } }
   }
 }
 function turtFxTick(dt){
@@ -4891,6 +4947,7 @@ function turtFxTick(dt){
     for(let i=0;i<4;i++) fx.push({k:"dust",x:wd.x+rnd2(-16,16),y:wd.y+rnd2(-8,8),f:i});
     toast("the Turtle is beaten — its Warden flees back through the Gate",3);
     tw.gateWd=null; }
+  TurtleBall.tick(dt);
   /* the rain */
   const rn=tw.rain;
   if(rn && !rn.over){ rn.t+=dt;
@@ -4903,6 +4960,7 @@ function turtFxTick(dt){
   if(rn){ for(const q of rn.streaks){ q.y+=q.v*dt; q.x-=q.v*.18*dt; } rn.streaks=rn.streaks.filter(q=>q.y<W.h*T+20);
     if(rn.over){ rn.dim=Math.max(0,rn.dim-dt*1.2); if(rn.dim<=0 && !rn.streaks.length) tw.rain=null; } }
   if(tw.up){ tw.up.y-=dt*1500; if(tw.up.y<-200) tw.up=null; }
+
   /* balls */
   for(const c of tw.balls){ if(c.done) continue; c.t+=dt; if(c.t<0) continue;
     if(c.ring.done && !c.landed){ c.done=true; continue; }      /* its volley was called off */
@@ -4927,13 +4985,13 @@ function turtFxTick(dt){
 }
 /* ---- drawing (world coordinates, minus cam) ---- */
 function twEll(x,y,r,ry){ g.beginPath(); g.ellipse(x,y,r,ry,0,0,Math.PI*2); }
-function twRing(x,y,k,locked,flash,fade,closing){
+function twRing(x,y,k,locked,flash,fade,closing,icy){
   const R=TT.RING, pul=k>.72?.5+.5*Math.sin(S.t*40):1;
   g.save(); g.globalAlpha=fade;
-  g.fillStyle="rgba(220,50,30,"+(locked?.22:.11)+")"; twEll(x,y,R,R*.5); g.fill();
+  g.fillStyle=(icy?"rgba(58,155,222,":"rgba(220,50,30,")+(locked?.22:.11)+")"; twEll(x,y,R,R*.5); g.fill();
   g.fillStyle="rgba(10,30,50,"+(.12+.34*k).toFixed(2)+")"; twEll(x,y,R*(.18+.42*k),R*(.18+.42*k)*.5); g.fill();
   g.strokeStyle="rgba(40,12,8,.55)"; g.lineWidth=8; twEll(x,y,R,R*.5); g.stroke();
-  g.strokeStyle=flash?"#ffffff":(locked?"rgba(255,110,64,"+(.75+.25*pul)+")":"rgba(255,140,100,.75)"); g.lineWidth=locked?3.5:2.5; twEll(x,y,R,R*.5); g.stroke();
+  g.strokeStyle=flash?"#ffffff":icy?"#b9efff":(locked?"rgba(255,110,64,"+(.75+.25*pul)+")":"rgba(255,140,100,.75)"); g.lineWidth=locked?3.5:2.5; twEll(x,y,R,R*.5); g.stroke();
   if(closing){ const cr=Math.max(5,R*(1-k)); g.strokeStyle="rgba(225,246,255,.95)"; g.lineWidth=2; twEll(x,y,cr,cr*.5); g.stroke(); }
   g.restore();
 }
@@ -4948,6 +5006,7 @@ function twBall(px,py,ang,str,size,ph){ const wob=Math.sin(ph==null?S.t*26:ph)*.
 function turtGround(cam){
   const tw=S.tw; const m=turtLive();
   if(tw){
+    TurtleBall.ground(cam);
     /* puddles */
     for(const d of tw.dec){ const age=d.T-d.t, a=Math.min(1,d.t/(d.T*.55)), sh=.75+.25*a;
       g.save(); g.globalAlpha=a; g.translate(d.x-cam.x,d.y-cam.y); g.scale(1,.5);
@@ -4965,7 +5024,7 @@ function turtGround(cam){
       const c=tw.balls.find(q=>q.ring===r);
       let k=0; if(r.kind==="rain") k=Math.min(1,Math.max(0,(S.t-r.appear)/TT.SU_SHOW)); else if(c && c.t>0) k=Math.min(1,c.t/c.T);
       const fade=r.kind==="rain"?Math.min(1,(S.t-r.appear)/.18):1;
-      twRing(r.x-cam.x,r.y-cam.y,k,r.locked,r.flash>0,fade,r.locked);
+      twRing(r.x-cam.x,r.y-cam.y,k,r.locked,r.flash>0,fade,r.locked,r.kind==="rain");
       if(c && (c.t>0 || r.kind==="rain")){ let gx=r.x, gy=r.y; if(c.kind==="spit"){ const p=twPos(c,k); gx=p.gx; gy=p.gy; }
         const s=10+26*k; g.fillStyle="rgba(8,20,32,"+(.12+.32*k).toFixed(2)+")"; twEll(gx-cam.x,gy-cam.y,s,s*.45); g.fill(); } }
   }
@@ -5017,15 +5076,12 @@ function turtTop(cam){
   /* balls in the air */
   for(const c of tw.balls){ if(c.done || c.t<0) continue; const k=Math.min(1,c.t/c.T);
     if(c.kind==="spit"){ const p=twPos(c,k), q=twPos(c,Math.min(1,k+.02)); twBall(p.x-cam.x,p.y-cam.y,Math.atan2(q.y-p.y,q.x-p.x),1.22,1,c.t*26+c.seed); }
-    else { const x=c.tx+c.dx*(1-k), y=c.ty-460*(1-k)*(1-k*.15); twBall(x-cam.x,y-cam.y,Math.PI/2+.17,1.32,1); } }
-  if(tw.up) twBall(tw.up.x-cam.x,tw.up.y-cam.y,-Math.PI/2,1.6,1.6);
+    else { const x=c.tx+c.dx*(1-k), y=c.ty-460*(1-k)*(1-k*.15); TurtleBall.ball(x-cam.x,y-cam.y,c.t*18,.65,-c.dx,460*(1.15-.3*k)); } }
+  if(tw.up) TurtleBall.ball(tw.up.x-cam.x,tw.up.y-cam.y,S.t*18,.8,0,-1);
   for(const p of tw.fx){ if(p.k!=="drop") continue; const sz=Math.max(2,Math.round(p.s)), X=Math.round((p.x-cam.x)/2)*2, Y=Math.round((p.y-p.z-cam.y)/2)*2;
     g.fillStyle="rgba(20,74,128,.85)"; g.fillRect(X-1,Y-1,sz+2,sz+2); g.fillStyle="rgba(120,205,245,.95)"; g.fillRect(X,Y,sz,sz);
     if(sz>=3){ g.fillStyle="#f2fbff"; g.fillRect(X,Y,1,1); } }
-  /* the sky during the Downpour */
-  const rn=tw.rain; if(rn && rn.dim>.01){ g.fillStyle="rgba(8,24,44,"+(.22*rn.dim).toFixed(3)+")"; g.fillRect(-cam.x-40,-cam.y-40,W.w*T+80,W.h*T+80);
-    g.strokeStyle="rgba(200,232,250,"+(.32*rn.dim).toFixed(3)+")"; g.lineWidth=1.5; g.beginPath();
-    for(const q of rn.streaks){ g.moveTo(q.x-cam.x,q.y-cam.y); g.lineTo(q.x+q.l*.18-cam.x,q.y-q.l-cam.y); } g.stroke(); }
+  TurtleBall.top(cam);
 }
 /* the body's own poses, by state; false means "draw it the usual way" */
 function turtDrawBody(mb,wx,wy){
@@ -5058,9 +5114,9 @@ function turtBar(){
     belly: ["BELLY UP · "+Math.max(0,b.t).toFixed(1)+"s", "it missed you — it can't bite or shut. Type!", "#8fdca6"],
     hide : ["SHELL SHUT · "+Math.max(0,b.t).toFixed(1)+"s", (typeof burnOn==="function"&&burnOn())?"wait for it to open, or nock Burn (1) and say its name":"wait — it opens on its own", "#9fb6c6"],
     gate : ["THE GATE OPENS", "a Warden walks out", "#ff8a5a"],
-    suWind:["IT DRAWS IN THE SEA", "DOWNPOUR — rain is coming", "#7fc8f0"],
-    suGey: ["DOWNPOUR", "rain is coming", "#7fc8f0"],
-    suRain:["DOWNPOUR", "find the dry spot between the rings", "#7fc8f0"],
+    suWind:["FREEZING DOWNPOUR", "three waves of icy water balls are coming", "#a7e9fa"],
+    suGey: ["IT FIRES INTO THE SKY", "find a dry spot between the warning circles", "#a7e9fa"],
+    suRain:["FREEZING DOWNPOUR", "dodge the falling balls · keep typing if frozen", "#a7e9fa"],
     winded:["WINDED · "+Math.max(0,b.t).toFixed(1)+"s", "open and still — type!", "#8fdca6"],
   }[b.st] || ["", "", "#e8c27a"];
   g.save();
@@ -5069,7 +5125,7 @@ function turtBar(){
   g.textAlign="left"; g.textBaseline="alphabetic";
   g.font='bold 11px system-ui'; g.fillStyle="#9fb0b8"; g.fillText("BOSS · "+L[0],x+12,y+17);
   g.font='bold 15px system-ui'; g.fillStyle="#f2ece0"; g.fillText("THE TURTLE",x+12,y+34);
-  const max=3, hw=HRT_W, gap=6, tw=max*hw+(max-1)*gap, hx=x+w-12-tw;
+  const max=hpOf('TU'), hw=HRT_W, gap=6, tw=max*hw+(max-1)*gap, hx=x+w-12-tw;
   for(let i=0;i<max;i++) heart(hx+i*(hw+gap), y+16, Math.max(0,Math.min(1,(m.hp||0)-i)));
   g.font='600 12px system-ui'; g.fillStyle=L[2]; g.fillText(L[1],x+12,y+51);
   g.restore();
@@ -5642,6 +5698,11 @@ function cqTick(){
    thirteen seconds that gap was survivable. At five it would be a plaque that vanishes for no
    visible reason, so the tag now carries a drain bar - see tag(). */
 const SUP_CD=26, SUP_LIFE=5, SUP_SPD=190, SUP_REACH=30;
+/* v129.2: THE QUIVER STANDS EIGHT. Measured on v129.1, a 30 WPM typist claimed about half the
+   Quiver plaques offered (7 of 21 on I-10) - the arrow income went to the players who needed it
+   least. The Ward offer keeps SUP_LIFE: it is a rescue, and the five-second decision above is
+   about it. */
+const SUP_LIFE_ARROW=8;
 const SUP_STALL=3;   /* v65: seconds a courier may stand without moving - see supplyTick */
 
 /* ================================ THE QUIVER =====================================
@@ -5684,12 +5745,12 @@ const SUP_STALL=3;   /* v65: seconds a courier may stand without moving - see su
    a live board with no arrows has no win condition and no loss condition either, which
    is a stall and is worse than dying. So the cooldown is suspended entirely while the
    quiver is empty. */
-const QV_SPARE    = 10;    /* the free issue's margin over the stage's own body count */
+const QV_SPARE    = 4;     /* v128: was 10 - the courier now carries the margin */    /* the free issue's margin over the stage's own body count */
 const QV_ENDLESS  = 34;    /* endless has no wave table to read; this is its issue     */
 const ARR_LOW     = 5;     /* at this many left, a QUIVER plaque is offered            */
-const ARR_GIFT    = 3;     /* what one courier carries. Six refunded the deficit this
+const ARR_GIFT    = 4;     /* v128: was 3 */     /* what one courier carries. Six refunded the deficit this
                               economy exists to create - Meat and Ink, §5.             */
-const ARR_CD      = 34;    /* seconds between arrow offers - suspended at zero         */
+const ARR_CD      = 18;    /* v128: was 34 */    /* seconds between arrow offers - suspended at zero         */
 const ARR_SPD     = 260;   /* the arrow courier outruns the sprint (232)               */
 /* HOW EARLY THE SHIELD COMES UP. An arrow flies at 640 px/s, so 170px is about a
    quarter of a second of warning - long enough to read as a reaction to something
@@ -5718,7 +5779,7 @@ const stageBodies = () => {
      clothes. Half of AFX_RATE because a twin pair is one roll, not two. */
   let n = 0, marshals = 0;
   for(const wv of st.waves) for(const k in wv){
-    n += wv[k]|0;
+    { const h=Math.max(1, hpOf(k)); n += Math.ceil((wv[k]|0) * (['MN','TU','BM','SR','SM','SK','LZ','LC','TR'].includes(k) ? h+2 : 1+.75*(h-1))); }   /* v127: 0.75 per extra heart on regular units */
     if(k === "MS") marshals += wv[k]|0;
   }
   /* HALF THE ROLL, not the whole of it. MUSTER_ROLL is the maximum a Marshal can
@@ -5728,7 +5789,8 @@ const stageBodies = () => {
      pressure. Half lands it at 50 - clear of the measured 43 with QV_SPARE's own
      margin still on top, which is where the twins are absorbed too. */
   n += Math.ceil(marshals * MUSTER_ROLL * 0.5);
-  if(S.chapter===2 && S.stage===9) n+=2; // Brood Hatch: at most two extra one-word targets.
+  // Blightmother uses the shared seven-heart, final-three-name arrow budget.
+  if(S.chapter===7) n+=4;   /* v127: chapter VIII still ran dry */
   return n;
 };
 const stageIssue = () => S.endless ? QV_ENDLESS : stageBodies() + QV_SPARE;
@@ -5793,10 +5855,10 @@ const QV_CAP     = 60;   /* THE CEILING, and it is derived, not chosen: the larg
                             exactly one stage - the boss of Chapter VIII, the one stage
                             where a player has most reason to want the arrows they saved.
                             If the wave tables change, this moves with them. */
-const ARR_FLOOR  = 8;    /* the shortest gap between arrow offers, even at zero       */
-const ARR_EVERY  = 20;   /* arrows spent between courier offers                       */
-const ARR_NEED   = 3;    /* v66: at this many or fewer the Quiver comes as if dry      */
-const BOSS_SP    = 2;   /* what a chapter's last stage pays, on its FIRST clear only */
+const ARR_FLOOR  = 6;    /* v128: was 8 */    /* the shortest gap between arrow offers, even at zero       */
+const ARR_EVERY  = 12;   /* v128: was 20 */   /* arrows spent between courier offers                       */
+const ARR_NEED   = 5;    /* v128: was 3 */    /* v66: at this many or fewer the Quiver comes as if dry      */
+const BOSS_SP    = 3;   /* v131.2: back to the 19 Oct rate */   /* what a chapter's last stage pays, on its FIRST clear only */
 const TALLY_EVERY= 10;   /* clean kills between Tally's arrows - see the node          */
 
 /* =================================== THE FLOCK ===================================
@@ -5960,25 +6022,25 @@ function dealChapter(ci){
    so that waiting the shell out costs exactly ONE name - which is the thing Ember buys
    back, which is how a player prices the element. */
 const TU_SHUT=2.6, TU_OPEN=2.6;
-const HP = {T3:2, T5:2, WD:1, MS:3, OG:4, MN:4, BW:2,
+const HP = {BM:7,T3:3, T5:3, WD:1, MS:4, OG:5, MN:5, BW:3,   /* v125: one more heart on every multi-heart unit */
             /* FIVE, and the number IS the unit. The Lizard is the only asset in the
                folder with a Hit sheet, so what it is for is being shot repeatedly and
                showing it. A boss is 4 here (the Ogre); this is the one that deviates, on
                that argument. Five hit points is five names, because the hit-point branch
                re-picks a word on every one. */
-            LZ:5,
+            LZ:7,   /* v125 */
             /* FOUR, the default a boss takes here - what the Ogre is. The Skull does not
                deviate: its rule is the ward, not the count, and stacking both would be
                two denials on one body. */
-            SK:4,
+            SK:6,   /* v125 */
             /* THREE, and it is the one boss that goes BELOW the default of four. The
                shell already doubles the time it takes to kill; four lives behind a
                shutting gate is the same fight twice. */
-            TU:3,
+            TU:4,   /* v125 */
             /* FOUR is what a boss is here - the Ogre's number - and three of these take
                it unchanged. The TROLL is 5 and that is the one judgement left in this
                column: it is the last boss in the campaign. */
-            SR:4, LC:4, SM:4, TR:5};
+            SR:7, LC:7, SM:6, TR:8};   /* v127: Spider 7 */   /* v125: late bosses scaled to their chapter's target speed */
 /* EVERY CHAPTER NOW. The Chapter II trial was step 1 of the build order and this
    is the same table let off its leash - the budget tables in Meat-and-Ink assume
    the whole campaign carries it, and the chapter bank below is costed against it. */
@@ -6135,26 +6197,33 @@ function supplyOffer(kind){
 
      T1/T2 first as before, so a ledger full of long names cannot make the
      Supply expensive - which would invert the whole point of it. */
-  let word = null;
+  let word = null, supFromLedger = false;
   {
     const taken = new Set(live().flatMap(x => [wof(x)[0], (x.trueWord||"")[0]]).filter(Boolean));
     /* T1 or T2 only - indices 0 and 1. Widen this and a hurt player is offered
        a fifteen-letter debt as their way out, which is the Supply doing the
        opposite of its job. Tiers are re-derived on read, so a word banked by an
        older build's tier bands is measured by this one's. */
-    const g = ledgerWorst().find(r => TIERS.indexOf(tierOf(r.w) || r.t) <= 1
-                                   && !taken.has(r.w[0]));
+    /* v131.5: ONE SLIP, ONCE. The worst ledger word used to be offered on EVERY Supply and Quiver,
+       and nothing took it off the ledger, so a player with a single slipped short word saw that word
+       on ~85% of all gold names, stage after stage. Now a ledger word comes on every third offer at
+       most, never twice in one stage, and a clean take of it strikes it off the ledger. */
+    S.supSeen = S.supSeen || new Set(); S.supN = (S.supN|0) + 1;
+    const g = (S.supN % 3 === 1) && ledgerWorst().find(r => TIERS.indexOf(tierOf(r.w) || r.t) <= 1
+                                   && !taken.has(r.w[0]) && !S.supSeen.has(r.w));
     word = (g && g.w) || pick("T1") || pick("T2");
+    if(word){ S.supSeen.add(word); if(g && g.w===word) supFromLedger = true; }
   }
   if(!word) return;
   const at=cand[(Math.random()*cand.length)|0];
-  mobs.push({uid:++uidN, tier:"SUP", label:arrow?"Quiver":"Supply", supply:true, kind,
+  mobs.push({uid:++uidN, tier:"SUP", label:arrow?"Quiver":"Supply", supply:true, kind, fromLedger:supFromLedger,
              word, wtier:tierOf(word)||"T1",
              x:at[0], y:at[1], level:0, f:0, slot:0, dirx:0, diry:0, jam:0,
              dead:false, doomed:false, shake:0, spd:0, sheet:"supIdle",
              radius:26, sep:30, stagger:0, lit:0, litFx:0, clang:0, wind:0, windCd:0,
              windFx:0, miss:0, hit:false, swing:0, swAng:0, shield:0, guardT:0,
-             healFx:-1, growFx:0, saved:0, chill:0, sparkFx:0, life:SUP_LIFE});
+             healFx:-1, growFx:0, saved:0, chill:0, sparkFx:0,
+             life:arrow?SUP_LIFE_ARROW:SUP_LIFE, life0:arrow?SUP_LIFE_ARROW:SUP_LIFE});
   if(arrow){ S.arrT = ARR_CD; S.offerAt = S.spent|0; }
   else S.supT = SUP_CD * (S.ward <= S.maxWard*LOW_HP ? .5 : 1);
   /* THE FIRST WARD COURIER EXPLAINS ITSELF. Raised here, after the mob exists, so the
@@ -6244,6 +6313,7 @@ function doorSpoken(d){
 /* the word was typed: the plaque becomes a courier at the same spot */
 function supplyTaken(m){
   m.dead=true;
+  if(m.fromLedger && !(S.wordFumbles>0)) ledgerRetire(m.word);   /* v131.5: typed clean, so it is practised */
   couriers.push({x:m.x, y:m.y, f:0, done:false, face:1, gleam:0, clang:0, trail:0, stall:0,
                  kind:m.kind||"ward"});
   /* the shield closing around it: a ring snapping inward at the spot the plaque stood, so the
@@ -6853,6 +6923,7 @@ const SPR_T=3.5, SPR_CD=5.0, SPR_MUL=1.55;      /* 150 -> 232 px/s */
 const BLI_GRACE=1.0, BLI_TICK=1.4;
 function blightTick(dt){
   if(S.scene!=="stage") return;
+  if(window.Blightmother && Blightmother.poisonTick(dt)) return;
   const c=cellAt(W,P.x,P.y);
   if(!c || c.t!=="blight"){ S.bliT=0; return; }
   const was=S.bliT;
@@ -7016,10 +7087,14 @@ function stormTick(dt){
     if(s.done) continue;
     s.t-=dt;
     if(s.t>0) continue;
+    if(window.StormwardFX?.active()&&!StormwardFX.fieldReady(s))continue;
     s.done=true; s.flash=.35;
     S.shake=Math.max(S.shake,9);
-    blip(90,.35,"sawtooth",.10,40); noise(.28,.09,900);
-    for(let i=0;i<4;i++)
+    if(!window.StormwardFX?.active()){
+      if(window.StormwardThunder)StormwardThunder.strike(s);
+      else{blip(90,.35,"sawtooth",.10,40); noise(.28,.09,900);}
+    }
+    if(!window.StormwardFX?.active())for(let i=0;i<4;i++)
       fx.push({k:"dust", x:s.x+(Math.random()-.5)*70, y:s.y+(Math.random()-.5)*50, f:i*1.2});
     if(onGround(P.x,P.y,s.x,s.y,nodeRing(),STK_K) && S.iframe<=0){
       sWard(); S.flash=.6; S.iframe=.8;
@@ -7847,6 +7922,50 @@ function nearestFlowCell(m,e,fld){
     if(d<bd){ bd=d; b=[cx-e.x, cy-e.y]; } }
   return b;
 }
+/* v129 THE DOOR FIELD. Chapter VII fields enemies in rooms behind shut doors, and the battering
+   rule only counts a routeless body that is standing AT a door. But a routeless body steered to the
+   nearest tile that has a route - which is on the other side of the wall - so most of them pressed
+   into the wall in a corner and the door was never battered. This field is seeded from every walkable
+   tile beside a shut door, so a body with no route walks to its own door instead. The Sapper uses
+   the same field for one door, seeded from BOTH sides: before, its field was seeded from whichever
+   side of the door came first in the grid, often the sealed room, and it stood still forever. */
+let DOORF={key:'',fld:null};
+function doorSeedFlow(m,doors){
+  const dist=new Int16Array(m.w*m.h).fill(-1), q=[];
+  for(const d of doors){ if(!d||!d.cell) continue; const [cx,cy]=d.cell;
+    for(const [ox,oy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=cx+ox, ny=cy+oy, c=passable(m,nx,ny);
+      if(!c) continue; const j=ny*m.w+nx; if(dist[j]===-1){ dist[j]=0; q.push(j); } } }
+  for(let head=0; head<q.length; head++){
+    const i=q[head], x=i%m.w, y=(i/m.w)|0, a=m.grid[y][x], d=dist[i];
+    for(const [dx,dy] of DIR8){
+      const nx=x+dx, ny=y+dy, c=passable(m,nx,ny);
+      if(!c) continue;
+      const j=ny*m.w+nx; if(dist[j]!==-1) continue;
+      if(!linked(a,c)) continue;
+      if(dx&&dy && !cornerOK(m,a,c,x,y,nx,ny)) continue;
+      dist[j]=d+1; q.push(j);
+    }
+  }
+  return dist;
+}
+function shutDoorsNow(){ return (S.doors||[]).filter(d=>!d.dead&&d.cell&&W.grid[d.cell[1]]&&W.grid[d.cell[1]][d.cell[0]].shut&&!W.grid[d.cell[1]][d.cell[0]].broken); }
+function doorWalk(m,e,x,y){
+  if(S.scene!=="stage") return null;
+  const ds=shutDoorsNow(); if(!ds.length) return null;
+  const key=S.chapter+':'+S.stage+':'+m.w+'x'+m.h+':'+ds.map(d=>d.cell.join(',')).join(';');
+  if(DOORF.key!==key) DOORF={key, fld:doorSeedFlow(m,ds)};
+  const f=DOORF.fld, here=f[y*m.w+x];
+  if(here<0) return null;
+  if(here===0){
+    let best=null, bd=1e9;
+    for(const d of ds){ const dd=Math.hypot(d.x-e.x,d.y-e.y); if(dd<bd){ bd=dd; best=d; } }
+    if(!best || bd<48) return [0,0];
+    return [best.x-e.x, best.y-e.y];
+  }
+  const nxt=bestNeighbour(m,f,x,y,e); if(!nxt) return null;
+  e.hx=Math.sign(nxt[0]-x); e.hy=Math.sign(nxt[1]-y);
+  return [nxt[0]*T+T/2-e.x, nxt[1]*T+T/2-e.y];
+}
 function flowStep(m,e){
   const dxp=P.x-e.x, dyp=P.y-e.y, dp=Math.hypot(dxp,dyp);
   /* close-quarters direct steering, ONLY on the same level with a clear line.
@@ -7864,7 +7983,8 @@ function flowStep(m,e){
   if(!fld) return [dxp,dyp];
   const x=Math.floor(e.x/T), y=Math.floor(e.y/T);
   if(x<0||y<0||x>=m.w||y>=m.h) return [dxp,dyp];
-  if(fld[y*m.w+x]<0){ const n=nearestFlowCell(m,e,fld); return n||[dxp,dyp]; }
+  if(fld[y*m.w+x]<0){ const dw=doorWalk(m,e,x,y); if(dw) return dw;   /* v129: routeless bodies walk to their door */
+    const n=nearestFlowCell(m,e,fld); return n||[dxp,dyp]; }
 
   /* Walk the field forward a few tiles to get a PATH, not just a next step. */
   const path=[]; let cx=x, cy=y;
@@ -7902,7 +8022,7 @@ function flowStep(m,e){
 function goalStep(m, mb, gx, gy, cache){
   const dxl=gx-mb.x, dyl=gy-mb.y, dl=Math.hypot(dxl,dyl);
   if(mb.level===0 && dl<110 && losClear(m,mb.x,mb.y,gx,gy,mb.level)) return [dxl,dyl];
-  if(!cache.flow) cache.flow = buildFlow(m,gx,gy,0);
+  if(!cache.flow) cache.flow = (mb.sapper&&mb.doorTarget!=null&&S.doors&&S.doors[mb.doorTarget]) ? doorSeedFlow(m,[S.doors[mb.doorTarget]]) : buildFlow(m,gx,gy,0);   /* v129: both sides of the door */
   const fld=cache.flow;
   const x=Math.floor(mb.x/T), y=Math.floor(mb.y/T);
   if(x<0||y<0||x>=m.w||y>=m.h) return [dxl,dyl];
@@ -8198,14 +8318,14 @@ function tradeMeat(){
   toast(pairs*MEAT_DEN+" meat for "+got+" arrows — the chapter's bank holds "
         +(S.bank|0), 3.2);
   blip(660,.10,"triangle",.05,990); blip(980,.14,"sine",.05,1320);
-  teach("post","this is the TRADING POST. Two meat buys three arrows, and they go to "
+  teach("post","this is the QUIVER SUPPLIER. Two meat buys three arrows, and they go to "
               +"the chapter's reserve — you draw them on your next stage.");
   saveNow();
   return got;
 }
 
 /* ---------- stage flow ---------- */
-function enterStage(i){ trollCleanup(true); lancerCleanup(true); if(window.OrbitOrbs?.reset) OrbitOrbs.reset(); usedW.clear();   /* v94: "no repeats" is per stage */ if(window.SkullCleave) SkullCleave.reset(); if(window.SpiritBoss) SpiritBoss.reset();
+function enterStage(i){ S.supSeen=new Set(); S.supN=0; try{wageSave();}catch(e){} trollCleanup(true); lancerCleanup(true); if(window.OrbitOrbs?.reset) OrbitOrbs.reset(); usedW.clear();   /* v94: "no repeats" is per stage */ if(window.SkullCleave) SkullCleave.reset(); if(window.SpiritBoss) SpiritBoss.reset();
   S.broodHusks=[];
   S.scene="stage"; S.stage=i; W=stageMaps[i]; S.wave=0;
   /* a normal stage entry leaves endless. enterEndless sets the flag AFTER calling this,
@@ -8283,7 +8403,9 @@ function enterStage(i){ trollCleanup(true); lancerCleanup(true); if(window.Orbit
     S.quiv = take;
     S.drew = take;           /* what this entry drew, for the summary to report */
   }
-  S.arrT=0; S.dryT=0; S.spent=0; S.given=0; S.burnAt=0; S.skAt={}; S.nock=false; S.edge=0; S.critN=0; S.skFx=[]; S.skUsed=0; FIRE=[]; S.skPend=null;  /* no supply in the first seconds of a stage, and
+  S.arrT=0; S.dryT=0; S.spent=0; S.given=0; S.offerAt=0; /* v129.2: offerAt is a mark on
+     S.spent's scale, so it resets with it. Carried over, a stage began owing the last stage's
+     count and the every-ARR_EVERY offer rarely fired - the courier came only when low. */ S.burnAt=0; S.skAt={}; S.nock=false; S.edge=0; S.critN=0; S.skFx=[]; S.skUsed=0; FIRE=[]; S.skPend=null;  /* no supply in the first seconds of a stage, and
                                          no echo carried in from the last one */
   S.startedAt=S.t; S.cause=""; mobs=[]; fx=[]; arrows=[]; shots=[]; flow=null; S.drownT=0; splashFx=[];
   /* ATTUNEMENT rank 1: the slot is remembered from the last stage instead of snapping back
@@ -8439,6 +8561,7 @@ function enterStage(i){ trollCleanup(true); lancerCleanup(true); if(window.Orbit
          +"else and it leaves.", 6.5);
   /* LAST IN THIS FUNCTION, so the card opens over a stage that is already built and the
      player reads it with the board behind it rather than over a black screen. */
+  if(window.PoisonFog) PoisonFog.start(W);
   raiseCard(i);
 }
 /* ================================== ENDLESS ========================================
@@ -9470,7 +9593,7 @@ function spawnMob(tier, atLane, exactPoint){
   }
   /* keyed, so it queues like the others rather than being droppable as a banner: "no
      mistakes" is a rule, and it is the only warning the player gets about one */
-  if(md.big && tier!=="SR" && !nm.lancer){ teach("ogre","an OGRE walks the field — one long name, and NO MISTAKES: "
+  if(md.big && tier!=="SR" && tier!=="BM" && !nm.lancer){ teach("ogre","an OGRE walks the field — one long name, and NO MISTAKES: "
                           +"a wrong letter sends you back to the first letter"); sWave(); }
   if(md.drill && md.armour) toast("a WARDEN. The name it wears is a disguise — type it.",6);
   else if(md.drill && md.healer)
@@ -9817,6 +9940,7 @@ function buyRank(k){
   const tab=TREE.find(t=>t.key===sk.tab);
   if(!tabOpen(tab)){ toast("the "+tab.name+" tab is not open yet"); return false; }
   if(r(k)>=sk.max){ toast(sk.name+" is already at "+sk.max+"/"+sk.max); return false; }
+  if(k!=='mastery' && SKILL.mastery && r('mastery')<3){ toast('Arrow Mastery needs Lv 3 before any other skill'); return false; }   /* v131.7 */
   if(!skillOpen(sk)){
     const up=SKILL[sk.up];
     toast(sk.name+" needs "+(sk.need||1)+" ranks of "+up.name+" first"); return false; }
@@ -9930,7 +10054,7 @@ function pickElem(i){
    90 STAYS BELOW AS A GUARD, NOT AS A VALUE. Every carded sheet has a row now, and the
    boot check further down makes sure the next one does too. */
 const CARD_BODY={
-  tuRun:179, srRun:104, smRun:122, skRun:98,
+  bmBoltCast:147, bmFloat:147, bmCast:170, tuRun:179, srRun:104, smRun:122, skRun:98,
   lzRun:112, lcRun:128, trRun:130, hlRun:77,
   monkRun:77, wdRun:77, hxRun:77, snRun:77,
   spRun:77, lnRun:77, scRun:77, warRun:88,
@@ -9969,7 +10093,7 @@ const CARD_FIT={
   ogreRun:[63,138], pawnRun:[92,129], scRun:[96,133],
   sdRun:[99,133], sheep:[63,79], skRun:[131,167],
   smRun:[110,155], snRun:[96,133], spRun:[96,133],
-  srRun:[112,159], supRun:[103,128], supWood:[101,128],
+  bmBoltCast:[96,166], bmFloat:[96,166], bmCast:[96,166], srRun:[112,159], supRun:[103,128], supWood:[101,128],
   trRun:[117,178], tuRun:[178,222], vtRun:[99,133],
   warRun:[99,133], wdRun:[96,133]};
 CARD_FIT.mnWalk=[131,203];
@@ -10085,7 +10209,7 @@ const CARDS={
         lines:["FREEZE. Press 3 to NOCK it, then finish a name: that enemy and everything within two tiles of it freeze for a moment, then walk at half speed.",
                "It takes no hearts. It buys you ground \u2014 the answer to anything too fast to outrun."]},
        {sheet:"hrRun", name:"Harrier",
-        lines:["The fastest body after the Spider. It has no rule of its own \u2014 that is the rule.",
+        lines:["One of the fastest ordinary enemies. It has no rule of its own \u2014 that is the rule.",
                "Freeze it. Frozen, then chilled, it is slower than a Footman."]}],
   206:[{sheet:null, name:"Hold the Ground",
         lines:["This stage is not won by clearing the board. Stand inside the circle until the meter fills and it is yours, however many are still standing.",
@@ -10150,10 +10274,10 @@ const CARDS={
      learn differently. No card here makes a claim the Library does not already make. */
   109:[{sheet:"tuRun", name:"Turtle",
        lines:["A SHELL THAT SHUTS on a clock. While it is shut every arrow rings off \u2014 and it opens again on its own.",
-              "Wait, or press 1 \u2014 Burn opens it early. Waiting costs one name, which is exactly what the Burn buys back."]}],
-  209:[{sheet:"srRun", name:"Spider",
-       lines:["FASTER THAN EVERY OTHER ENEMY. It never stops closing, and walking away only opens ground on it slowly.",
-              "Nock Freeze on anything near it. Freezing is the only thing that buys the distance back \u2014 this is what the chapter\u2019s skill is for."]}],
+              "Burn opens it early. Its FREEZING DOWNPOUR drops three waves of water balls: find the dry spots between the rings. Contact freezes movement for 0.8s; typing still works."]}],
+  209:[{sheet:"bmFloat", name:"Blightmother",
+       lines:["BOUNCING POISON aims at you for up to three hops: move clear before the ball lands. She also casts aimed POISON BOLTS and marks your position for a POISON METEOR. Dodge the bolts and leave the meteor circle. Between normal attacks, an occasional THREE-SECOND COUNTDOWN warns before the FOUR-SECOND poison field.",
+              "Type during the warning; Freeze delays her cast. Clouds and the field share continuous exposure. At base resistance, poison deals 10 HP after 2.4 seconds, then again at 3.8 seconds. Killing her clears the field. The last heart takes three names."]}],
   309:[{sheet:"smRun", name:"Shaman",
        lines:["IT NEVER CLOSES. It stops four tiles out and throws, which is one Ember radius beyond your reach.",
               "Nock Thunder on something between you and it, and let the bolt jump \u2014 or walk in and take the throw. It can always be typed at."]}],
@@ -10922,7 +11046,7 @@ function update(dt){
     /* movement */
     let dx=(keys.has("ArrowRight")?1:0)-(keys.has("ArrowLeft")?1:0);
     let dy=(keys.has("ArrowDown")?1:0)-(keys.has("ArrowUp")?1:0);
-    if(S.scene==="stage"&&window.FirstJob?.casting?.()){ dx=0; dy=0; }   /* v122: rooted while casting */
+    if(S.scene==="stage"&&(window.FirstJob?.casting?.()||window.TurtleBall?.frozen())){ dx=0; dy=0; }   /* Casting and freezing water stop movement; typing remains available. */
     /* v3.93 - OVERLAP SAMPLE, one frame at a time, read-only via __K.overlap(). Sampled
        right here rather than at the top of update() because this branch is already
        exactly "movement input currently matters" (stage or overworld, not drowning) -
@@ -11083,6 +11207,7 @@ function update(dt){
       if(mb.turt && turtTick(mb,dt)) continue;   /* v81: SHELL GAME */
       if(mb.lancer && lancerTick(mb,dt)) continue;
       if(trollTick(mb,dt)) continue;
+      if(window.Blightmother && Blightmother.tick(mb,dt)) continue;
       if(mb.stagger>0){ mb.stagger-=dt; mb.f+=dt*FPS*0.4; continue; }
       /* flow + separation as ONE capped velocity. Separation used to be a
          second pass moving mobs at up to 50 px/s - faster than they walk - so
@@ -11096,7 +11221,7 @@ function update(dt){
          the contact swing) is untouched: a hunting Snuffer is still a body other mobs shove off
          and still swings at you if you stand where it is walking. */
       let [fx2,fy2] = mb.sheep ? sheepStep(mb, dt)
-                    : (mb.snuffer && mb.snuffTarget!=null)
+                    : (mb.snuffer && mb.snuffTarget!=null && (S.lamps[mb.snuffTarget] || (mb.snuffTarget=null, false)))   /* v129.1: a lamp can be removed */
                     ? goalStep(W, mb, S.lamps[mb.snuffTarget].x,
                                       S.lamps[mb.snuffTarget].y,
                                       S.lamps[mb.snuffTarget])
@@ -11496,7 +11621,7 @@ function update(dt){
              like one. `braced` never clears - see the spawn list. */
           m.brace=0; m.braced=true;
           m.doomed=false; m.shake=.5; m.clang=.35; S.shake=3;
-          m.stagger=Math.max(m.stagger||0, HP_STAGGER);
+          m.arrowHitT=S.t; m.stagger=Math.max(m.stagger||0, window.FirstJob?.isBoss?.(m)?0.2:HP_STAGGER);   /* v125: bosses 0.2s */
           const w = pick(m.turt?"T4":m.wtier, [m.word]) || pick("T1", [m.word]);
           if(w){ m.word=w; m.wtier=tierOf(w)||m.wtier; }
           blip(240,.07,"square",.06,170); blip(660,.09,"triangle",.05,880);
@@ -11721,7 +11846,7 @@ function typingWPM(){
      never be sized off a number nothing produced honestly. */
   return Math.min(999,Math.round((S.chars/5)/(Math.max(typedMs,300)/1000/60)));
 }
-function stageSkillReward(stage){return stage===NSTAGE-1?BOSS_SP:[2,5,7].includes(stage)?1:0;}
+function stageSkillReward(stage){return stage===NSTAGE-1?BOSS_SP:1;}   /* v131.2: every first clear pays */
 function finish(won){ trollCleanup(true); lancerCleanup(true); if(window.OrbitOrbs?.reset) OrbitOrbs.reset();
   /* EVERYTHING UNSPENT GOES BACK IN THE BANK, and on a LOSS the bodies come back
      with it - one arrow for every body dropped.
@@ -12137,7 +12262,15 @@ addEventListener("keydown",e=>{
     if(k==="Backspace"){ e.preventDefault(); if(S.lock&&S.typed>0){S.typed--; blip(240,.04,"square",.05);} return; }
     /* `0`, not Shift+R. See the sprint's note: Shift is the sprint now, and the old binding
        could never fire anyway because Shift makes the browser report "R". */
-    if(k==="0"){ e.preventDefault(); enterStage(S.stage); return; }
+    /* v129.2: A RESTART IS SETTLED LIKE A LOSS, then re-entered. enterStage draws a fresh
+       quiver from the bank, so calling it straight threw away the one in hand - three restarts
+       could empty a chapter. finish(false) returns what is left plus S.kills; this is the same
+       arithmetic without the summary. Endless has no bank, and a bare enterStage would clear
+       S.endless and land in the campaign stage, so it re-enters its own arena. */
+    if(k==="0"){ e.preventDefault();
+      if(S.endless){ enterEndless(S.eArena); return; }
+      S.bank=(S.bank|0)+Math.max(0,S.quiv|0)+(S.kills|0); S.quiv=0;
+      enterStage(S.stage); return; }
     /* THE NUMPAD'S FULL STOP ENDS THE RUN WHERE YOU STAND - concede, and go straight to the
        results screen with everything you did up to that point still counted.
        READ FROM e.code, NOT e.key, and the reason is already written down twice in this file:
@@ -12847,7 +12980,7 @@ function plaques(V){
        Deliberately keyed on the TEXT, so "OPEN · 2s" and "OPEN · 1s" stay separate - they say
        different things, and the second is not a duplicate of the first. */
     if(tg) tag(tg[0],tg[1],p,x,y,
-               m.supply ? m.life/SUP_LIFE
+               m.supply ? m.life/(m.life0||SUP_LIFE)
              : m.door   ? (W.grid[m.cell[1]][m.cell[0]].batter>0
                            ? 1 - W.grid[m.cell[1]][m.cell[0]].batter/DOOR_BREAK
                            : undefined)
@@ -13648,13 +13781,14 @@ function render(){
   g.fillRect(0,0,VW,VH);
   g.save(); g.translate(V.ox,V.oy); g.scale(V.z,V.z);   /* world space from here */
   drawWater(m,V);                                       /* sea + the foam loop, under the land */
-  g.drawImage(m.canvas,0,0);
+  g.drawImage(window.PoisonFog ? PoisonFog.terrain(m) : m.canvas,0,0);
   folDrawLayer(m);                                      /* FOLIAGE PREVIEW: standing props */
   /* THE SKY GOES HERE AND NOWHERE LATER, and only over the sea. Everything below this line
      is something the player has to be able to read; see the note on the sky. */
   drawSky(m);
 
   if(S.scene==="over"){
+    window.Fletcher?.drawVendor(cam);
     for(let i=0;i<NODES().length;i++){
       const n=NODES()[i], nx=n[0]*T+T/2-cam.x, ny=n[1]*T+T/2-cam.y;
       const open=i<PRU(), done=i<PR().cleared, boss=i===NSTAGE-1;
@@ -13667,24 +13801,7 @@ function render(){
       g.fillText(boss?"B":String(i+1),nx,ny+1);
       if(done){ g.fillStyle="#f0c850"; g.beginPath(); g.arc(nx+r-2,ny-r+2,7,0,7); g.fill(); }
     }
-    /* THE TRADING POST, drawn in the node loop's own idiom so it reads as the same
-       kind of thing you press Enter at - but a SQUARE rather than a disc, because
-       depth of stack and shape are this game's two silhouette channels and a second
-       circle on the same road would say "stage eleven". Moss, the same band the
-       sheep's plaque uses, so the post and the thing that fills it are one colour. */
-    {
-      const pn=POST();
-      if(pn){
-        const px=pn[0]*T+T/2-cam.x, py=pn[1]*T+T/2-cam.y, r=14;
-        g.fillStyle="rgba(18,22,26,.75)"; g.fillRect(px-r-3,py-r-3,(r+3)*2,(r+3)*2);
-        g.fillStyle=(S.meat|0)>=MEAT_DEN ? "#8fae5a" : "#55663f";
-        g.fillRect(px-r,py-r,r*2,r*2);
-        g.strokeStyle="#f0ece0"; g.lineWidth=3; g.strokeRect(px-r,py-r,r*2,r*2);
-        g.fillStyle="#fff"; g.font='bold 14px system-ui';
-        g.textAlign="center"; g.textBaseline="middle";
-        g.fillText(String(S.meat|0),px,py+1);
-      }
-    }
+    /* The v9 Fletcher now represents the existing meat-for-arrows post. */
     drawArcher(cam); folCanopy(m);
     /* THE EFFECTS LOOP RUNS HERE TOO. It only ever ran in the stage branch, so on the chapter
        map the sprint's dust was created every frame and drawn on none of them. A player
@@ -13713,8 +13830,8 @@ function render(){
         const px=pn[0]*T+T/2-cam.x, py=pn[1]*T+T/2-cam.y;
         if(Math.hypot(px+cam.x-P.x,py+cam.y-P.y)<=46){
           const pr=Math.floor((S.meat|0)/MEAT_DEN);
-          const txt = pr>0 ? "TRADE · "+(pr*MEAT_DEN)+" MEAT → "+(pr*MEAT_NUM)+" ARROWS"
-                           : "TRADING POST · 2 MEAT → 3 ARROWS";
+          const txt = pr>0 ? "QUIVER SUPPLIER · ENTER · "+(pr*MEAT_DEN)+" MEAT → "+(pr*MEAT_NUM)+" ARROWS"
+                           : "QUIVER SUPPLIER · ENTER · 2 MEAT → 3 ARROWS";
           g.font='bold 13px system-ui'; g.textAlign="center"; g.textBaseline="middle";
           const w=Math.max(104, g.measureText(txt).width+22);
           g.fillStyle="rgba(10,14,18,.9)"; g.fillRect(px-w/2,py-92,w,26);
@@ -13743,10 +13860,13 @@ function render(){
     drawDoors(m);
 
     drawDark(m);
+    if(window.PoisonFog && PoisonFog.active()) PoisonFog.draw(cam);
+    if(window.Blightmother) Blightmother.ground();
     if(window.ShamanDemo) ShamanDemo.ground();
     lancerReserveDraw(g); for(const lm of mobs) lancerDraw(g,lm);
     trollGround();
     Glowburst.ground(); SpiritBoss.ground(); broodGround(); minoGround(cam); turtGround(cam); skFxGround(cam); if(window.FirstJob)FirstJob.ground();  /* V7: frost spreads under bodies; plaques are still drawn last. */
+    if(window.StormwardFX)StormwardFX.drawGround(cam);
     const order=[...mobs].sort((a,b)=>a.y-b.y);
     let drawn=false;
     for(const mb of order){
@@ -13813,7 +13933,7 @@ function render(){
          the thing that just happened to the body. */
       const mobSprite=(key,frame,x,y,flip)=>{
         if(!(mb.frzT>0)) mb.icePose={key,frame,dx:x-wx,dy:y-wy,flip};
-        if(mb.tier==='LZ'&&!mb.dead){
+        if(mb.tier==='LZ'&&!mb.dead&&!(window.Bosses&&Bosses.lizardDark(mb))){
           g.save();g.globalAlpha=1;const pulse=.5+.5*Math.sin(S.t*3.5);
           const glow=g.createRadialGradient(x,y-48,8,x,y-48,76);
           glow.addColorStop(0,'rgba(133,255,65,.20)');glow.addColorStop(.55,'rgba(88,235,44,.10)');glow.addColorStop(1,'rgba(70,220,30,0)');
@@ -13822,7 +13942,8 @@ function render(){
           sprite(key,frame,x,y,flip);g.restore();
         }else sprite(key,frame,x,y,flip);
       };
-      if(broodDrawBody(mb,wx,wy)){ /* v82: eggs and half-size original Spiderlings */ }
+      if(window.Blightmother && Blightmother.body(mb,wx,wy)){}
+      else if(broodDrawBody(mb,wx,wy)){ /* v82: eggs and half-size original Spiderlings */ }
       else if(trollBody(mb,wx,wy)){}
       else if(Glowburst.body(mb,wx,wy)){} else if(SkullCleave.body(mb,wx,wy)){}
       else if(mb.turt && !(mb.frzT>0) && turtDrawBody(mb,wx,wy)){ /* v81: drawn by its state */ }
@@ -13966,6 +14087,7 @@ function render(){
       g.restore();
     }
     if(!drawn) drawArcher(cam); folCanopy(m); trollTop(); SpiritBoss.top(); SkullCleave.top(); Glowburst.top();
+    if(window.Blightmother) Blightmother.air();
     if(window.ShamanDemo) ShamanDemo.top();
     /* arrows */
     const ai=IMG.arrow;
@@ -14061,7 +14183,7 @@ function render(){
        the terrain canvas was baked before they existed. Darker and wetter than the baked
        patches on purpose: "this turned while you were reading" is different information from
        "this was poisoned when you arrived". */
-    if(W&&W.spread&&W.spread.length){
+    if(W&&W.spread&&W.spread.length && !(window.PoisonFog && PoisonFog.active())){
       const hb=(x,y)=>{ const n=Math.sin(x*57.31+y*91.7)*4375.53; return n-Math.floor(n); };
       /* the ragged silhouette matters MORE here than on a baked patch. The creep arrives one
          square at a time, so a tile-shaped fill drew a staircase of little boxes marching
@@ -14096,14 +14218,15 @@ function render(){
       }
       g.restore();
     }
-    drawSmoke(cam);        /* haze off the poisoned ground - see smokeTick()'s note */
+    if(!(window.PoisonFog && PoisonFog.active())) drawSmoke(cam); /* haze off the poisoned ground - see smokeTick()'s note */
     drawSnuffWarn();       /* the yellow countdown before a Snuffer's blackout lands - see its own note */
     /* THE STORM'S TELEGRAPH. A ring that CLOSES over STK_TELE seconds - closing, not
        flashing, because a flash tells you something is happening and a closing ring tells
        you how long you have, which is the only information the player actually needs to
        decide between finishing the word and walking. Drawn on the ground plane so it reads
        as a place rather than as UI. */
-    for(const st of S.strikes){
+    if(window.StormwardFX?.active())StormwardFX.drawAir(cam);
+    else for(const st of S.strikes){
       const sx=st.x-cam.x, sy=st.y-cam.y;
       if(st.done){
         const f=Math.max(0,st.flash||0);
@@ -14353,7 +14476,7 @@ function minimap(m){
   /* and the post, square here too - the minimap is four pixels a tile and the
      shape is the only thing that survives at that size */
   { const pn=POST();
-    if(pn){ g.fillStyle="#8fae5a"; g.fillRect(ox+pn[0]*S3,oy+pn[1]*S3,S3+1,S3+1); } }
+    if(pn){ g.fillStyle="#c9963f"; g.fillRect(ox+pn[0]*S3,oy+pn[1]*S3,S3+1,S3+1); } }
   g.fillStyle="#ffffff";
   g.beginPath(); g.arc(ox+(P.x/T)*S3,oy+(P.y/T)*S3,3,0,7); g.fill();
 }
@@ -14690,7 +14813,7 @@ function hud(){
     for(let v=HP_WARD;v<S.maxWard;v+=HP_WARD)
       g.fillRect(Math.round(bd.x+bd.w*v/S.maxWard), Math.round(bd.y), 1, Math.round(bd.h));
     /* v72-test-V7: the percentage beside the bar was removed on request - the bar and its notches say it */
-    if(S.scene==="stage"){ minoBar(); turtBar(); lancerBar(); }   /* v80, v81, v110 */
+    if(S.scene==="stage"){ minoBar(); turtBar(); lancerBar(); window.BossRes?.draw(); }   /* v80, v81, v110 */
     /* NO LOW-WARD PULSE, AND THIS IS A REJECTION WORTH RECORDING because the idea is a good
        one in general and wrong here specifically.
        The gamecraft HUD skill says plainly that "a low-health pulse beats the bar", and it is
@@ -16634,11 +16757,18 @@ function drawPanelBox(){
          Five of six rows now sit directly on the paper, so the unselected row's ink has to be
          BROWN. It was #e6e0d0, chosen to sit on steel, and on cream that is very nearly invisible
          - the sort of thing that looks like a rendering fault rather than a colour choice. */
-      if(on) ribbon(RIB.gold, r.x, r.y, r.w, r.h);
+      /* v129.3: THE GOLD RIBBON IS GONE TOO, on request. The note above explains why one plate
+         was kept as the marker; without it the selection is marked the way the title column
+         marks it - the row in gold ink and a breathing caret at its left edge, the same shape
+         ttRow() draws - so the screen still says "this one" in a still frame. */
       g.font='bold 19px system-ui'; g.textAlign="left";
       const mid=r.y+r.h/2+7,
-            ink = on ? "#2b1e09" : (PAPER?"#4a3a26":"#e6e0d0"),
-            off = on ? "#6b5a2c" : (PAPER?"#9c8b73":"#8d9aa1");
+            ink = on ? (PAPER?"#7a4a14":"#f0c34a") : (PAPER?"#4a3a26":"#e6e0d0"),
+            off = PAPER?"#9c8b73":"#8d9aa1";
+      const caret = lx=>{ if(!on) return;
+        const pu=Math.abs(Math.sin(S.t*3))*4, ax=lx-15-pu, cy=mid-6;
+        g.fillStyle=ink; g.beginPath(); g.moveTo(ax,cy-8); g.lineTo(ax,cy+8); g.lineTo(ax+11,cy);
+        g.closePath(); g.fill(); };
       if(r.opts){
         /* THE SAME SWITCH, ON A RIBBON. The report was about the title's panel, but this overlay
            carries the identical rows one keystroke inside a run, and "Sound FX: ON" on a plate is
@@ -16650,7 +16780,7 @@ function drawPanelBox(){
         let w=g.measureText(r.name).width+18;
         for(let i=0;i<r.opts.length;i++)
           w+=R*2+gap+g.measureText(r.opts[i]).width+(i<r.opts.length-1?pad:0);
-        let x=B.cx-w/2;
+        let x=B.cx-w/2; caret(x);
         g.fillStyle=ink; g.fillText(r.name,x,mid); x+=g.measureText(r.name).width+18;
         for(let i=0;i<r.opts.length;i++){
           const isv=i===sel, c=isv?ink:off;
@@ -16662,6 +16792,7 @@ function drawPanelBox(){
         }
       } else {
         g.textAlign="center";
+        caret(B.cx-g.measureText(r.label()).width/2);
         g.fillStyle=ink; g.fillText(r.label(),B.cx,mid);
       }
       g.textAlign="center";
@@ -17188,38 +17319,34 @@ function summary(){
 const FirstJob=window.FirstJob=(()=>{
   'use strict';
   const colors={fire:'#f59049',ice:'#8fd3e8',electric:'#eacb67',poison:'#a6d955',wind:'#a6d9f5'};
-  const retiredRanks=['focus','job_chainCast','job_twinNock','job_overcharge'];
-  const groups=[
-    ['fire',['burn','Burn','arrow',10],['flameRing','Flame Ring','instant',16],['fireWall','Fire Wall','instant',18],['meteorStorm','Meteor Storm','super',0]],
-    ['ice',['freeze','Freeze','arrow',12],['frozenGround','Frozen Ground','instant',18],['iceWall','Ice Wall','instant',20],['blizzard','Blizzard','super',0]],
-    ['electric',['thunder','Thunder','arrow',12],['lightningRod','Lightning Rod','instant',20],['thunderLance','Thunder Lance','instant',16],['tempest','Tempest','super',0]],
-    ['poison',['venomArrow','Venom Arrow','arrow',10],['toxicSpores','Toxic Spores','instant',16],['plagueMark','Plague Mark','instant',18],['miasma','Miasma','super',0]],
-    ['wind',['gustArrow','Gust Arrow','arrow',10],['tailwind','Tailwind','instant',18],['whirlwind','Whirlwind','instant',16],['cyclone','Cyclone','super',0]]
-  ];
+  const retiredRanks=['focus','job_chainCast','job_twinNock','job_overcharge','job_flameRing','job_fireWall','job_meteorStorm','job_frozenGround','job_iceWall','job_blizzard','job_lightningRod','job_thunderLance','job_tempest','job_toxicSpores','job_plagueMark','job_miasma','job_tailwind','job_whirlwind','job_cyclone'];
+  /* v125: the skill tree is the five arrow skills and their passives. The old instants and
+     supers were not on the tree any more; they are retired, and any saved ranks are refunded. */
+  const groups=[['fire',['burn','Burn','arrow',10]],['ice',['freeze','Freeze','arrow',12]],['electric',['thunder','Thunder','arrow',12]],['poison',['venomArrow','Venom Arrow','arrow',10]],['wind',['gustArrow','Gust Arrow','arrow',10]]];
   const descriptions={
-    burn:'Arrow: burns enemies within 2 tiles for half a heart over 3s; opens armour. Lv 5 keeps armour open 2s longer.',
+    burn:'Arrow: burns the enemy you named for half a heart over 3s; opens its armour. Higher levels shorten the cooldown.',
     flameRing:'Instant: lights enemies within 2 tiles and pushes them back one step. Lv 5 reaches 2.5 tiles.',
     fireWall:'Instant: a 4-tile fire wall between you and the nearest pack. Crossing enemies burn and move 40% slower. Lasts 4–6s.',
     meteorStorm:'Super: 5 / 6 / 8 meteors over 3s seek the enemies with most hearts. Each burns, takes half a heart and knocks down for 0.5s.',
-    freeze:'Arrow: freezes enemies within 2 tiles for 1.5–1.9s, then slows them by half for 2s (3s at Lv 5). Takes no hearts.',
+    freeze:'Arrow: freezes the enemy you named for 1–1.2s, then slows it by half for 2s. Takes no hearts.',
     frozenGround:'Instant: a 3-tile patch under you slows enemies to 30% speed for 4–6s.',
     iceWall:'Instant: 5 ice blocks curve 1.5 tiles ahead toward the nearest pack. Lasts 5–7s; 7 blocks at Lv 5. Arrows pass through.',
     blizzard:'Super: the field moves at 40% speed for 6 / 7 / 8s. Freezes the nearest unfrozen enemy every 1.5 / 1.2 / 1s.',
-    thunder:'Arrow: half a heart and 0.5–0.9s stun on the target and 2 nearby jumps within 3 tiles. Lv 5 adds a third jump.',
+    thunder:'Arrow: half a heart and a 0.5–0.7s stun on the enemy you named. Never its last heart.',
     lightningRod:'Instant: a rod beside you lasts 6s. Zaps the nearest enemy within 3 tiles every 1.5s (1s at Lv 5), half a heart and 0.4s stun.',
     thunderLance:'Instant: a 6-tile bolt toward the nearest enemy. Stuns for 0.8–1.2s and pushes back 1 tile (2 at Lv 5). Takes no hearts.',
     tempest:'Super: strikes the entire field once each second for 3 / 4 / 5s. Half a heart each strike; holds enemies stunned throughout.',
-    venomArrow:'Arrow: poisons enemies within 1 tile, half a heart over 6s, and prevents healing. Lv 5 spreads 2 tiles.',
+    venomArrow:'Arrow: poisons the enemy you named, half a heart over 6s, and it cannot be healed.',
     toxicSpores:'Instant: a 2-tile cloud on the nearest pack lasts 5s. Poisons enemies inside; their hits are 30% softer (40% at Lv 5).',
     plagueMark:'Instant: marks your typing target or nearest enemy for 10s. On death, poisons a 2-tile area. Lv 5: 3 tiles plus 30% slow for 3s.',
     miasma:'Super: poisons the whole field and blocks healing for 8 / 10 / 12s. Slows enemies by 25 / 30 / 40%.',
-    gustArrow:'Arrow: pushes the target and enemies behind it back 1.5 tiles (2.5 at Lv 5), with 0.5s stagger. Takes no hearts.',
+    gustArrow:'Arrow: pushes the enemy you named back 1.5 tiles with a 0.5s stagger. Takes no hearts.',
     tailwind:'Instant: for 5s, walk 25% faster and arrows fly 30% faster. Lv 5 lasts 8s.',
     whirlwind:'Instant: rolls 5 tiles toward the nearest pack, gathering enemies and staggering for 1s. Lv 5: 7 tiles and 1.5s stagger.',
     cyclone:'Super: lifts every enemy, spins them and drops them 2 / 2.5 / 3 tiles away, with 1 / 1.5 / 2s landing stun. Takes no hearts.'
   };
   // Literal approved proposal data; runtime remains self-contained in the shipped HTML.
-  const radial=[{"id":"burn","name":"Burn","group":"fire","tag":"Arrow skill","description":"Burn the target and enemies within 2 tiles for half a heart over 3 seconds and expose their armour. Burn cannot take the final heart. Radius grows 5% per additional rank.","levels":["2-tile radius · 10s cooldown","2.1-tile radius · 9.5s cooldown","2.2-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"embers","name":"Deep Embers","group":"fire","tag":"Elemental passive","description":"Slightly increase Burn damage while preserving the final heart. The same three-second damage window applies. Does not increase radius or armour exposure.","levels":["+5% Burn damage · 0.525 hearts total","+8% Burn damage · 0.54 hearts total","+10% Burn damage · 0.55 hearts total"],"max":3,"requires":["burn",3],"tuned":true},{"id":"reclaim","name":"Ember Reclaim","group":"fire","tag":"Elemental passive","description":"The first arrow kill against an enemy burned by a given Burn cast reduces Burn’s remaining cooldown. Activates at most once per cast, even if that cast burns a crowd. Shares the 20% passive cooldown-reduction cap with Momentum and Cold Focus.","levels":["−0.25s Burn cooldown · once per cast","−0.4s Burn cooldown · once per cast"],"max":2,"requires":["embers",3],"tuned":true},{"id":"freeze","name":"Freeze","group":"ice","tag":"Arrow skill","description":"Freeze the target and enemies within 2 tiles, then slow them to half speed. Deals no elemental damage. Bosses are slowed instead of frozen.","levels":["1.5s freeze + 2s slow · 12s cooldown","1.6s freeze + 2s slow · 11.5s cooldown","1.7s freeze + 2s slow · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"frost","name":"Lingering Frost","group":"ice","tag":"Elemental passive","description":"Slightly extend the slow that follows Freeze on ordinary enemies. Does not extend solid freeze or add any duration against bosses. Slows use the strongest current effect rather than stacking.","levels":["+0.15s slow duration","+0.3s slow duration","+0.5s slow duration"],"max":3,"requires":["freeze",3],"tuned":true},{"id":"focus","name":"Cold Focus","group":"ice","tag":"Elemental passive","description":"Slightly reduce Freeze’s cooldown after its normal level reduction. This reduction counts toward the shared 20% passive cooldown-reduction cap per cast, so it cannot stack beyond that cap with Momentum.","levels":["−0.25s Freeze cooldown","−0.5s Freeze cooldown"],"max":2,"requires":["frost",3],"tuned":true},{"id":"thunder","name":"Thunder","group":"electric","tag":"Arrow skill","description":"Strike the target for half a heart and jump to two nearby enemies within 3 tiles of each other, stunning each. Elemental damage preserves the final heart.","levels":["3 targets · 0.5s stun · 12s cooldown","3 targets · 0.6s stun · 11.5s cooldown","3 targets · 0.7s stun · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"fork","name":"Forked Current","group":"electric","tag":"Elemental passive","description":"Slightly increase the maximum distance between Thunder’s jumps. Does not add targets, damage or stun duration.","levels":["+0.15 tiles jump range · 3.15 total","+0.3 tiles jump range · 3.3 total","+0.5 tiles jump range · 3.5 total"],"max":3,"requires":["thunder",3],"tuned":true},{"id":"echo","name":"Static Echo","group":"electric","tag":"Elemental passive","description":"One second after Thunder hits, a harmless echo briefly slows only its original target. Deals no damage, adds no stun, cannot chain or repeat itself, and has no effect on bosses. Uses the strongest current slow.","levels":["5% slow for 1s · original target only","8% slow for 1s · original target only"],"max":2,"requires":["fork",3],"tuned":true},{"id":"venom","name":"Venom Arrow","group":"poison","tag":"Arrow skill","description":"Poison enemies within 1 tile for half a heart over 6 seconds and prevent healing. Poison preserves the final heart.","levels":["1-tile radius · 10s cooldown","1-tile radius · 9.5s cooldown","1-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"creep","name":"Creeping Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target moves slightly slower for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Uses the strongest current slow.","levels":["3% slow for 2s · original target only","5% slow for 2s · original target only","8% slow for 2s · original target only"],"max":3,"requires":["venom",3],"tuned":true},{"id":"wither","name":"Withering Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target deals slightly less attack damage for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Reapplication cannot stack the reduction.","levels":["Target deals 3% less damage for 2s","Target deals 5% less damage for 2s"],"max":2,"requires":["creep",3],"tuned":true},{"id":"gust","name":"Gust Arrow","group":"wind","tag":"Arrow skill","description":"Push the target and enemies behind it, with a half-second stagger. Deals no elemental damage. Bosses cannot be displaced.","levels":["1.5-tile push · 10s cooldown","1.5-tile push · 9.5s cooldown","1.5-tile push · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"slip","name":"Slipstream","group":"wind","tag":"Elemental passive","description":"After Gust Arrow hits an enemy, gain a small movement-speed bonus for 1.5 seconds. Activates once per cast, not on every clean name or every enemy hit. Does not stack or refresh from the same cast.","levels":["+2% movement speed for 1.5s","+3% movement speed for 1.5s","+4% movement speed for 1.5s"],"max":3,"requires":["gust",3],"tuned":true},{"id":"backdraft","name":"Backdraft","group":"wind","tag":"Elemental passive","description":"Slightly increase the push on Gust Arrow’s original target only. Enemies behind it receive only the retained arrow’s normal push. Boss displacement immunity remains.","levels":["+0.1 tiles push · original target only","+0.2 tiles push · original target only"],"max":2,"requires":["slip",3],"tuned":true}];
+  const radial=[{"id":"burn","name":"Burn","group":"fire","tag":"Arrow skill","description":"Burn the enemy you named for half a heart over 3 seconds and expose its armour. One target.","levels":["single target · 10s cooldown","single target · 9.5s cooldown","single target · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"embers","name":"Deep Embers","group":"fire","tag":"Elemental passive","description":"Slightly increase Burn damage. The same three-second damage window applies. Does not increase radius or armour exposure.","levels":["+5% Burn damage · 0.525 hearts total","+8% Burn damage · 0.54 hearts total","+10% Burn damage · 0.55 hearts total"],"max":3,"requires":["burn",3],"tuned":true},{"id":"reclaim","name":"Ember Reclaim","group":"fire","tag":"Elemental passive","description":"The first arrow kill against an enemy burned by a given Burn cast reduces Burn’s remaining cooldown. Activates at most once per cast, even if that cast burns a crowd. Shares the 20% passive cooldown-reduction cap with Momentum and Cold Focus.","levels":["−0.25s Burn cooldown · once per cast","−0.4s Burn cooldown · once per cast"],"max":2,"requires":["embers",3],"tuned":true},{"id":"freeze","name":"Freeze","group":"ice","tag":"Arrow skill","description":"Freeze the enemy you named, then slow it to half speed. One target. Deals no elemental damage. Bosses are slowed instead of frozen.","levels":["1s freeze + 2s slow · 12s cooldown","1.1s freeze + 2s slow · 11.5s cooldown","1.2s freeze + 2s slow · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"frost","name":"Lingering Frost","group":"ice","tag":"Elemental passive","description":"Slightly extend the slow that follows Freeze on ordinary enemies. Does not extend solid freeze or add any duration against bosses. Slows use the strongest current effect rather than stacking.","levels":["+0.15s slow duration","+0.3s slow duration","+0.5s slow duration"],"max":3,"requires":["freeze",3],"tuned":true},{"id":"focus","name":"Cold Focus","group":"ice","tag":"Elemental passive","description":"Slightly reduce Freeze’s cooldown after its normal level reduction. This reduction counts toward the shared 20% passive cooldown-reduction cap per cast, so it cannot stack beyond that cap with Momentum.","levels":["−0.25s Freeze cooldown","−0.5s Freeze cooldown"],"max":2,"requires":["frost",3],"tuned":true},{"id":"thunder","name":"Thunder","group":"electric","tag":"Arrow skill","description":"Strike the enemy you named for half a heart and stun it. One target, never its last heart.","levels":["single target · 0.5s stun · 12s cooldown","single target · 0.6s stun · 11.5s cooldown","single target · 0.7s stun · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"fork","name":"Forked Current","group":"electric","tag":"Elemental passive","description":"Slightly increase the maximum distance between Thunder’s jumps. Does not add targets, damage or stun duration.","levels":["+0.15 tiles jump range · 3.15 total","+0.3 tiles jump range · 3.3 total","+0.5 tiles jump range · 3.5 total"],"max":3,"requires":["thunder",3],"tuned":true},{"id":"echo","name":"Static Echo","group":"electric","tag":"Elemental passive","description":"One second after Thunder hits, a harmless echo briefly slows only its original target. Deals no damage, adds no stun, cannot chain or repeat itself, and has no effect on bosses. Uses the strongest current slow.","levels":["5% slow for 1s · original target only","8% slow for 1s · original target only"],"max":2,"requires":["fork",3],"tuned":true},{"id":"venom","name":"Venom Arrow","group":"poison","tag":"Arrow skill","description":"Poison the enemy you named for half a heart over 6 seconds; it cannot be healed. One target.","levels":["single target · 10s cooldown","single target · 9.5s cooldown","single target · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"creep","name":"Creeping Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target moves slightly slower for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Uses the strongest current slow.","levels":["3% slow for 2s · original target only","5% slow for 2s · original target only","8% slow for 2s · original target only"],"max":3,"requires":["venom",3],"tuned":true},{"id":"wither","name":"Withering Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target deals slightly less attack damage for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Reapplication cannot stack the reduction.","levels":["Target deals 3% less damage for 2s","Target deals 5% less damage for 2s"],"max":2,"requires":["creep",3],"tuned":true},{"id":"gust","name":"Gust Arrow","group":"wind","tag":"Arrow skill","description":"Push the enemy you named back, with a half-second stagger. One target. Deals no elemental damage. Bosses cannot be displaced.","levels":["1.5-tile push · 10s cooldown","1.5-tile push · 9.5s cooldown","1.5-tile push · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"slip","name":"Slipstream","group":"wind","tag":"Elemental passive","description":"After Gust Arrow hits an enemy, gain a small movement-speed bonus for 1.5 seconds. Activates once per cast, not on every clean name or every enemy hit. Does not stack or refresh from the same cast.","levels":["+2% movement speed for 1.5s","+3% movement speed for 1.5s","+4% movement speed for 1.5s"],"max":3,"requires":["gust",3],"tuned":true},{"id":"backdraft","name":"Backdraft","group":"wind","tag":"Elemental passive","description":"Slightly increase the push on Gust Arrow’s original target only. Enemies behind it receive only the retained arrow’s normal push. Boss displacement immunity remains.","levels":["+0.1 tiles push · original target only","+0.2 tiles push · original target only"],"max":2,"requires":["slip",3],"tuned":true}];
   const proposalKey=id=>({venom:'venomArrow',gust:'gustArrow'}[id]||id);
   const list=[],defs={},rects={};
   // Source circles from the approved sheet. Crop inside each rim, never its label.
@@ -17227,8 +17354,8 @@ const FirstJob=window.FirstJob=(()=>{
   for(let col=0;col<groups.length;col++){
     const [group,...items]=groups[col];
     items.forEach(([key,name,type,cd],row)=>{
-      const starter=type==='arrow',rankKey='job_'+key;
-      const max=starter||type==='super'?3:5;
+      const starter=false,rankKey='job_'+key;   /* v131.1: no free skills - learned with points */
+      const max=type==='arrow'||type==='super'?3:5;
       const d={key,name,type,cd,group,color:colors[group],row,col,starter,rankKey,max,previous:row?items[row-1][0]:null,description:descriptions[key]};
       defs[key]=d;list.push(d);rects[key]={x:xs[row]-95,y:ys[col]-90,w:190,h:180};
     });
@@ -17241,10 +17368,18 @@ const FirstJob=window.FirstJob=(()=>{
     defs[key]=d;list.push(d);
   }
   const J={list,defs,rects,charge:0,casts:{},castSerial:0,echoes:[],slipUntil:0,zones:[],marks:new Map(),superFx:null,tailUntil:0,
-    slots:['burn','freeze','thunder','venomArrow','gustArrow',null,null,null],superKey:null,pend:null,intUntil:0,intName:''};
+    slots:[null,null,null,null,null,null,null,null],superKey:null,pend:null,intUntil:0,intName:''};   /* v131.1: empty until learned */
   const eligible=m=>!!m&&!m.dead&&!m.sheep&&!m.supply&&!m.door&&!m.taboo&&!m.drowned&&!!MOBDEF[m.tier]&&m.level===P.level;
   const targets=()=>mobs.filter(eligible);
-  const isBoss=m=>!!(m&&(m.boss||m.mino||m.turt||m.lancer||(m.tier==='SR'&&S.chapter===2&&!m.broodOwner)||['TR','SK','LZ'].includes(m.tier)||window.SpiritBoss?.owns(m)));
+  const isBoss=m=>!!(m&&(m.boss||m.mino||m.turt||m.lancer||(m.tier==='SR'&&S.chapter===2&&!m.broodOwner)||['BM','TR','SK','LZ','SM','MS'].includes(m.tier)||window.SpiritBoss?.owns(m)));   /* v125: + Shaman, Marshal */
+  /* v125 RESISTANCE (option F). Each boss, and four regular units, resist one element: that
+     element's skills deal half damage, hold half as long and slow half as much. The skill still
+     works, and works in full on everything else. curEl is set around every place a skill acts. */
+  const ELEM={burn:'fire',freeze:'ice',thunder:'electric',venomArrow:'poison',gustArrow:'wind'};
+  const RESIST={MN:'wind',TU:'ice',BM:'poison',SR:'poison',SM:'electric',SK:'ice',LZ:'fire',LC:'electric',TR:'fire',HR:'wind',HL:'fire',BW:'wind',AD:'fire'};
+  let curEl=null;
+  const resists=m=>!!(m&&curEl&&RESIST[m.tier]===curEl);
+  const resistScale=(m,el,scale)=>RESIST[m?.tier]===el?1-(1-scale)*.5:scale;
   const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const nearest=(origin=P)=>targets().sort((a,b)=>distance(a,origin)-distance(b,origin))[0]||null;
   const lvl=key=>{const d=defs[key];return d?Math.min(d.max,Math.max(0,Number(S.ranks?.[d.rankKey])||0)+(d.starter?1:0)):0;};
@@ -17252,10 +17387,40 @@ const FirstJob=window.FirstJob=(()=>{
   const active=()=>S.scene==='stage'&&!S.endless&&!S.card&&!S.shop&&!S.opt&&!S.skCard&&!(S.drownT>0);
   const pos=m=>({x:m.x,y:m.y,level:m.level});
   const ring=(p,r,col)=>{S.skFx||=[];const rgb=col==='#a6d955'?'166,217,85':col==='#a6d9f5'?'166,217,245':'255,150,70';S.skFx.push({k:'ring',x:p.x,y:p.y,r,col:rgb,t:.45,T:.45});};
-  function hurt(m,amount){if(!eligible(m))return;const hp=m.hp==null?1:m.hp;m.hp=Math.max(Math.min(1,hp),hp-amount);m.shake=Math.max(m.shake||0,.2);if(m.lancer&&m.hp<hp)lancerHit(m);}
+  function hurt(m,amount){if(!eligible(m))return;const boss=isBoss(m);if(boss&&(m.shield>0||(m.turt&&m.armour)))return;if(resists(m))amount*=.5;const hp=m.hp==null?1:m.hp;m.hp=hp-amount;
+  m.shake=Math.max(m.shake||0,.2);if(m.lancer&&m.hp<hp)lancerHit(m);
+  if((m.mino||m.turt)&&m.boss?.last){m.finDmg=(m.finDmg||0)+(hp-Math.max(0,m.hp));m.hp=Math.max(m.hp,.01);if(m.finDmg>=1){m.finDmg-=1;skillKill(m);}return;}   /* finale: a full heart of skill damage counts as one name */
+  if(m.hp<=.001)skillKill(m);}   /* v126: skills can finish any enemy, bosses included */
+  /* v126 SKILL KILL. The same kill an arrow makes, minus the arrow-only rewards. The Minotaur's
+     and the Turtle's last-heart finales still play: a skill that empties them starts the finale,
+     and during it each emptied heart counts as one of its names. */
+  function skillKill(m){
+    if(m.dead)return;
+    if((m.mino&&minoSpare(m))||(m.turt&&turtSpare(m))){m.hp=1;m.stagger=Math.max(m.stagger||0,.2);return;}
+    m.hp=0;m.dead=true;m.skillKilled=true;S.kills=(S.kills|0)+1;
+    if(S.lock===m){S.lock=null;S.typed=0;}
+    try{if(m.muster)decree(m);}catch(e){}
+    if(m.afx==="echo"&&!m.echoed)S.echo=m.word;
+    if(m.afx==="twin"&&m.twinOf){const mate=mobs.find(x=>!x.dead&&x.uid===m.twinOf);if(mate){S.twinRage=(S.twinRage|0)+1;mate.spd*=AFX.twin.rage;mate.shake=.3;}}
+    try{fx.push({k:"dust",x:m.x,y:m.y,f:0});sHit();}catch(e){}
+  }
   function stop(m,seconds,freeze=false){
     if(!eligible(m))return;
-    if(freeze&&isBoss(m)){slow(m,.5,seconds+2);return;}
+    if(resists(m))seconds*=.5;
+    /* v125 CONTROL FATIGUE (option B). A boss that is already held is not held again; each new
+       hold inside 6s lasts half as long as the last, and the third makes it UNBREAKABLE for 4s.
+       Freeze on a boss is a slow plus a 0.4s ice moment - enough to break the Reaper's spin. */
+    if(isBoss(m)){
+      if(resists(m)){if(freeze)slow(m,.5,seconds+2);return;}   /* v127: a resisted element never holds a boss */
+      if(freeze){slow(m,.5,seconds+2);seconds=Math.min(seconds,.4);
+        if(m.lancer){m.jobStop=Math.max(m.jobStop||0,S.t+seconds);iceOn(m,seconds);return;}}   /* the Reaper's counter ignores fatigue */
+      if((m.ctlImmune||0)>S.t||(m.jobStop||0)>S.t)return;
+      const recent=(m.ctlLast||-99)>S.t-6;m.ctlN=recent?(m.ctlN||0)+1:0;m.ctlLast=S.t;
+      seconds*=Math.pow(.5,m.ctlN);
+      m.jobStop=S.t+seconds;if(freeze)iceOn(m,seconds);
+      if(m.ctlN>=2){m.ctlImmune=S.t+seconds+4;m.ctlN=0;m.ctlLast=-99;toast((MOBDEF[m.tier]?.label||'The boss').toUpperCase()+' IS UNBREAKABLE · 4s',2.2);}
+      return;
+    }
     m.jobStop=Math.max(m.jobStop||0,S.t+seconds);
     if(freeze){m.jobFreeze=Math.max(m.jobFreeze||0,S.t+seconds);iceOn(m,seconds);}
   }
@@ -17264,6 +17429,7 @@ const FirstJob=window.FirstJob=(()=>{
     m.frzT=Math.max(m.frzT||0,seconds);m.stagger=Math.max(m.stagger||0,seconds);iceBurst(m.x,m.y,12,false,m.big?1.45:1);}
   function slow(m,scale,seconds){
     if(!eligible(m))return;
+    if(resists(m))scale=1-(1-scale)*.5;
     m.jobSlows||=[];m.jobSlows.push({scale,until:S.t+seconds});
   }
   const stopped=m=>(m.jobStop||0)>S.t;
@@ -17301,39 +17467,43 @@ const FirstJob=window.FirstJob=(()=>{
     S.skAt[key]-=amount;castData.used+=amount;return amount;
   }
   function spend(key){S.skAt||={};S.skAt[key]=S.t+rankCooldown(key);
-    if(defs[key]?.type==='arrow'){newCast(key);if(key==='freeze')reduceCooldown(key,[0,.25,.5][lvl('focus')]);}
+    if(defs[key]?.type==='arrow'){for(const k of J.slots)if(k&&k!==key&&defs[k]?.type==='arrow')S.skAt[k]=Math.max(S.skAt[k]||0,S.t+1.5);   /* v127: 1.5s between elemental arrows */
+      newCast(key);if(key==='freeze')reduceCooldown(key,[0,.25,.5][lvl('focus')]);}
     else S.skUsed=(S.skUsed||0)+1;
   }
   function arrowKill(m){
     const castData=m?.jobBurnCast;if(!m?.dead||!castData||castData.reclaimed||!lvl('reclaim'))return;
     castData.reclaimed=true;if(J.casts.burn===castData)reduceCooldown('burn',[0,.25,.4][lvl('reclaim')]);
   }
-  function impact(key,src,castData=null){
+  function impact(key,src,castData=null){const _o=curEl;curEl=ELEM[key]||null;try{return impact0(key,src,castData);}finally{curEl=_o;}}
+  function impact0(key,src,castData=null){
     if(!src||src.level!==P.level)return;
     const L=lvl(key)||1,origin=pos(src),near=targets();
     castData ||= J.casts[key] || newCast(key);
-    if(key==='burn'){const radius=2*T*(1+.05*(L-1));for(const m of near)if(distance(m,origin)<=radius)burn(m,L,castData);ring(origin,radius,colors.fire);}
+    if(key==='burn'){if(eligible(src))burn(src,L,castData);ring(origin,T*.6,colors.fire);}   /* v131.3: the target only */
     else if(key==='freeze'){
-      for(const m of near)if(distance(m,origin)<=2*T){const hold=1.5+.1*(L-1);
+      for(const m of (eligible(src)?[src]:[])){let hold=1+.1*(L-1);   /* v131.3: the target only */
+        if(isBoss(m)){stop(m,hold,true);m.chill=Math.max(m.chill||0,(resists(m)?.75:1.5));continue;}   /* v125: bosses are slowed, as the skill says */
+        if(resists(m))hold*=.5;
         m.jobStop=Math.max(m.jobStop||0,S.t+hold);m.jobFreeze=Math.max(m.jobFreeze||0,S.t+hold);iceOn(m,hold);
         m.chill=Math.max(m.chill||0,hold+2+(L>=5?1:0)+(isBoss(m)?0:[0,.15,.3,.5][lvl('frost')]));}   /* v124: chill = the game's half speed */
       iceBurst(src.x,src.y,26);
-      S.skFx||=[];S.skFx.push({k:'frost',x:src.x,y:src.y,r:2*T,t:.9,T:.9,ang:Math.atan2(src.y-P.y,src.x-P.x)});
+      S.skFx||=[];S.skFx.push({k:'frost',x:src.x,y:src.y,r:T*.8,t:.9,T:.9,ang:Math.atan2(src.y-P.y,src.x-P.x)});
       blip(880,.14,'sine',.06,1320);blip(1320,.10,'sine',.04,1760);
     }else if(key==='thunder'){
       const hit=[],pts=[];let m=eligible(src)?src:null;
-      for(let i=0;m&&i<3;i++){
+      for(let i=0;m&&i<1;i++){   /* v131.3: the target only, no jumps */
         hit.push(m);pts.push([m.x,m.y-28]);hurt(m,.5);stop(m,.5+.1*(L-1));zapBurst(m.x,m.y,10);
         const from=m;m=near.filter(n=>!hit.includes(n)&&distance(n,from)<=(3+[0,.15,.3,.5][lvl('fork')])*T).sort((a,b)=>distance(a,from)-distance(b,from))[0];
       }
       if(eligible(src)&&!isBoss(src)&&lvl('echo'))J.echoes.push({target:src,at:S.t+1,until:S.t+2,scale:1-[0,.05,.08][lvl('echo')],level:src.level});
       if(pts.length>1){S.skFx||=[];S.skFx.push({k:'bolt',pts,t:.45,T:.45,seed:123});}
-     }else if(key==='venomArrow'){const radius=T;for(const m of near)if(distance(m,origin)<=radius)poison(m);
+     }else if(key==='venomArrow'){const radius=T*.6;if(eligible(src))poison(src);   /* v131.3: the target only */
       if(eligible(src)&&!isBoss(src)){if(lvl('creep'))slow(src,1-[0,.03,.05,.08][lvl('creep')],2);if(lvl('wither'))src.jobWither={until:S.t+2,scale:1-[0,.03,.05][lvl('wither')]};}
       ring(origin,radius,colors.poison);}
     else if(key==='gustArrow'){
       const n=distance(src,P)||1,v={x:(src.x-P.x)/n,y:(src.y-P.y)/n};
-      for(const m of near)if(m===src||lineDistance(m,origin,v,4*T)<T*.7){const amount=T*(1.5+(m===src?[0,.1,.2][lvl('backdraft')]:0));push(m,v.x*amount,v.y*amount);stop(m,.5);}
+      for(const m of near)if(m===src){const amount=   /* v131.3: the target only */T*(1.5+(m===src?[0,.1,.2][lvl('backdraft')]:0));push(m,v.x*amount,v.y*amount);stop(m,.5);}
       if(eligible(src)&&lvl('slip')&&!castData.slipped){castData.slipped=true;J.slipUntil=S.t+1.5;}
       ring(origin,1.5*T,colors.wind);
     }
@@ -17413,8 +17583,8 @@ const FirstJob=window.FirstJob=(()=>{
     for(const echo of J.echoes)if(S.t>=echo.at&&S.t<echo.until&&echo.level===P.level&&eligible(echo.target)&&!isBoss(echo.target))slow(echo.target,echo.scale,echo.until-S.t);
     J.echoes=J.echoes.filter(echo=>S.t<echo.at);
     for(const m of targets()){
-      if(m.jobBurn?.left>0){const d=Math.min(m.jobBurn.left,m.jobBurn.rate*dt);m.jobBurn.left-=d;hurt(m,d);}
-      if((m.jobPoisonUntil||0)>S.t-dt&&m.jobPoisonLeft>0){const elapsed=Math.min(dt,Math.max(0,m.jobPoisonUntil-(S.t-dt))),d=Math.min(m.jobPoisonLeft,m.jobPoisonRate*elapsed);m.jobPoisonLeft-=d;hurt(m,d);}
+      if(m.jobBurn?.left>0){const d=Math.min(m.jobBurn.left,m.jobBurn.rate*dt);m.jobBurn.left-=d;curEl='fire';hurt(m,d);curEl=null;}
+      if((m.jobPoisonUntil||0)>S.t-dt&&m.jobPoisonLeft>0){const elapsed=Math.min(dt,Math.max(0,m.jobPoisonUntil-(S.t-dt))),d=Math.min(m.jobPoisonLeft,m.jobPoisonRate*elapsed);m.jobPoisonLeft-=d;curEl='poison';hurt(m,d);curEl=null;}
       m.jobSlows=(m.jobSlows||[]).filter(s=>s.until>S.t);
     }
     for(const [m,mark] of J.marks){
@@ -17467,27 +17637,50 @@ const FirstJob=window.FirstJob=(()=>{
     return true;
   }
   function serialize(){return {v:1,slots:J.slots.slice(),super:J.superKey};}
+  // One source of truth for the current arrow -> passive -> passive branches.
+  // Chapter selection and TEST_UNLOCK never substitute for an actual boss clear.
+  const finalBossChapter={focus:1,reclaim:4,echo:3,wither:2}; // zero-based; both ranks use the assigned boss
+  function requirements(key,targetLevel=lvl(key)+1){
+    const d=defs[key];if(!d)return [];
+    const result=[{label:'Arrow Mastery Lv 3',met:((S.ranks?.mastery)|0)>=3}];
+    if(d.previous)result.push({label:defs[d.previous].name+' Lv 3',met:lvl(d.previous)>=3});
+    if(d.type==='passive'){
+      const middle=defs[d.previous]?.type==='arrow';
+      const chapter=middle?0:(finalBossChapter[key]??(targetLevel>=2?2:1));
+      result.push({label:(middle?'Clear Chapter ':'Defeat Chapter ')+['I','II','III','IV','V'][chapter]+(middle?'':' boss'),met:((S.prog?.[chapter]?.cleared)|0)>=NSTAGE});
+    }
+    return result;
+  }
   function restore(data){
     S.ranks||={};
     for(const key of retiredRanks)delete S.ranks[key];
     for(const d of list)if(d.rankKey in S.ranks)S.ranks[d.rankKey]=Math.max(0,Math.min(d.max-(d.starter?1:0),Math.floor(Number(S.ranks[d.rankKey])||0)));
+    // Earned points stay unchanged: removing a premature rank returns its cost
+    // through spLeft(), rather than adding points again on every reload.
+    let returned=0;
+    for(const d of [...list].sort((a,b)=>a.row-b.row)){
+      const held=lvl(d.key);let allowed=0;
+      for(let level=1;level<=held;level++){if(requirements(d.key,level).some(req=>!req.met))break;allowed=level;}
+      if(allowed<held){S.ranks[d.rankKey]=allowed;returned+=held-allowed;}
+    }
+    if(returned)J.refundedRanks=returned;
     S.nock2=false;
-    J.slots=['burn','freeze','thunder','venomArrow','gustArrow',null,null,null];J.superKey=null;
+    J.slots=[null,null,null,null,null,null,null,null];J.superKey=null;
     if(data&&Array.isArray(data.slots)){const used=new Set();J.slots=Array.from({length:8},(_,i)=>{const k=data.slots[i],d=defs[k];if(!d||!learned(k)||!['arrow','instant'].includes(d.type)||used.has(k))return null;used.add(k);return k;});}
     if(defs[data?.super]?.type==='super'&&learned(data.super))J.superKey=data.super;
     J.charge=0;
   }
   function buy(key){const d=defs[key];if(!d)return false;const L=lvl(key);
     if(L>=d.max){toast(d.name+' is maxed');return false;}
-    const need=3;
-    if(d.previous&&lvl(d.previous)<need){toast('Needs '+defs[d.previous].name+' Lv '+need);return false;}
+    const missing=requirements(key).filter(req=>!req.met);
+    if(missing.length){toast(missing.map(req=>req.label).join(' · '));return false;}
     if(spLeft()<1){toast('Clear a stage to earn another skill point');return false;}
     S.ranks[d.rankKey]=(S.ranks[d.rankKey]||0)+1;
     if(!L&&d.type==='super'&&!J.superKey)equip(key,8);
-    if(!L&&d.type==='instant'){const slot=J.slots.indexOf(null);if(slot>=0)equip(key,slot);}
+    if(!L&&(d.type==='instant'||d.type==='arrow')){const slot=J.slots.indexOf(null);if(slot>=0)equip(key,slot);}
     saveNow();return true;
   }
-  Object.assign(J,{interrupt,casting:()=>!!J.pend&&active(),castTime:k=>CAST_T[k]||0,level:lvl,learned,eligible,cast,impact,tick,reset,equip,unequip,serialize,restore,buy,cost:key=>defs[key]&&lvl(key)<defs[key].max?1:0,cooldown,rankCooldown,reduceCooldown,arrowKill,spend,chargeNeed,poisoned,stopped,frozen,moveScale,blocks,damageScale,
+  Object.assign(J,{requirements,isBoss,resistOf:m=>RESIST[m?.tier]||null,RESIST,interrupt,casting:()=>!!J.pend&&active(),castTime:k=>CAST_T[k]||0,level:lvl,learned,eligible,cast,impact,tick,reset,equip,unequip,serialize,restore,buy,cost:key=>defs[key]&&lvl(key)<defs[key].max?1:0,cooldown,rankCooldown,reduceCooldown,arrowKill,spend,chargeNeed,poisoned,stopped,frozen,moveScale,blocks,damageScale,
     beforeMob:m=>stopped(m),walkScale:()=>active()?(J.tailUntil>S.t?1.25:1)*(J.slipUntil>S.t?1+[0,.02,.03,.04][lvl('slip')]:1):1,arrowScale:()=>active()&&J.tailUntil>S.t?1.3:1});
 
   // Register before saveLoad so new ranks are recognized. Retired ranks are refunded
@@ -17499,7 +17692,7 @@ const FirstJob=window.FirstJob=(()=>{
   jobTab.skills=list.map(d=>({k:d.rankKey,name:d.name,max:d.max-(d.starter?1:0),col:d.col,row:d.row,per:d.description,cap:'Lv '+d.max,jobKey:d.key,passive:d.type==='passive',type:d.type}));
   for(const sk of jobTab.skills)SKILL[sk.k]={...sk,tab:jobTab.key};
   for(const d of list)if(d.type==='arrow')SKDEF[d.key]={name:d.name.toUpperCase(),col:d.color,lite:d.color,glyph:{burn:'ember',freeze:'frost',thunder:'spark'}[d.key]||d.key,cd:d.cd};
-  const oldSkillOpen=skillOpen;skillOpen=sk=>sk.jobKey?(!defs[sk.jobKey].previous||lvl(defs[sk.jobKey].previous)>=3):oldSkillOpen(sk);
+  const oldSkillOpen=skillOpen;skillOpen=sk=>sk.jobKey?requirements(sk.jobKey).every(req=>req.met):oldSkillOpen(sk);
   const oldBuy=buyRank;buyRank=k=>{const d=list.find(d=>d.rankKey===k);return d?buy(d.key):oldBuy(k);};
   const oldNock=skNock;skNock=k=>defs[k]?cast(k):oldNock(k);
   const oldFire=skFire;skFire=(k,m)=>{if(!defs[k])return oldFire(k,m);const arrow=arrows.find(a=>a.target===m&&a.sk===k);return impact(k,m,arrow?.jobCast);};
@@ -17530,8 +17723,8 @@ const FirstJob=window.FirstJob=(()=>{
   const oldEnter=enterStage;enterStage=(...args)=>{reset();return oldEnter(...args);};
   const oldFinish=finish;finish=(...args)=>{const value=oldFinish(...args);if(S.scene!=='stage')reset();return value;};
   const oldUnbind=unbind;unbind=()=>{const ok=oldUnbind();if(ok){reset();restore(null);saveNow();}return ok;};
-  const oldNew=newRun;newRun=(...args)=>{const v=oldNew(...args);reset();restore(null);return v;};
-  const oldErase=saveErase;saveErase=(...args)=>{reset();restore(null);return oldErase(...args);};
+  const oldNew=newRun;newRun=(...args)=>{const v=oldNew(...args);reset();restore(null);J.refundedRanks=0;return v;};
+  const oldErase=saveErase;saveErase=(...args)=>{reset();restore(null);J.refundedRanks=0;return oldErase(...args);};
   return J;
 })();
 
@@ -17550,12 +17743,12 @@ const FirstJob=window.FirstJob=(()=>{
   function text(t,x,y,color='#cbd5da',size=12){g.fillStyle=color;g.font=size+'px system-ui';g.fillText(t,x,y);}
   function wrap(t,x,y,width,line=17){let row='';for(const word of t.split(' ')){const next=row?row+' '+word:word;if(g.measureText(next).width>width&&row){g.fillText(row,x,y);y+=line;row=word;}else row=next;}if(row)g.fillText(row,x,y);return y;}
   function hotbar(y,small=false){
-    const size=small?30:42,gap=small?18:22,width=9*size+8*gap+12,start=(VW-width)/2;
+    const size=small?30:42,gap=small?18:22,width=8*size+7*gap,start=(VW-width)/2;
     g.save();g.textAlign='center';g.textBaseline='alphabetic';
-    for(let i=0;i<9;i++){
+    for(let i=0;i<8;i++){
       const key=i===8?J.superKey:J.slots[i],d=J.defs[key],x=start+i*(size+gap)+(i===8?12:0),cy=y+size/2;
       g.fillStyle='#0b141ded';g.fillRect(x-3,y-3,size+6,size+6);
-      if(d){badge(key,x,y,size);
+      if(d&&J.learned(key)){badge(key,x,y,size);
         if(i<8&&J.pend?.key===key){const f=1-J.pend.left/J.pend.total;g.strokeStyle='#ffe08a';g.lineWidth=3;g.beginPath();g.arc(x+size/2,cy,size/2+4,-Math.PI/2,-Math.PI/2+Math.PI*2*f);g.stroke();}
         const nock=S.nock===key||S.nock2===key,remaining=i===8?0:Math.max(0,skAtOf(key)-S.t),frac=i===8?1-J.charge/J.chargeNeed():Math.min(1,remaining/J.cooldown(key));
         if(!small&&frac>0){g.save();g.beginPath();g.moveTo(x+size/2,cy);g.arc(x+size/2,cy,size/2,-Math.PI/2,-Math.PI/2+Math.PI*2*frac);g.closePath();g.clip();g.fillStyle='#03080bb8';g.fillRect(x,y,size,size);g.restore();}
@@ -17618,9 +17811,9 @@ const FirstJob=window.FirstJob=(()=>{
   J.key=e=>{
     if(S.scene!=='stage'||S.endless||S.card||S.skCard||S.opt||S.shop)return false;
     if(arrowOf(e)||e.ctrlKey||e.altKey||e.metaKey)return false;
-    if(e.code?.startsWith('Numpad'))return e.key>='1'&&e.key<='9';
-    if(e.key<'1'||e.key>'9')return false;
-    e.preventDefault();if(!e.repeat){const key=e.key==='9'?J.superKey:J.slots[+e.key-1];if(key)J.cast(key);else toast('Equip a skill on this key in the 1st Job page',1.6);}return true;
+    if(e.code?.startsWith('Numpad'))return e.key>='1'&&e.key<='8';
+    if(e.key<'1'||e.key>'8')return false;
+    e.preventDefault();if(!e.repeat){const key=e.key==='9'?J.superKey:J.slots[+e.key-1];if(key&&!J.learned(key))toast(J.defs[key].name+' is not learned yet: spend a skill point on it in the 1st Job page',2.2);else if(key)J.cast(key);else toast('Equip a skill on this key in the 1st Job page',1.6);}return true;
   };
   cv.addEventListener('click',e=>{
     if(S.scene!=='over'||!S.shop)return;
@@ -17629,7 +17822,7 @@ const FirstJob=window.FirstJob=(()=>{
     if(S.tsel!==1)return;
     if(x>=VW-155&&x<=VW-36&&y>=VH-104&&y<=VH-84){J.buy(chosen().key);return;}
     for(const d of J.list){const cx=28+cw*(d.col+.5),cy=150+d.row*78+24;if(Math.hypot(x-cx,y-cy)<31){S.csel=d.row*COLS+d.col;return;}}
-    if(y>=68&&y<=115){const size=30,gap=18,width=9*size+8*gap+12,start=(VW-width)/2;for(let i=0;i<9;i++){const xx=start+i*(size+gap)+(i===8?12:0);if(x>=xx&&x<=xx+size&&J.equip(chosen().key,i)){saveNow();return;}}}
+    if(y>=68&&y<=115){const size=30,gap=18,width=8*size+7*gap,start=(VW-width)/2;for(let i=0;i<8;i++){const xx=start+i*(size+gap)+(i===8?12:0);if(x>=xx&&x<=xx+size&&J.equip(chosen().key,i)){saveNow();return;}}}
   });
   cv.addEventListener('dblclick',e=>{if(S.scene==='over'&&S.shop&&S.tsel===1){const [x,y]=canvasXY(e),d=chosen(),cw=(VW-56)/COLS;if(Math.hypot(x-(28+cw*(d.col+.5)),y-(174+d.row*78))<31)J.buy(d.key);}});
   // Ground effects are drawn inside the world's existing camera transform.
@@ -17888,13 +18081,13 @@ const SkillBookUI=window.SkillBookUI=(()=>{
   function modalXY(e){const rect=cv.getBoundingClientRect();return [(e.clientX-rect.left)*VW/rect.width,(e.clientY-rect.top)*H/rect.height];}
   addEventListener('resize',()=>{if(active())modalViewport();});
   const U={radial:true,confirm:false,equipping:false,playing:false,previewKey:null,previewAt:0,pausedAt:0,note:'',noteAt:0,zoom:1,pan:{x:0,y:0}};
-  const catalogue=[{"id":"mastery","name":"Arrow Mastery","group":"basic","tag":"Arrow damage","description":"Increase the base damage of ordinary arrows by 5% per rank. This bonus does not increase elemental damage or the extra hearts from True Shot and Keen Edge.","levels":["+5% ordinary arrow damage","+10% ordinary arrow damage","+15% ordinary arrow damage"],"max":3},{"id":"vigor","name":"Vigor","group":"basic","tag":"Health","description":"Increase maximum health by 10% per rank. An upgrade also fills the health it adds.","levels":["110 maximum health","120 maximum health","130 maximum health"],"max":3},{"id":"nerve","name":"Iron Nerve","group":"basic","tag":"Survival","description":"Forgive a fatal blow once per stage, twice at Lv 3. Each rank adds 0.15 seconds of protection after being hit.","levels":["1 rescue · +0.15s hit protection","1 rescue · +0.30s hit protection","2 rescues · +0.45s hit protection"],"max":3},{"id":"crit","name":"True Shot","group":"basic","tag":"Critical arrows","description":"Critical arrows take an extra heart. Against a one-heart enemy, refund the arrow instead. Chance builds between critical hits.","levels":["About 5% critical arrows","About 10% critical arrows","About 15% critical arrows"],"max":3},{"id":"edge","name":"Keen Edge","group":"basic","tag":"Charged arrows","description":"Wounding arrows fill a meter. When full, the next qualifying arrow spends it to take an extra heart.","levels":["+10% meter per wound","+20% meter per wound","+25% meter per wound"],"max":3},{"id":"mender","name":"Mender","group":"basic","tag":"Supply healing","description":"The Supply healer restores more health. Healing always stops at your maximum.","levels":["+5 healing · 20–40 total","+10 healing · 25–45 total","+15 healing · 30–50 total"],"max":3},{"id":"fleet","name":"Fleet Foot","group":"basic","tag":"Movement","description":"Increase walking speed, including while sprinting.","levels":["+4% walking speed","+8% walking speed","+12% walking speed"],"max":3},{"id":"quiver","name":"Deep Quiver","group":"general","tag":"Ammunition","description":"Increase your maximum arrow capacity.","levels":["+1 arrow capacity","+2 arrow capacity","+3 arrow capacity"],"max":3},{"id":"flight","name":"Quick Flight","group":"general","tag":"Arrow speed","description":"Increase arrow travel speed so shots reach their targets sooner.","levels":["+10% arrow speed","+20% arrow speed","+30% arrow speed"],"max":3},{"id":"momentum","name":"Momentum","group":"general","tag":"Clean typing","description":"Completing a clean enemy name reduces the remaining cooldown of all five elemental arrows. A clean name is completed without a typing mistake. All passive cooldown reductions combined are capped at 20% of each arrow’s rank-adjusted cooldown per cast, including Cold Focus and Ember Reclaim.","levels":["−0.2s remaining cooldown per clean name","−0.4s remaining cooldown per clean name","−0.6s remaining cooldown per clean name"],"max":3},{"id":"breath","name":"Catch Your Breath","group":"general","tag":"Stage recovery","description":"Restore health when first-clearing a stage. Replays do not grant this healing.","levels":["Restore 4 health","Restore 6 health","Restore 8 health"],"max":3},{"id":"stride","name":"Last Stride","group":"general","tag":"Low-health movement","description":"Gain movement speed while below 30% maximum health.","levels":["+5% movement speed","+10% movement speed","+15% movement speed"],"max":3},{"id":"scavenger","name":"Scavenger","group":"general","tag":"Arrow pickups","description":"Arrow pickups restore additional ammunition, up to your quiver capacity.","levels":["+1 arrow per pickup","+2 arrows per pickup","+3 arrows per pickup"],"max":3},{"id":"aim","name":"Steady Aim","group":"general","tag":"Critical arrows","description":"After standing still for one second, gain additional critical chance until you move. Values are percentage points.","levels":["+3 percentage points critical chance","+6 percentage points critical chance","+9 percentage points critical chance"],"max":3,"added":true},{"id":"longword","name":"Long Word","group":"general","tag":"Typing recovery","description":"An arrow kill against an enemy with a name of seven or more letters restores health, up to your maximum.","levels":["Restore 1 health per qualifying kill","Restore 2 health per qualifying kill","Restore 3 health per qualifying kill"],"max":3,"added":true},{"id":"reserve","name":"Emergency Reserve","group":"general","tag":"Emergency ammunition","description":"The first time your health falls below 30% each stage, recover arrows up to your quiver capacity. Activates once per stage.","levels":["Recover 1 arrow","Recover 2 arrows","Recover 3 arrows"],"max":3,"added":true},{"id":"supply","name":"Supply Guard","group":"general","tag":"Supply protection","description":"Using a Supply grants damage reduction against the next hit within eight seconds. Holds one charge and cannot stack.","levels":["10% reduction against the next hit","20% reduction against the next hit","30% reduction against the next hit"],"max":3,"added":true},{"id":"armour","name":"Light Armour","group":"general","tag":"Direct defence","description":"Reduce damage from direct enemy attacks. Environmental damage is unaffected.","levels":["2% less direct attack damage","4% less direct attack damage","6% less direct attack damage"],"max":3,"added":true},{"id":"read","name":"Read Ahead","group":"general","tag":"Keen Edge synergy","description":"The first wounding arrow against each enemy adds extra percentage points to your Keen Edge meter. Has no effect until Keen Edge is learned.","levels":["+5 percentage points to the meter","+10 percentage points to the meter","+15 percentage points to the meter"],"max":3,"added":true},{"id":"burn","name":"Burn","group":"fire","tag":"Arrow skill","description":"Burn the target and enemies within 2 tiles for half a heart over 3 seconds and expose their armour. Burn cannot take the final heart. Radius grows 5% per additional rank.","levels":["2-tile radius · 10s cooldown","2.1-tile radius · 9.5s cooldown","2.2-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"embers","name":"Deep Embers","group":"fire","tag":"Elemental passive","description":"Slightly increase Burn damage while preserving the final heart. The same three-second damage window applies. Does not increase radius or armour exposure.","levels":["+5% Burn damage · 0.525 hearts total","+8% Burn damage · 0.54 hearts total","+10% Burn damage · 0.55 hearts total"],"max":3,"requires":["burn",3],"tuned":true},{"id":"reclaim","name":"Ember Reclaim","group":"fire","tag":"Elemental passive","description":"The first arrow kill against an enemy burned by a given Burn cast reduces Burn’s remaining cooldown. Activates at most once per cast, even if that cast burns a crowd. Shares the 20% passive cooldown-reduction cap with Momentum and Cold Focus.","levels":["−0.25s Burn cooldown · once per cast","−0.4s Burn cooldown · once per cast"],"max":2,"requires":["embers",3],"tuned":true},{"id":"freeze","name":"Freeze","group":"ice","tag":"Arrow skill","description":"Freeze the target and enemies within 2 tiles, then slow them to half speed. Deals no elemental damage. Bosses are slowed instead of frozen.","levels":["1.5s freeze + 2s slow · 12s cooldown","1.6s freeze + 2s slow · 11.5s cooldown","1.7s freeze + 2s slow · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"frost","name":"Lingering Frost","group":"ice","tag":"Elemental passive","description":"Slightly extend the slow that follows Freeze on ordinary enemies. Does not extend solid freeze or add any duration against bosses. Slows use the strongest current effect rather than stacking.","levels":["+0.15s slow duration","+0.3s slow duration","+0.5s slow duration"],"max":3,"requires":["freeze",3],"tuned":true},{"id":"focus","name":"Cold Focus","group":"ice","tag":"Elemental passive","description":"Slightly reduce Freeze’s cooldown after its normal level reduction. This reduction counts toward the shared 20% passive cooldown-reduction cap per cast, so it cannot stack beyond that cap with Momentum.","levels":["−0.25s Freeze cooldown","−0.5s Freeze cooldown"],"max":2,"requires":["frost",3],"tuned":true},{"id":"thunder","name":"Thunder","group":"electric","tag":"Arrow skill","description":"Strike the target for half a heart and jump to two nearby enemies within 3 tiles of each other, stunning each. Elemental damage preserves the final heart.","levels":["3 targets · 0.5s stun · 12s cooldown","3 targets · 0.6s stun · 11.5s cooldown","3 targets · 0.7s stun · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"fork","name":"Forked Current","group":"electric","tag":"Elemental passive","description":"Slightly increase the maximum distance between Thunder’s jumps. Does not add targets, damage or stun duration.","levels":["+0.15 tiles jump range · 3.15 total","+0.3 tiles jump range · 3.3 total","+0.5 tiles jump range · 3.5 total"],"max":3,"requires":["thunder",3],"tuned":true},{"id":"echo","name":"Static Echo","group":"electric","tag":"Elemental passive","description":"One second after Thunder hits, a harmless echo briefly slows only its original target. Deals no damage, adds no stun, cannot chain or repeat itself, and has no effect on bosses. Uses the strongest current slow.","levels":["5% slow for 1s · original target only","8% slow for 1s · original target only"],"max":2,"requires":["fork",3],"tuned":true},{"id":"venom","name":"Venom Arrow","group":"poison","tag":"Arrow skill","description":"Poison enemies within 1 tile for half a heart over 6 seconds and prevent healing. Poison preserves the final heart.","levels":["1-tile radius · 10s cooldown","1-tile radius · 9.5s cooldown","1-tile radius · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"creep","name":"Creeping Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target moves slightly slower for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Uses the strongest current slow.","levels":["3% slow for 2s · original target only","5% slow for 2s · original target only","8% slow for 2s · original target only"],"max":3,"requires":["venom",3],"tuned":true},{"id":"wither","name":"Withering Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target deals slightly less attack damage for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Reapplication cannot stack the reduction.","levels":["Target deals 3% less damage for 2s","Target deals 5% less damage for 2s"],"max":2,"requires":["creep",3],"tuned":true},{"id":"gust","name":"Gust Arrow","group":"wind","tag":"Arrow skill","description":"Push the target and enemies behind it, with a half-second stagger. Deals no elemental damage. Bosses cannot be displaced.","levels":["1.5-tile push · 10s cooldown","1.5-tile push · 9.5s cooldown","1.5-tile push · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"slip","name":"Slipstream","group":"wind","tag":"Elemental passive","description":"After Gust Arrow hits an enemy, gain a small movement-speed bonus for 1.5 seconds. Activates once per cast, not on every clean name or every enemy hit. Does not stack or refresh from the same cast.","levels":["+2% movement speed for 1.5s","+3% movement speed for 1.5s","+4% movement speed for 1.5s"],"max":3,"requires":["gust",3],"tuned":true},{"id":"backdraft","name":"Backdraft","group":"wind","tag":"Elemental passive","description":"Slightly increase the push on Gust Arrow’s original target only. Enemies behind it receive only the retained arrow’s normal push. Boss displacement immunity remains.","levels":["+0.1 tiles push · original target only","+0.2 tiles push · original target only"],"max":2,"requires":["slip",3],"tuned":true}];
+  const catalogue=[{"id":"mastery","name":"Arrow Mastery","group":"basic","tag":"Arrow damage","description":"Increase the base damage of ordinary arrows by 5% per rank. This bonus does not increase elemental damage or the extra hearts from True Shot and Keen Edge.","levels":["+5% ordinary arrow damage","+10% ordinary arrow damage","+15% ordinary arrow damage"],"max":3},{"id":"vigor","name":"Vigor","group":"basic","tag":"Health","description":"Increase maximum health by 10% per rank. An upgrade also fills the health it adds.","levels":["110 maximum health","120 maximum health","130 maximum health"],"max":3},{"id":"nerve","name":"Iron Nerve","group":"basic","tag":"Survival","description":"Forgive a fatal blow once per stage, twice at Lv 3. Each rank adds 0.15 seconds of protection after being hit.","levels":["1 rescue · +0.15s hit protection","1 rescue · +0.30s hit protection","2 rescues · +0.45s hit protection"],"max":3},{"id":"crit","name":"True Shot","group":"basic","tag":"Critical arrows","description":"Critical arrows take an extra heart. Against a one-heart enemy, refund the arrow instead. Chance builds between critical hits.","levels":["About 5% critical arrows","About 10% critical arrows","About 15% critical arrows"],"max":3},{"id":"edge","name":"Keen Edge","group":"basic","tag":"Charged arrows","description":"Wounding arrows fill a meter. When full, the next qualifying arrow spends it to take an extra heart.","levels":["+10% meter per wound","+20% meter per wound","+25% meter per wound"],"max":3},{"id":"mender","name":"Mender","group":"basic","tag":"Supply healing","description":"The Supply healer restores more health. Healing always stops at your maximum.","levels":["+5 healing · 20–40 total","+10 healing · 25–45 total","+15 healing · 30–50 total"],"max":3},{"id":"fleet","name":"Fleet Foot","group":"basic","tag":"Movement","description":"Increase walking speed, including while sprinting.","levels":["+4% walking speed","+8% walking speed","+12% walking speed"],"max":3},{"id":"quiver","name":"Deep Quiver","group":"general","tag":"Ammunition","description":"Increase your maximum arrow capacity.","levels":["+1 arrow capacity","+2 arrow capacity","+3 arrow capacity"],"max":3},{"id":"flight","name":"Quick Flight","group":"general","tag":"Arrow speed","description":"Increase arrow travel speed so shots reach their targets sooner.","levels":["+10% arrow speed","+20% arrow speed","+30% arrow speed"],"max":3},{"id":"momentum","name":"Momentum","group":"general","tag":"Clean typing","description":"Completing a clean enemy name reduces the remaining cooldown of all five elemental arrows. A clean name is completed without a typing mistake. All passive cooldown reductions combined are capped at 20% of each arrow’s rank-adjusted cooldown per cast, including Cold Focus and Ember Reclaim.","levels":["−0.2s remaining cooldown per clean name","−0.4s remaining cooldown per clean name","−0.6s remaining cooldown per clean name"],"max":3},{"id":"breath","name":"Catch Your Breath","group":"general","tag":"Stage recovery","description":"Restore health when first-clearing a stage. Replays do not grant this healing.","levels":["Restore 4 health","Restore 6 health","Restore 8 health"],"max":3},{"id":"stride","name":"Last Stride","group":"general","tag":"Low-health movement","description":"Gain movement speed while below 30% maximum health.","levels":["+5% movement speed","+10% movement speed","+15% movement speed"],"max":3},{"id":"scavenger","name":"Scavenger","group":"general","tag":"Arrow pickups","description":"Arrow pickups restore additional ammunition, up to your quiver capacity.","levels":["+1 arrow per pickup","+2 arrows per pickup","+3 arrows per pickup"],"max":3},{"id":"aim","name":"Steady Aim","group":"general","tag":"Critical arrows","description":"After standing still for one second, gain additional critical chance until you move. Values are percentage points.","levels":["+3 percentage points critical chance","+6 percentage points critical chance","+9 percentage points critical chance"],"max":3,"added":true},{"id":"longword","name":"Long Word","group":"general","tag":"Typing recovery","description":"An arrow kill against an enemy with a name of seven or more letters restores health, up to your maximum.","levels":["Restore 1 health per qualifying kill","Restore 2 health per qualifying kill","Restore 3 health per qualifying kill"],"max":3,"added":true},{"id":"reserve","name":"Emergency Reserve","group":"general","tag":"Emergency ammunition","description":"The first time your health falls below 30% each stage, recover arrows up to your quiver capacity. Activates once per stage.","levels":["Recover 1 arrow","Recover 2 arrows","Recover 3 arrows"],"max":3,"added":true},{"id":"supply","name":"Supply Guard","group":"general","tag":"Supply protection","description":"Using a Supply grants damage reduction against the next hit within eight seconds. Holds one charge and cannot stack.","levels":["10% reduction against the next hit","20% reduction against the next hit","30% reduction against the next hit"],"max":3,"added":true},{"id":"armour","name":"Light Armour","group":"general","tag":"Direct defence","description":"Reduce damage from direct enemy attacks. Environmental damage is unaffected.","levels":["2% less direct attack damage","4% less direct attack damage","6% less direct attack damage"],"max":3,"added":true},{"id":"read","name":"Read Ahead","group":"general","tag":"Keen Edge synergy","description":"The first wounding arrow against each enemy adds extra percentage points to your Keen Edge meter. Has no effect until Keen Edge is learned.","levels":["+5 percentage points to the meter","+10 percentage points to the meter","+15 percentage points to the meter"],"max":3,"added":true},{"id":"burn","name":"Burn","group":"fire","tag":"Arrow skill","description":"Burn the enemy you named for half a heart over 3 seconds and expose its armour. One target.","levels":["single target · 10s cooldown","single target · 9.5s cooldown","single target · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"embers","name":"Deep Embers","group":"fire","tag":"Elemental passive","description":"Slightly increase Burn damage. The same three-second damage window applies. Does not increase radius or armour exposure.","levels":["+5% Burn damage · 0.525 hearts total","+8% Burn damage · 0.54 hearts total","+10% Burn damage · 0.55 hearts total"],"max":3,"requires":["burn",3],"tuned":true},{"id":"reclaim","name":"Ember Reclaim","group":"fire","tag":"Elemental passive","description":"The first arrow kill against an enemy burned by a given Burn cast reduces Burn’s remaining cooldown. Activates at most once per cast, even if that cast burns a crowd. Shares the 20% passive cooldown-reduction cap with Momentum and Cold Focus.","levels":["−0.25s Burn cooldown · once per cast","−0.4s Burn cooldown · once per cast"],"max":2,"requires":["embers",3],"tuned":true},{"id":"freeze","name":"Freeze","group":"ice","tag":"Arrow skill","description":"Freeze the enemy you named, then slow it to half speed. One target. Deals no elemental damage. Bosses are slowed instead of frozen.","levels":["1s freeze + 2s slow · 12s cooldown","1.1s freeze + 2s slow · 11.5s cooldown","1.2s freeze + 2s slow · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"frost","name":"Lingering Frost","group":"ice","tag":"Elemental passive","description":"Slightly extend the slow that follows Freeze on ordinary enemies. Does not extend solid freeze or add any duration against bosses. Slows use the strongest current effect rather than stacking.","levels":["+0.15s slow duration","+0.3s slow duration","+0.5s slow duration"],"max":3,"requires":["freeze",3],"tuned":true},{"id":"focus","name":"Cold Focus","group":"ice","tag":"Elemental passive","description":"Slightly reduce Freeze’s cooldown after its normal level reduction. This reduction counts toward the shared 20% passive cooldown-reduction cap per cast, so it cannot stack beyond that cap with Momentum.","levels":["−0.25s Freeze cooldown","−0.5s Freeze cooldown"],"max":2,"requires":["frost",3],"tuned":true},{"id":"thunder","name":"Thunder","group":"electric","tag":"Arrow skill","description":"Strike the enemy you named for half a heart and stun it. One target, never its last heart.","levels":["single target · 0.5s stun · 12s cooldown","single target · 0.6s stun · 11.5s cooldown","single target · 0.7s stun · 11s cooldown"],"max":3,"arrow":true,"cd":12},{"id":"fork","name":"Forked Current","group":"electric","tag":"Elemental passive","description":"Slightly increase the maximum distance between Thunder’s jumps. Does not add targets, damage or stun duration.","levels":["+0.15 tiles jump range · 3.15 total","+0.3 tiles jump range · 3.3 total","+0.5 tiles jump range · 3.5 total"],"max":3,"requires":["thunder",3],"tuned":true},{"id":"echo","name":"Static Echo","group":"electric","tag":"Elemental passive","description":"One second after Thunder hits, a harmless echo briefly slows only its original target. Deals no damage, adds no stun, cannot chain or repeat itself, and has no effect on bosses. Uses the strongest current slow.","levels":["5% slow for 1s · original target only","8% slow for 1s · original target only"],"max":2,"requires":["fork",3],"tuned":true},{"id":"venom","name":"Venom Arrow","group":"poison","tag":"Arrow skill","description":"Poison the enemy you named for half a heart over 6 seconds; it cannot be healed. One target.","levels":["single target · 10s cooldown","single target · 9.5s cooldown","single target · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"creep","name":"Creeping Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target moves slightly slower for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Uses the strongest current slow.","levels":["3% slow for 2s · original target only","5% slow for 2s · original target only","8% slow for 2s · original target only"],"max":3,"requires":["venom",3],"tuned":true},{"id":"wither","name":"Withering Venom","group":"poison","tag":"Elemental passive","description":"Venom Arrow’s original target deals slightly less attack damage for two seconds after impact. Poison ticks do not refresh this bonus. Secondary poisoned enemies and bosses are unaffected. Reapplication cannot stack the reduction.","levels":["Target deals 3% less damage for 2s","Target deals 5% less damage for 2s"],"max":2,"requires":["creep",3],"tuned":true},{"id":"gust","name":"Gust Arrow","group":"wind","tag":"Arrow skill","description":"Push the enemy you named back, with a half-second stagger. One target. Deals no elemental damage. Bosses cannot be displaced.","levels":["1.5-tile push · 10s cooldown","1.5-tile push · 9.5s cooldown","1.5-tile push · 9s cooldown"],"max":3,"arrow":true,"cd":10},{"id":"slip","name":"Slipstream","group":"wind","tag":"Elemental passive","description":"After Gust Arrow hits an enemy, gain a small movement-speed bonus for 1.5 seconds. Activates once per cast, not on every clean name or every enemy hit. Does not stack or refresh from the same cast.","levels":["+2% movement speed for 1.5s","+3% movement speed for 1.5s","+4% movement speed for 1.5s"],"max":3,"requires":["gust",3],"tuned":true},{"id":"backdraft","name":"Backdraft","group":"wind","tag":"Elemental passive","description":"Slightly increase the push on Gust Arrow’s original target only. Enemies behind it receive only the retained arrow’s normal push. Boss displacement immunity remains.","levels":["+0.1 tiles push · original target only","+0.2 tiles push · original target only"],"max":2,"requires":["slip",3],"tuned":true}];
   const branches=[{"id":"survival","name":"SURVIVAL","subtitle":"ENDURE & RECOVER","angle":-90,"color":"#b3c298","ids":["vigor","nerve","mender","breath","stride","armour"]},{"id":"fire","name":"FIRE","subtitle":"BURN & EXPOSE","angle":-45,"color":"#c79b73","ids":["burn","embers","reclaim"]},{"id":"ice","name":"ICE","subtitle":"FREEZE & SLOW","angle":0,"color":"#9fbec5","ids":["freeze","frost","focus"]},{"id":"electric","name":"ELECTRIC","subtitle":"STUN & REACH","angle":45,"color":"#cbb578","ids":["thunder","fork","echo"]},{"id":"poison","name":"POISON","subtitle":"DENY & WEAKEN","angle":90,"color":"#a3b477","ids":["venom","creep","wither"]},{"id":"wind","name":"WIND","subtitle":"PUSH & MOVE","angle":135,"color":"#a8b2c5","ids":["gust","slip","backdraft"]},{"id":"readiness","name":"READINESS","subtitle":"MOVE & RESUPPLY","angle":180,"color":"#bab58e","ids":["fleet","quiver","momentum","scavenger","reserve","supply"]},{"id":"precision","name":"PRECISION","subtitle":"AIM & COMMIT","angle":225,"color":"#c4b899","ids":["crit","edge","flight","aim","longword","read"]}];
   const glyphs={"mastery":"M4 20L20 4M12 4h8v8M4 14l6 6M2 18l4 4","vigor":"M12 21S3 15 3 9a5 5 0 019-3 5 5 0 019 3c0 6-9 12-9 12z","nerve":"M12 2l8 4v6c0 4-3 7-8 10-5-3-8-6-8-10V6l8-4zm0 5v10m-4-5h8","mender":"M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z","breath":"M4 13q4-8 8 0t8 0M4 18q4-8 8 0t8 0M12 3v5m-3-3 3 3 3-3","stride":"M3 16l5-3 4 3 4-5 5 2M4 7h4m-2-2v4","armour":"M8 3h8l5 5-4 3v10H7V11L3 8l5-5zm2 0v5h4V3","crit":"M12 2v4m0 12v4M2 12h4m12 0h4M12 6a6 6 0 110 12 6 6 0 010-12zm0 4v4m-2-2h4","edge":"M5 20L19 4l-4 10-7 7M4 15l5 5m-7 2 4-4","flight":"M3 19L21 5M14 4l7 1-2 7M3 7h6M1 11h5","aim":"M12 3a9 9 0 110 18 9 9 0 010-18zm0 5a4 4 0 110 8 4 4 0 010-8zm0 3v2m-1-1h2","longword":"M4 4h16v16H4V4zm4 4h8M8 12h8m-8 4h5","read":"M3 5q5-2 9 1 4-3 9-1v14q-5-2-9 1-4-3-9-1V5zm9 1v14","fleet":"M3 17l6-2 3-8 4 5 5 1-1 5H3v-1zm6-2 6 3M11 3h5","quiver":"M6 8h12l-2 13H8L6 8zm3 0V2m3 6V1m3 7V3M7 14h10","momentum":"M12 3a9 9 0 11-8 5M3 3v6h6m3-3v6l4 2","scavenger":"M5 8h14l2 13H3L5 8zm3 0V5q4-5 8 0v3m-4 4v6m-3-3h6","reserve":"M6 3h12v18H6V3zm3 5h6m-6 4h6m-6 4h6","supply":"M12 2l8 4v6c0 4-3 7-8 10-5-3-8-6-8-10V6l8-4zm0 6v8m-4-4h8","fire":"M13 2c2 6-3 7 0 10 1-2 3-3 4-3 5 8 0 13-5 13S1 17 6 10c0 4 3 5 3 2 0-3 3-6 4-10z","ice":"M12 2v20M3 7l18 10M3 17L21 7M8 4l4 4 4-4M8 20l4-4 4 4","electric":"M14 2L5 14h7l-2 8 9-13h-7l2-7z","poison":"M9 3h6m-5 0v6L4 19q-1 2 2 2h12q3 0 2-2L14 9V3M7 15h10M9 18h1m4-1h1","wind":"M3 7h12q5 0 4-3t-4 0M3 12h16q5 0 2 4t-4 0M3 17h8q4 0 2 4"};
   const gameKey=id=>['burn','freeze','thunder','venom','gust','embers','reclaim','frost','focus','fork','echo','creep','wither','slip','backdraft'].includes(id)?'job_'+({venom:'venomArrow',gust:'gustArrow'}[id]||id):id;
   const display=Object.fromEntries(catalogue.map(d=>[gameKey(d.id),d]));
   const radialKeys=catalogue.map(d=>gameKey(d.id));
-  const advanced=()=>FirstJob.list.filter(d=>!d.starter&&d.type!=='passive').map(d=>d.rankKey);
+  const advanced=()=>FirstJob.list.filter(d=>!d.starter&&d.type!=='passive'&&d.type!=='arrow').map(d=>d.rankKey);
   const currentKeys=()=>S.tsel===1?advanced():radialKeys;
   const parents={};const branchFor={mastery:{name:'BASIC',color:'#d8bd7c'}};
   for(const b of branches)b.ids.forEach((id,i)=>{const pair=b.ids.length===6;branchFor[gameKey(id)]=b;parents[gameKey(id)]=pair?(i<2?'mastery':gameKey(b.ids[i-2])):(i===0?'mastery':gameKey(b.ids[i-1]));});
@@ -17907,9 +18100,11 @@ const SkillBookUI=window.SkillBookUI=(()=>{
   function details(){
     const sk=selected(),b=BasicSkills.defs[sk.k],j=FirstJob.defs[sk.jobKey],info=display[sk.k];
     const level=j?FirstJob.level(j.key):r(sk.k),max=j?j.max:sk.max,cost=1,passive=!j||j.type==='passive';
+    const requirements=j?FirstJob.requirements(j.key,Math.min(level+1,max)):[];
     let reason='';
     if(level>=max)reason='Maximum level reached';
-    else if(j?.previous&&FirstJob.level(j.previous)<3)reason='Requires '+FirstJob.defs[j.previous].name+' Lv 3';
+    else if(sk.k!=='mastery'&&r('mastery')<3)reason='Requires Arrow Mastery Lv 3';   /* v131.7: the hub first */
+    else if(requirements.some(req=>!req.met))reason=requirements.filter(req=>!req.met).map(req=>req.label).join(' · ');
     else if(spLeft()<1)reason='Need 1 skill point · earned on first-clear milestones';
     const slot=j&&!passive?(j.type==='super'?(FirstJob.superKey===j.key?9:0):FirstJob.slots.indexOf(j.key)+1):0;
     const levels=b?.levels||j?.levels||info?.levels;
@@ -17920,7 +18115,7 @@ const SkillBookUI=window.SkillBookUI=(()=>{
       type:kind,category:(branchFor[sk.k]?.name||j?.group?.toUpperCase()||'BASIC')+' / '+kind.toUpperCase(),description,hint,
       current:levels?(level?levels[level-1]:'Not learned'):slot?'Equipped on '+slot:level?'Learned · not equipped':'Not learned',
       next:levels?levels[Math.min(level,max-1)]:j?.type==='super'?'Charge with '+FirstJob.chargeNeed()+' clean words':j?FirstJob.cooldown(j.key).toFixed(1)+'s cooldown':'',
-      canBuy:!reason,reason};
+      canBuy:!reason,reason,requirements};
   }
   let fixedTree=null;
   // Authored coordinates keep branch order and connection paths independent of
@@ -17955,10 +18150,10 @@ const SkillBookUI=window.SkillBookUI=(()=>{
       return {key,sk,x:cx+(p.x+p.size/2-fixed.cx)*graphScale-size/2,y:cy+(p.y+p.size/2-fixed.cy)*graphScale-size/2,size};
     });
     const branchLabels=fixed.labels.map(b=>({...b,x:cx+(b.x-fixed.cx)*graphScale,y:cy+(b.y-fixed.cy)*graphScale}));
-    const slotSize=Math.min(35,(main.w-54)/9),slotGap=(main.w-9*slotSize)/8;
+    const slotSize=Math.min(35,(main.w-54)/8),slotGap=(main.w-8*slotSize)/7;
     return {main,detail,nodes,branchLabels,cx,cy,scale,scaleX,graphScale,
       tabs:[],
-      slots:Array.from({length:9},(_,i)=>({x:main.x+i*(slotSize+slotGap),y:H-59,w:slotSize,h:slotSize,index:i})),
+      slots:Array.from({length:8},(_,i)=>({x:main.x+i*(slotSize+slotGap),y:H-59,w:slotSize,h:slotSize,index:i})),
       equip:{x:detail.x+14,y:H-99,w:(detail.w-34)/2,h:30},unequip:{x:detail.x+20+(detail.w-34)/2,y:H-99,w:(detail.w-34)/2,h:30},
       upgrade:{x:detail.x+14,y:H-58,w:detail.w-104,h:35},refund:{x:VW-96,y:H-58,w:64,h:35},
       preview:{x:detail.x+14,y:76,w:detail.w-28,h:Math.min(300,Math.max(164,H*.28))},replay:{x:detail.x+22,y:84,w:22,h:22},
@@ -18037,8 +18232,8 @@ const SkillBookUI=window.SkillBookUI=(()=>{
     }
     for(const n of L.nodes){
       const j=FirstJob.defs[n.sk.jobKey],level=j?FirstJob.level(j.key):r(n.key),max=j?j.max:n.sk.max,cx=n.x+n.size/2,cy=n.y+n.size/2,isSel=sel.k===n.key;
-      const locked=j?.previous&&FirstJob.level(j.previous)<3;
-      badge(n.sk,n.x,n.y,n.size,locked);
+      const locked=j&&FirstJob.requirements(j.key,Math.min(level+1,max)).some(req=>!req.met);
+      badge(n.sk,n.x,n.y,n.size,locked&&level===0);
       if(isSel){g.strokeStyle=C.bright;g.lineWidth=1.5;g.beginPath();g.arc(cx,cy,n.size/2+4*(S.tsel===0?L.graphScale:1),0,Math.PI*2);g.stroke();}
       if(locked){g.setLineDash([2,3]);g.strokeStyle='#80907a';g.beginPath();g.arc(cx,cy,n.size/2+2*(S.tsel===0?L.graphScale:1),0,Math.PI*2);g.stroke();g.setLineDash([]);}
       const labelScale=S.tsel===0?L.graphScale:1;text(level+'/'+max,cx,n.y+n.size+(S.tsel===0?17:11)*labelScale,level?C.gold:C.muted,(S.tsel===0?16:9)*labelScale,'center');
@@ -18049,7 +18244,7 @@ const SkillBookUI=window.SkillBookUI=(()=>{
   }
 
   function loadout(L){
-    text(U.equipping?'CHOOSE A SLOT · 1–8':'EQUIPPED SKILLS',L.main.x,H-65,U.equipping?C.gold:C.muted,8);text('1–8 ACTIVE · 9 SUPER',L.main.x+L.main.w,H-65,C.muted,8,'right');
+    text(U.equipping?'CHOOSE A SLOT · 1–8':'EQUIPPED SKILLS',L.main.x,H-65,U.equipping?C.gold:C.muted,8);text('KEYS 1–8',L.main.x+L.main.w,H-65,C.muted,8,'right');
     L.slots.forEach((b,i)=>{
       const key=i===8?FirstJob.superKey:FirstJob.slots[i],sk=key?SKILL['job_'+key]:null;
       box({x:b.x-3,y:b.y-3,w:b.w+6,h:b.h+6},'#101810b0',U.equipping?'#e6ce8c':i===8?'#a89a6099':'#78826266');
@@ -18087,7 +18282,7 @@ const SkillBookUI=window.SkillBookUI=(()=>{
     preview(L,d);
     text(d.name,x,270+offset,C.bright,23,'left',true);text('Lv '+d.level+' / '+d.max,b.x+b.w-14,270+offset,C.gold,11,'right');
     const trigger=!d.passive?(d.j.type==='super'?'Charge '+FirstJob.chargeNeed()+' clean words':'Cooldown '+FirstJob.cooldown(d.j.key).toFixed(1)+'s'):'Always active';
-    const radius=d.j?.key==='freeze'?' · 2-tile area':d.j?.key==='burn'?' · '+(2+.1*(Math.max(1,d.level)-1)).toFixed(1).replace(/\.0$/,'')+'-tile area':'';
+    const radius=(d.j&&d.j.type==='arrow')?' · single target':'';
     text(trigger+radius,x,293+offset,C.muted,11);line(x,307+offset,x+w,307+offset);
     g.font='500 10px "Trebuchet MS", sans-serif';const tagW=Math.min(w,g.measureText(d.category).width+16);
     box({x,y:323+offset,w:tagW,h:20},'#4c58333b','#92946c55');text(d.category,x+8,337+offset,C.gold,10);
@@ -18095,6 +18290,10 @@ const SkillBookUI=window.SkillBookUI=(()=>{
     if(d.passive){text('LEVEL '+Math.min(d.level+1,d.max)+(d.level>=d.max?' · MAX':' · NEXT'),x,457+offset,C.muted,10);wrap(d.next,x,476+offset,w,C.gold,13,16,1);}
     else if(!d.j)text('Lv '+d.level+' / '+d.max,x,465+offset,C.gold,13);
     else wrap(d.hint,x,468+offset,w,d.slot?C.gold:C.muted,11,14,2);
+    if(d.j?.type==='passive'){
+      text('REQUIREMENTS'+(d.level>=d.max?' · MET':' · NEXT RANK'),x,H-137,C.muted,10);
+      d.requirements.forEach((req,i)=>text((req.met?'[x] ':'[ ] ')+req.label,x,H-121+i*14,req.met?'#a9ba91':'#c6ad7f',10));
+    }
     const unlock=false;
     const label=unlock?'Unlock '+tab().name:d.level>=d.max?'Maximum Level':(d.level?'Skill Upgrade':'Learn Skill')+'  ·  '+d.cost+' pt'+(d.cost===1?'':'s');
     const note=U.note&&performance.now()-U.noteAt<2200?U.note:d.reason||'Enter to '+(d.level?'upgrade':'learn')+'  ·  progress saves automatically';
@@ -18106,8 +18305,8 @@ const SkillBookUI=window.SkillBookUI=(()=>{
     g.fillStyle='#050b08c9';g.fillRect(0,0,VW,H);
     box({x:VW/2-184,y:H/2-88,w:368,h:176},'#1c281d','#aba16e');
     text('Reset your skill ranks?',VW/2,H/2-51,C.bright,23,'center',true);
-    text('Return '+spSpent()+' points. Free starter arrows stay learned.',VW/2,H/2-20,C.body,13,'center');
-    text('Your equipped skills return to the starter arrows.',VW/2,H/2+2,C.muted,12,'center');
+    text('Return '+spSpent()+' points. Every skill is unlearned.',VW/2,H/2-20,C.body,13,'center');
+    text('Special skills are learned again with points.',VW/2,H/2+2,C.muted,12,'center');
     button(L.confirmNo,'Cancel · Esc');button(L.confirmYes,'Reset · Enter');
   }
   function draw(){
@@ -18121,6 +18320,7 @@ const SkillBookUI=window.SkillBookUI=(()=>{
   function changeTab(i){if(i!==0&&i!==1)return;S.tsel=i;S.csel=0;U.equipping=false;U.note='';U.previewKey=null;S.unbHeld=false;S.unbT=0;}
   function refund(){
     const d=details();if(d.level<=(d.j?.starter?1:0)){note('No purchased rank to refund');return;}
+    if(d.key==='mastery'&&r('mastery')<=3&&Object.keys(S.ranks||{}).some(k=>k!=='mastery'&&(S.ranks[k]|0)>0)){note('Refund the other skills first · Arrow Mastery holds the tree');return;}   /* v131.7 */
     if(d.j&&FirstJob.list.some(child=>child.previous===d.j.key&&FirstJob.level(child.key)>0&&d.level<=3)){note('Refund the dependent skill first');return;}
     if(d.b){if(RadialSkills.refund(d.key))note('1 point returned · saved');return;}
     S.ranks[d.key]=Math.max(0,r(d.key)-1);
@@ -18187,7 +18387,7 @@ const SkillBookUI=window.SkillBookUI=(()=>{
     else if(k==='u')unequipSelected();
     else if(k==='p')togglePreview();
     else if(k==='r'&&spSpent()>0){U.equipping=false;S.unbHeld=false;S.unbT=0;U.confirm=true;}
-    else if(k>='1'&&k<='9')equip(+k-1);
+    else if(k>='1'&&k<='8')equip(+k-1);
     else if(k==='backspace')refund();
     else if(k==='enter'||k===' '){buy();S.unbHeld=false;S.unbT=0;}
     return true;
@@ -18214,7 +18414,9 @@ const SkillBookUI=window.SkillBookUI=(()=>{
     if(inside(x,y,L.preview))togglePreview();
   }
   cv.addEventListener('click',pointer,true);cv.addEventListener('dblclick',pointer,true);
-  const oldShop=openShop;openShop=()=>{oldShop();U.equipping=false;U.confirm=false;U.previewKey=null;U.playing=false;U.note='';U.zoom=1;U.pan={x:0,y:0};S.tsel=0;S.csel=0;S.unbHeld=false;S.unbT=0;modalViewport();};
+  const oldShop=openShop;openShop=()=>{oldShop();U.equipping=false;U.confirm=false;U.previewKey=null;U.playing=false;U.note='';U.zoom=1.75;U.pan={x:0,y:0};S.tsel=0;   /* v125: opens zoomed in; Fit shows the whole tree */S.csel=0;S.unbHeld=false;S.unbT=0;modalViewport();
+    if(FirstJob.refundedRanks){note(FirstJob.refundedRanks+' skill points returned · chapter requirements updated');FirstJob.refundedRanks=0;}
+  };
   // The full-screen book owns its frame. The map need not draw behind an opaque menu.
   const oldRender=render;render=()=>{if(active()&&loaded>=total){draw();return;}restoreViewport();return oldRender();};
   BasicSkills.layout=()=>layout().nodes.map(n=>({...n,...BasicSkills.defs[n.key]}));
@@ -18763,7 +18965,9 @@ function sapperTick(dt){
         if(d.dead || claimed.has(i)) continue;
         const c = W.grid[d.cell[1]][d.cell[0]];
         if(!c.shut || c.broken) continue;      /* an open door needs no sapping */
-        const dd = (d.x-mb.x)**2 + (d.y-mb.y)**2;
+        const gxs=Math.floor(mb.x/T), gys=Math.floor(mb.y/T), dfl=doorSeedFlow(W,[d]);
+        const dd = (gxs>=0&&gys>=0&&gxs<W.w&&gys<W.h) ? dfl[gys*W.w+gxs] : -1;   /* v129: by walking distance, and only doors it can reach */
+        if(dd < 0) continue;
         if(dd < bd){ bd = dd; best = i; }
       }
       if(best < 0) continue;                   /* nothing shut: it walks at you */
