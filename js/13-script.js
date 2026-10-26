@@ -9,8 +9,8 @@
 const Bosses=window.Bosses={cur:null,words:[],msg:'',msgT:0};
 (function(B){
 'use strict';
-const CH={SR:2,SM:3,SK:4,LZ:5,LC:6,TR:7};   /* v130: + the Spider */
-const NAME={SR:['XXX · THE WEB ROT','SPIDER'],SM:['XL · THE STORMWARD','SHAMAN'],SK:['L · THE LAST LAMP','SKULL'],LZ:['LX · THE LAST EMBER','LIZARD'],LC:['LXX · THE GATEHOUSE','REAPER'],TR:['LXXX · THE MUSTER','TROLL']};
+const CH={BM:2,SR:2,SM:3,SK:4,LZ:5,LC:6,TR:7};   /* v130: + the Spider */
+const NAME={BM:['XXX · THE BLIGHTMOTHER','BLIGHTMOTHER'],SR:['XXX · THE WEB ROT','SPIDER'],SM:['XL · THE STORMWARD','SHAMAN'],SK:['L · THE LAST LAMP','SKULL'],LZ:['LX · THE LAST EMBER','LIZARD'],LC:['LXX · THE GATEHOUSE','REAPER'],TR:['LXXX · THE MUSTER','TROLL']};
 const D=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const say=(t,s)=>{B.msg=t;B.msgT=s||2.4;};
 const stageOn=()=>S.scene==='stage'&&!S.endless;
@@ -159,16 +159,23 @@ SM.call=function(c){const m=c.m,st=c.st;const tier=c.half?'T3':'T2';
   if(c.half){const p=spotNear(P.x,P.y,P.level,STK_R*2.2,STK_R*4,null);if(p)make(p.x,p.y);}
   m.cast=.6;};
 SM.land=function(c,r){s_land(r.x,r.y);};
-function s_land(x,y){S.shake=Math.max(S.shake,9);blip(90,.35,'sawtooth',.1,40);noise(.28,.09,900);
+function s_land(x,y,onField){
+  if(window.StormwardFX?.active()){StormwardFX.queueStrike(x,y,onField);return;}
+  S.shake=Math.max(S.shake,9);
+  if(window.StormwardThunder)StormwardThunder.strike({x,y});
+  else{blip(90,.35,'sawtooth',.1,40);noise(.28,.09,900);}
   for(let i=0;i<4;i++)fx.push({k:'dust',x:x+(Math.random()-.5)*70,y:y+(Math.random()-.5)*50,f:i*1.2});
   S.strikes.push({x,y,t:0,done:true,flash:.35});
   if(onGround(P.x,P.y,x,y,nodeRing(),STK_K)&&S.iframe<=0){sWard();S.flash=.6;S.iframe=.8;loseWard('the storm took you',DMG_HAZ.storm);}
-  for(const mb of mobs){if(mb.dead)continue;if(onGround(mb.x,mb.y,x,y,nodeRing(),STK_K)){mb.stun=Math.max(mb.stun||0,nodeStun());mb.shake=Math.max(mb.shake,.3);}}}
-SM.turnedStrike=function(c,r){const m=c.m;s_land(m.x,m.y);m.stun=Math.max(m.stun||0,2);m.shake=.6;
+  for(const mb of mobs){if(mb.dead)continue;if(onGround(mb.x,mb.y,x,y,nodeRing(),STK_K)){mb.stun=Math.max(mb.stun||0,nodeStun());mb.shake=Math.max(mb.shake,.3);}}
+  if(onField)onField();}
+SM.turnedStrike=function(c,r){const m=c.m;s_land(m.x,m.y,()=>{
+  if(B.cur!==c||m.dead||S.scene!=='stage')return;
+  m.stun=Math.max(m.stun||0,2);m.shake=.6;
   if(m.hp>HP_FIN+.5){m.hp=Math.max(1,m.hp-.5);}
   S.flash=Math.max(S.flash||0,.15);say('THE STORM STRUCK THE SHAMAN — stunned 2s',2.2);
-  if(c.last){c.st.forgive=true;say('TURNED — your next slip on its name is forgiven',2.4);}};
-SM.ground=function(c){const st=c.st;g.save();for(const r of st.rings){const f=1-Math.max(0,r.t)/nodeTele();
+  if(c.last){c.st.forgive=true;say('TURNED — your next slip on its name is forgiven',2.4);}});};
+SM.ground=function(c){if(window.StormwardFX?.active())return;const st=c.st;g.save();for(const r of st.rings){const f=1-Math.max(0,r.t)/nodeTele();
     g.strokeStyle=r.turned?'rgba(232,173,245,.9)':'rgba(242,216,87,.9)';g.lineWidth=3;g.beginPath();g.ellipse(r.x,r.y,nodeRing(),nodeRing()*STK_K,0,0,7);g.stroke();
     g.fillStyle=r.turned?'rgba(232,173,245,.18)':'rgba(242,216,87,.18)';g.beginPath();g.ellipse(r.x,r.y,nodeRing()*f,nodeRing()*STK_K*f,0,0,7);g.fill();}
   g.restore();};
@@ -362,7 +369,8 @@ TR.hud=function(c){const m=c.m,st=c.st;
 TR.tag=function(c,m){if(m.yourSlip&&!m.dead)return ['YOUR SLIP','#e0a050'];if(m===c.m){if(c.last)return ['LAST WORD '+(4-c.lastN)+' / 3','#ff6a4a'];if(c.st.waiting)return ['WATCHING','#e0a050'];if(c.st.cast>0)return ['DRUM · WOUND IT','#ffb347'];}return null;};
 
 /* ================= wiring ================= */
-const IMPL={SR,SM,SK,LZ,LC,TR};
+const BM={start:c=>Blightmother.start(c),tick:()=>{},hud:c=>{bar(c,Blightmother.status(c));Blightmother.meter();}};
+const IMPL={BM,SR,SM,SK,LZ,LC,TR};
 function detect(){if(B.cur&&(B.cur.m.dead&&B.cur.done||!mobs.includes(B.cur.m)))B.cur=null;if(B.cur)return;
   if(!stageOn())return;for(const key in CH){if(S.chapter!==CH[key])continue;const m=mobs.find(x=>!x.dead&&x.tier===key);if(m){const c=begin(m,key);IMPL[key].start(c);}}}
 const oTick=skFxTick;skFxTick=function(dt){oTick(dt);if(!stageOn())return;detect();const c=cur();if(!c)return;if(!sharedTick(c,dt))return;IMPL[c.key].tick(c,dt);};
