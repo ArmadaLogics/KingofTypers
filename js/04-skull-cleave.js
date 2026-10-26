@@ -11,11 +11,11 @@ SkullCleave.image.src="assets/images/image-d93a1a72eb78cea4.png";
  if(d.healing){m.hit=false;m.wind=0;m.swing=0;d.shot=null;}
  if(m.frzT>0||m.stun>0||m.doomed||supFrozen()||window.FirstJob?.stopped(m))continue;
  const step=dt*(m.chill>0?.5:1);
- if(!d.active&&!d.healUsed&&m.hp<=2&&m.hp>0){d.healUsed=true;d.healing=true;d.active=true;d.t=0;d.shot=null;m.hit=false;d.healHp=m.hp;d.anchor={x:m.x,y:m.y};d.healResult='';d.angle=Math.atan2(P.y-m.y,P.x-m.x);}
+ if(!d.active&&!d.healUsed&&m.hp<=hpOf('SK')/2&&m.hp>0){d.healUsed=true;d.healing=true;d.active=true;d.t=0;d.shot=null;m.hit=false;d.healHp=m.hp;d.anchor={x:m.x,y:m.y};d.healResult='';d.angle=Math.atan2(P.y-m.y,P.x-m.x);}
  if(d.healing){m.spd=0;m.wind=0;m.swing=0;m.windCd=99;m.x=d.anchor.x;m.y=d.anchor.y;
  if(!d.healResult&&m.hp<d.healHp){d.healResult='INTERRUPTED';d.t=3;}
  d.t+=step;
- if(d.t>=3&&!d.healResult){if(window.FirstJob?.poisoned(m))d.healResult='POISONED';else{m.hp=Math.min(HP.SK,m.hp+1);d.healResult='+1 HP';}}
+ if(d.t>=3&&!d.healResult){if(window.FirstJob?.poisoned(m))d.healResult='POISONED';else{m.hp=Math.min(HP.SK,m.hp+1);d.healResult='+1 HP';   /* v127: was +2 */}}
  if(d.t>=4.5){d.healing=false;d.active=false;d.wait=2;m.spd=d.speed;m.windCd=.5;}
  continue;}
 

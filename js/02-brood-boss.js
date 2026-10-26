@@ -42,7 +42,7 @@ function broodSpawn(boss){
 }
 function broodBossTick(m,dt){
  if(m.tier!=='SR'||S.chapter!==2||S.endless||m.broodOwner||m.dead)return false;
- if(!m.brood){if(m.hp>2||m.doomed)return false;m.brood={phase:'lay',left:BROOD.wind,done:false};m.wind=0;m.swing=0;teach('brood','the SPIDER is laying eggs — type their short names before they hatch. Freeze buys more time.');}
+ if(!m.brood){if(m.hp>hpOf('SR')/2||m.doomed)return false;m.brood={phase:'lay',left:BROOD.wind,done:false};m.wind=0;m.swing=0;teach('brood','the SPIDER is laying eggs — type their short names before they hatch. Freeze buys more time.');}
  const b=m.brood;if(b.done)return false;
  if(m.frzT>0||m.stun>0||m.doomed)return true;
  b.left-=dt;m.f+=dt*FPS*.35;
