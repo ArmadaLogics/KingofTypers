@@ -10,3 +10,55 @@
   /* image-rendering is set by fit(), not here: it belongs to whichever scale is in use
      (pixelated on an exact multiple, auto on a fractional one - see fit()). */
   canvas{box-shadow:0 12px 60px rgba(0,0,0,.65);display:block}
+
+  /* Parchment shell appears before the game scripts; artwork stays external. */
+  #loading-screen{
+    --loading-ivory:#382e26;
+    position:fixed;inset:0;z-index:10000;box-sizing:border-box;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:32px;overflow:hidden;color:var(--loading-ivory);
+    background:#efe3c6;
+    font-family:"Trebuchet MS",sans-serif;
+  }
+  #loading-screen[hidden]{display:none}
+  #loading-screen::before{
+    content:"";position:absolute;inset:16px;pointer-events:none;z-index:1;mix-blend-mode:multiply;
+    background:radial-gradient(ellipse at 50% 45%,transparent 35%,#93652e13 72%,#79572f26 100%),
+      url('../assets/images/loading-paper-grain.svg') 0 0 / 512px 512px repeat;
+  }
+  .loading-paper{position:absolute;inset:0;pointer-events:none;z-index:0;box-shadow:none}
+  .loading-edge{position:absolute;left:50%;width:170px;height:1px;transform:translateX(-50%);
+    z-index:2;background:linear-gradient(90deg,transparent,#80644380,transparent)}
+  .loading-edge::after{content:"";position:absolute;left:50%;top:-2px;width:5px;height:5px;
+    background:#806443;transform:translateX(-50%) rotate(45deg)}
+  .loading-edge-top{top:40px}.loading-edge-bottom{bottom:40px}
+  .loading-content{position:relative;z-index:2;text-align:center;width:min(100%,648px);flex:none}
+  .loading-emblem{position:relative;width:192px;height:96px;margin:0;left:50%;transform:translateX(-50%)}
+  .loading-pawn{position:absolute;left:0;top:-48px;width:192px;height:192px;image-rendering:pixelated;
+    background:url('../assets/images/image-dfdbd7e2b9482e69.png') 0 0 / 1152px 192px no-repeat;
+    animation:loading-pawn-run .75s steps(6,end) infinite}
+  @keyframes loading-pawn-run{to{background-position-x:-1152px}}
+  .loading-progress-block{width:100%;margin:24px auto 0}
+  #loading-status{margin:12px 0 0;color:#514236;font:400 15px/1.5 Georgia,"Times New Roman",serif;letter-spacing:.025em}
+  /* BigBar_Base has separate left/middle/right cells, not a continuous strip.
+     Keep its caps intact and stretch only the wooden middle, as the game HUD does. */
+  .loading-track{--bar-scale:.35;position:relative;height:calc(51px * var(--bar-scale));image-rendering:pixelated}
+  .loading-track::before,.loading-track::after{content:"";position:absolute;top:0;
+    width:calc(24px * var(--bar-scale));height:100%;
+    background-image:url('../assets/images/image-a1053c7b5176b80d.png');
+    background-size:calc(320px * var(--bar-scale)) calc(64px * var(--bar-scale));background-repeat:no-repeat}
+  .loading-track::before{left:0;background-position:calc(-40px * var(--bar-scale)) calc(-9px * var(--bar-scale))}
+  .loading-track::after{right:0;background-position:calc(-256px * var(--bar-scale)) calc(-9px * var(--bar-scale))}
+  .loading-bar-center{position:absolute;inset:0 calc(24px * var(--bar-scale));
+    background:url('../assets/images/image-a1053c7b5176b80d.png') 50% calc(-9px * var(--bar-scale)) / 500% calc(64px * var(--bar-scale)) no-repeat}
+  .loading-fill{position:relative;top:calc(11px * var(--bar-scale));width:0%;height:calc(24px * var(--bar-scale));
+    background:url('../assets/images/image-1eee58410178874f.png') 0 calc(-20px * var(--bar-scale)) / calc(64px * var(--bar-scale)) calc(64px * var(--bar-scale)) repeat-x;
+    transition:width .18s ease-out}
+  @media(max-width:520px){
+    #loading-screen::before{inset:12px}
+    .loading-edge-top{top:32px}.loading-edge-bottom{bottom:32px}
+  }
+  @media(max-height:620px){
+    .loading-edge-top{top:20px}.loading-edge-bottom{bottom:18px}
+  }
+  @media(prefers-reduced-motion:reduce){.loading-pawn{animation:none}.loading-fill{transition:none}}

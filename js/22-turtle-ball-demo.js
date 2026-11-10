@@ -1,5 +1,6 @@
 /* Save-isolated shortcut to the real Chapter II Turtle encounter. */
-if(['#turtle-ball-demo','#turtle-wall-demo'].includes(location.hash)){
+if(['#turtle-ball-demo','#turtle-wall-demo','#crystal-turtle-demo'].includes(location.hash)){
+ const crystal=location.hash==='#crystal-turtle-demo';
  const demo=window.TurtleBallDemo={};
  demo.restart=function(special=true){
   __K.reset();enterChapter(1);enterStage(9);
@@ -26,17 +27,28 @@ if(['#turtle-ball-demo','#turtle-wall-demo'].includes(location.hash)){
  const panel=document.createElement('section');panel.id='turtle-ball-preview';
  panel.setAttribute('aria-label','Turtle freezing Downpour preview');
  panel.style.cssText='position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:20000;box-sizing:border-box;width:min(720px,96vw);padding:10px 14px;background:#102a36f2;color:#e1f6ff;border:1px solid #83d1e5;border-radius:7px;font:13px system-ui;text-align:center';
- const title=document.createElement('strong');title.textContent='TURTLE · FREEZING DOWNPOUR';panel.appendChild(title);
+ const title=document.createElement('strong');title.textContent=crystal?'CRYSTAL TURTLE · PLAYABLE ENCOUNTER':'TURTLE · FREEZING DOWNPOUR';panel.appendChild(title);
  const help=document.createElement('div');help.textContent='Arrow keys move · Shift sprints · dodge the falling balls · type names to shoot';help.style.margin='6px 0';panel.appendChild(help);
  const status=document.createElement('div');status.id='turtle-ball-status';panel.appendChild(status);
- for(const [label,action]of [['Replay freezing Downpour',()=>demo.restart(true)],['Full turtle fight',()=>demo.restart(false)],['Pause / Resume',()=>{if(S.card)cardClose();else showCard({name:'Water ball preview paused',sheet:null,lines:['Press Enter or Pause / Resume to continue.']});}]]){
+ const actions=[['Replay freezing Downpour',()=>demo.restart(true)],['Full turtle fight',()=>demo.restart(false)]];
+ if(crystal){
+  demo.skill=function(kind){
+   if(!['snap','spit','slide','downpour'].includes(kind))return;
+   demo.restart(false);const m=demo.boss;
+   if(kind==='snap')for(let i=0;i<16;i++){const distance=120,a=i*Math.PI/8,x=P.x+Math.cos(a)*distance,y=P.y+Math.sin(a)*distance,c=cellAt(W,x,y);if(c?.level===P.level&&twRoom(x,y)){m.x=x;m.y=y;break;}}
+   if(kind==='downpour')turtWaterBall(m,m.boss);else turtStart(m,m.boss,kind,1);
+  };
+  actions.push(['Bite',()=>demo.skill('snap')],['Water spit',()=>demo.skill('spit')],['Shell slide',()=>demo.skill('slide')],['Freezing Downpour',()=>demo.skill('downpour')]);
+ }
+ actions.push(['Pause / Resume',()=>{if(S.card)cardClose();else showCard({name:'Water ball preview paused',sheet:null,lines:['Press Enter or Pause / Resume to continue.']});}]);
+ for(const [label,action]of actions){
   const button=document.createElement('button');button.textContent=label;
   button.style.cssText='margin:7px 4px 4px;padding:7px 10px;border:1px solid #87c8d8;border-radius:4px;background:#ccebf2;color:#153241;cursor:pointer';
   button.onclick=()=>{action();document.activeElement?.blur();};panel.appendChild(button);
  }
  const note=document.createElement('small');note.textContent='Preview progress is not saved';note.style.display='block';panel.appendChild(note);document.body.appendChild(panel);
  const timer=setInterval(()=>{
-  if(!window.__K||!ready||loaded<total)return;clearInterval(timer);demo.restart();
+  if(!window.__K||!ready||loaded<total||(crystal&&!window.CrystalTurtle?.ready))return;clearInterval(timer);demo.restart();
   setInterval(()=>{
    const w=S.tw?.rain;
    status.textContent='HP '+Math.ceil(S.ward)+' / '+S.maxWard+' · '+(TurtleBall.frozen()?'FROZEN '+S.tw.freeze.toFixed(1)+'s':w&&!w.over?w.t<0?'Drawing water · three waves incoming':'DOWNPOUR · wave '+w.plan.length+' / 3 · '+w.per+' shots per wave':demo.boss.dead?'Turtle defeated':'Type while the turtle recovers');

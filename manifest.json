@@ -12,6 +12,12 @@
       "generatedTag": "<script  src=\"js/00-preview-storage.js\"></script>"
     },
     {
+      "path": "js/00-loading-screen.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/00-loading-screen.js\"></script>"
+    },
+    {
       "path": "js/01-game.js",
       "tag": "script",
       "attributes": " ",
@@ -94,6 +100,108 @@
       "tag": "script",
       "attributes": " ",
       "generatedTag": "<script  src=\"js/14-poison-fog.js\"></script>"
+    },
+    {
+      "path": "js/15-poison-timing.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/15-poison-timing.js\"></script>"
+    },
+    {
+      "path": "js/blightmother-attacks.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/blightmother-attacks.js\"></script>"
+    },
+    {
+      "path": "js/16-blightmother.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/16-blightmother.js\"></script>"
+    },
+    {
+      "path": "js/17-blightmother-demo.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/17-blightmother-demo.js\"></script>"
+    },
+    {
+      "path": "js/18-stormward-effects.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/18-stormward-effects.js\"></script>"
+    },
+    {
+      "path": "js/19-stormward-weather.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/19-stormward-weather.js\"></script>"
+    },
+    {
+      "path": "js/20-stormward-thunder.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/20-stormward-thunder.js\"></script>"
+    },
+    {
+      "path": "js/21-turtle-water-ball.js",
+      "tag": "script",
+      "attributes": "",
+      "generatedTag": "<script src=\"js/21-turtle-water-ball.js\"></script>"
+    },
+    {
+      "path": "js/crystal-chill-emitter.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/crystal-chill-emitter.js\"></script>"
+    },
+    {
+      "path": "js/25-crystal-turtle.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/25-crystal-turtle.js\"></script>"
+    },
+    {
+      "path": "js/22-turtle-ball-demo.js",
+      "tag": "script",
+      "attributes": "",
+      "generatedTag": "<script src=\"js/22-turtle-ball-demo.js\"></script>"
+    },
+    {
+      "path": "js/24-fletcher.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/24-fletcher.js\"></script>"
+    },
+    {
+      "path": "js/23-mastery-gate.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/23-mastery-gate.js\"></script>"
+    },
+    {
+      "path": "js/26-guttered-overworld.js",
+      "tag": "script",
+      "attributes": "",
+      "generatedTag": "<script src=\"js/26-guttered-overworld.js\"></script>"
+    },
+    {
+      "path": "js/27-lamplit-overworld.js",
+      "tag": "script",
+      "attributes": "",
+      "generatedTag": "<script src=\"js/27-lamplit-overworld.js\"></script>"
+    },
+    {
+      "path": "js/28-ashen-art.js",
+      "tag": "script",
+      "attributes": "",
+      "generatedTag": "<script src=\"js/28-ashen-art.js\"></script>"
+    },
+    {
+      "path": "js/28-ashen-overworld.js",
+      "tag": "script",
+      "attributes": "",
+      "generatedTag": "<script src=\"js/28-ashen-overworld.js\"></script>"
     }
   ],
   "styles": [
@@ -1250,6 +1358,590 @@
       "mime": "image/png",
       "bytes": 1960575,
       "sha256": "a69756d60375f775cb0f4412598b7c3179b4db9cdbbf378080a207359593b272"
+    },
+    {
+      "path": "assets/bosses/blightmother/float.png",
+      "mime": "image/png",
+      "bytes": 488141
+    },
+    {
+      "path": "assets/bosses/blightmother/cast.png",
+      "mime": "image/png",
+      "bytes": 253640
+    },
+    {
+      "path": "assets/bosses/blightmother/bolt-cast.png",
+      "mime": "image/png",
+      "bytes": 278294
+    },
+    {
+      "path": "assets/bosses/blightmother/bolt-flight.png",
+      "mime": "image/png",
+      "bytes": 197872
+    },
+    {
+      "path": "assets/bosses/blightmother/bolt-impact.png",
+      "mime": "image/png",
+      "bytes": 88181
+    },
+    {
+      "path": "assets/bosses/blightmother/bolt-launch.png",
+      "mime": "image/png",
+      "bytes": 62448
+    },
+    {
+      "path": "assets/bosses/blightmother/meteor-fall.png",
+      "mime": "image/png",
+      "bytes": 206928
+    },
+    {
+      "path": "assets/bosses/blightmother/meteor-impact.png",
+      "mime": "image/png",
+      "bytes": 192839
+    },
+    {
+      "path": "assets/effects/stormward/lightning-v2.png",
+      "mime": "image/png",
+      "bytes": 166308
+    },
+    {
+      "path": "assets/effects/stormward/field-shock.png",
+      "mime": "image/png",
+      "bytes": 274681
+    },
+    {
+      "path": "assets/images/fletcher-idle-d4841c9c05bae447.png",
+      "mime": "image/png",
+      "bytes": 6652,
+      "sha256": "d4841c9c05bae44724dcb093b1741a602cc25a9b33a665a1d90046a4bd9eb55e"
+    },
+    {
+      "path": "assets/images/loading-butterfly-flight.png",
+      "mime": "image/png",
+      "bytes": 30057,
+      "sha256": "f85ccbb7f910fca50d4fed8a2b2abba8192a6abc3c12ab3e767c1446ec98c30d"
+    },
+    {
+      "path": "assets/images/loading-paper-grain.svg",
+      "mime": "image/svg+xml",
+      "bytes": 732,
+      "sha256": "b8339e7838266fa66c0529ee56412929c4e18a369b6cfc644c3bdd3facbd8b14"
+    },
+    {
+      "path": "assets/images/loading-butterfly-flight-lime-yellow.png",
+      "mime": "image/png",
+      "bytes": 29391,
+      "sha256": "5dee6ee94025496e7f0cbe8535aa58f502bc590d02363d1dd51157d94c18bdd0"
+    },
+    {
+      "path": "assets/images/loading-butterfly-flight-sage-gold.png",
+      "mime": "image/png",
+      "bytes": 30695,
+      "sha256": "b2e5a258f0f3273dd91c0bfad65108b2af3034168d47d70d407e1c215a51a507"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-01.png",
+      "mime": "image/png",
+      "bytes": 181262,
+      "sha256": "32919c752629215144dc56810d23d1ad2a00130116ae7e218c800662f1a41621"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-02.png",
+      "mime": "image/png",
+      "bytes": 179599,
+      "sha256": "d5f0d1bd92112a9ef02efb07717a9e232036109c9b62382a171925fba9ca9d7b"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-03.png",
+      "mime": "image/png",
+      "bytes": 180213,
+      "sha256": "7a39db7ad517be1ac8eb87fc793bdca6001ea6ad62e7edc5a1ed00c0cbda14c9"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-04.png",
+      "mime": "image/png",
+      "bytes": 178870,
+      "sha256": "554e6762b66b3130a6f5286b0b8dd660057b526913a0689a7c35a63c3692fa6b"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-05.png",
+      "mime": "image/png",
+      "bytes": 180587,
+      "sha256": "4e5c2be807637f5de34f55eef37aa070413a24969800d949f2687213f00fe7b9"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-06.png",
+      "mime": "image/png",
+      "bytes": 179648,
+      "sha256": "b541ca66a27a415319b40f32b592ab4c59e184b3716c2e57c2282fae90660114"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-07.png",
+      "mime": "image/png",
+      "bytes": 180577,
+      "sha256": "9a451532ba6d7f2b71dd6783fa8c024edc6d81a70124113b70ab1f07d61ea0f7"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-08.png",
+      "mime": "image/png",
+      "bytes": 179748,
+      "sha256": "9c837251eae3e7199b9c6110afbf058e88293ff9640254c969cb79c89477e6cd"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-01.png",
+      "mime": "image/png",
+      "bytes": 181262,
+      "sha256": "32919c752629215144dc56810d23d1ad2a00130116ae7e218c800662f1a41621"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-02.png",
+      "mime": "image/png",
+      "bytes": 180724,
+      "sha256": "268b249ecdeed74452bebe93ec8c951bdbad91e8a9f82b7b337909fb69c8cdd7"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-03.png",
+      "mime": "image/png",
+      "bytes": 180586,
+      "sha256": "a0b855634c5db9aa6514f4cd85b3caa664fdf353a3c50b493563c8f7bf1390d3"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-04.png",
+      "mime": "image/png",
+      "bytes": 180131,
+      "sha256": "3d2a282eca48097d21841914979c13e4ec9e1715f73d57369ff7732525adb40e"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-05.png",
+      "mime": "image/png",
+      "bytes": 180277,
+      "sha256": "0eb0d231f25b2e4060ec5cc5e87cb8bec5d70f24f79c74cdc60e5c3a567792a8"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-06.png",
+      "mime": "image/png",
+      "bytes": 183283,
+      "sha256": "b6ef21251f8ca28ed5968ee2d4734d6642ac2f3bfb7fe750b0dc574f5ee73661"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-07.png",
+      "mime": "image/png",
+      "bytes": 184694,
+      "sha256": "fad448d598a65191b53a10c7a81fd7462940082604e38f599766934b9e097e7d"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-08.png",
+      "mime": "image/png",
+      "bytes": 184478,
+      "sha256": "d64b7ca26c91bc21ff60b1896ad9ba4ff1a65adbeb6dfcb5dfc89a6e32f22420"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-09.png",
+      "mime": "image/png",
+      "bytes": 183177,
+      "sha256": "03a92e1249d98d8c67668f14378a2492782d686572bf45fd27e0823b1d116173"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-10.png",
+      "mime": "image/png",
+      "bytes": 181797,
+      "sha256": "54cd547be2357eec176ec5e229a53e68d35de1d88dce73b1cf1e81087dd071fe"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-11.png",
+      "mime": "image/png",
+      "bytes": 181043,
+      "sha256": "b662ae239a40e669da8a10fd654c06c75423b03186ad54dd40c8c694ec6f0ac3"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-12.png",
+      "mime": "image/png",
+      "bytes": 181262,
+      "sha256": "32919c752629215144dc56810d23d1ad2a00130116ae7e218c800662f1a41621"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-01.png",
+      "mime": "image/png",
+      "bytes": 179103,
+      "sha256": "ca3ab4305144cb0ffeeabe5bd353563f95e8b058568974f3fa0e9aa00191e234"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-02.png",
+      "mime": "image/png",
+      "bytes": 179283,
+      "sha256": "77f5924fcc8a008afe9ab3a07f3ae3cc106c66b0ea26ad171bbc5afa6f3ad3fe"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-03.png",
+      "mime": "image/png",
+      "bytes": 189509,
+      "sha256": "372f9e9de5ca6180f4a87a6af88b92a54df96704bc3f1c10fb1829b07d675b31"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-04.png",
+      "mime": "image/png",
+      "bytes": 192489,
+      "sha256": "d0237218bbe6ec5dea33d5af1505df050efead1ed164330cdb79a6e61e492bc7"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-05.png",
+      "mime": "image/png",
+      "bytes": 194533,
+      "sha256": "03490a694fbd77af7bdf8def6142dca8c505cdf9528907faa47f85566aade502"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-06.png",
+      "mime": "image/png",
+      "bytes": 197179,
+      "sha256": "947924c9fd0976a137f8be3d274b9b814075c92319dba54c5f45fd70023999e2"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-07.png",
+      "mime": "image/png",
+      "bytes": 195227,
+      "sha256": "1849843c6b18857b8d5f39269be4c92b9876c31dbfae71d42074f6e49223d262"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-08.png",
+      "mime": "image/png",
+      "bytes": 180630,
+      "sha256": "c696d4280b0a31d5a1daa164fec0ac8bfbf37698a55334945820b34815f6ade1"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-09.png",
+      "mime": "image/png",
+      "bytes": 179103,
+      "sha256": "ca3ab4305144cb0ffeeabe5bd353563f95e8b058568974f3fa0e9aa00191e234"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-01.png",
+      "mime": "image/png",
+      "bytes": 63856,
+      "sha256": "861bba10ce63e6300dfeb4333a3debe9a689c7bf05faecb74086cf2c89fcdacd"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-02.png",
+      "mime": "image/png",
+      "bytes": 55993,
+      "sha256": "8188bb56ee52ec58263aa7817af2ed222f75134b1d8890b7c9e38c181f0452d6"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-03.png",
+      "mime": "image/png",
+      "bytes": 63713,
+      "sha256": "750d6beb1547e842499b292aafe5b2b609ae969b710ddab30da644f6f4fa7d93"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-04.png",
+      "mime": "image/png",
+      "bytes": 55597,
+      "sha256": "3c581e1b5dc8aaa3ab4a4114c616be657547c91c234ba066dfaa7fc2d8adbacb"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-05.png",
+      "mime": "image/png",
+      "bytes": 58965,
+      "sha256": "8cbd73692dfeab36d3a311644f805fb1f031b7b8b018a40f0eadfaea2d73ac77"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-06.png",
+      "mime": "image/png",
+      "bytes": 54622,
+      "sha256": "4315601173f62fd0f52cffdb47465918ce2ee44d54edf669662bc93a8428f519"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-07.png",
+      "mime": "image/png",
+      "bytes": 68470,
+      "sha256": "82193e7592be749b2c6a14cd152fdb67c2fe0f9c24a038b5aebc203bd348fc29"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-08.png",
+      "mime": "image/png",
+      "bytes": 78081,
+      "sha256": "a12fafacfd667ee559bfcc4119d9ee36969d0dab05954eff888bb216ee5c5a13"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-09.png",
+      "mime": "image/png",
+      "bytes": 75625,
+      "sha256": "6e9ea83cc3a5d319574def8c0aa01a0a57c6a0beb07820f083934cd5f027a8a8"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-10.png",
+      "mime": "image/png",
+      "bytes": 82465,
+      "sha256": "5f232881ab62e6e37d94211a950d3c2747d8d5d739c3bdfcf3fe9ac581140690"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-11.png",
+      "mime": "image/png",
+      "bytes": 81733,
+      "sha256": "8197ffa89fcf2edccb240fc367697d2192e8f63d6b265ee55297d0c26f976710"
+    },
+    {
+      "mime": "image/png",
+      "path": "assets/bosses/crystal-turtle/water-laser-v1.png",
+      "bytes": 95529,
+      "sha256": "a28da53a060add39e72a46fc0d163e8f698749f05cb3c4c90f28859e78d4c967"
+    },
+    {
+      "mime": "image/png",
+      "path": "assets/bosses/crystal-turtle/water-laser-full-v2.png",
+      "bytes": 114968,
+      "sha256": "2ebbe8ccfcc743c22ba5d2513f60850a6ca5fac897207e63eba3daafaba02472"
+    },
+    {
+      "mime": "image/png",
+      "path": "assets/bosses/crystal-turtle/water-hose-strong-v2.png",
+      "bytes": 266081,
+      "sha256": "0a26b2eb769304a6026085d03eef550d3e574dbc2eec0e7562e39c5c5daa38f2"
+    },
+    {
+      "mime": "application/json",
+      "path": "assets/bosses/crystal-turtle/water-hose-strong-v2.json",
+      "bytes": 8865,
+      "sha256": "8972571e423f6980f850d6c0a41d11f19803919d1978c756c635dcd4b1d50f5e"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/bush1.png",
+      "bytes": 9455,
+      "sha256": "db5440c0c63597bf12d25118cc7a778aae67adec4f26783d3cef09f1eae1fdc7",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/bush2.png",
+      "bytes": 10594,
+      "sha256": "622545ec84536cb41ce90df751535fc69213f73b8189a5b8917acb1a9e3651b0",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/castle.png",
+      "bytes": 129393,
+      "sha256": "574ad155a5678a236c4eed643c3a84caf3a5d7f467ecbcac9b94a862d8a1b1ac",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/fern.png",
+      "bytes": 78282,
+      "sha256": "6edfb9af6a967d445b9254f69a4f79c7887a7fc42eed5755ac01316db8949201",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/fungi.png",
+      "bytes": 61748,
+      "sha256": "22f594e6eec7f8464d5d1029821099ef4b7043e8d2f41a3a629cd1090bd903d4",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/grass.png",
+      "bytes": 85151,
+      "sha256": "d6668bc876094fa986d6dc98e0a7d3d0c1e46dfce0d3280454f96ce4fd0bcbd1",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/house.png",
+      "bytes": 92366,
+      "sha256": "4e850fef7b1d15a44fffd6256bf0ffc90392e1f97605e2a9b04df68cbe449fac",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/moss.png",
+      "bytes": 61081,
+      "sha256": "a950c9af93776c8c99d58b4355893329a4fac2415bbd65a088285af64d1069e2",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/pillar.png",
+      "bytes": 63929,
+      "sha256": "3ba49d339994134fe1b38a0227d359522a2e7ef109692a7c9cfedaa15250a09e",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/rock1.png",
+      "bytes": 4459,
+      "sha256": "4ab9d2b120873cb9f337967edb0d4962ee65f58881da6fe37f99afdf7edd8dea",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/rock2.png",
+      "bytes": 3350,
+      "sha256": "a9d5edeb62ae2dce64731ee3d6b568645b6475f99b0445b632b60e8939546ba4",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/root-rock.png",
+      "bytes": 78103,
+      "sha256": "2732ad4cd7b0772617e4d6334fceebfb82513ec346c2bdd7dcffa99009b82a34",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/root-stump.png",
+      "bytes": 78037,
+      "sha256": "2cbde1f559f3a15fb5fe6e1f30da8233922c27fab5ff962f65aeb5468cee0b1c",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/terrain.png",
+      "bytes": 364466,
+      "sha256": "21c0f6f081d6e5cd462c5f30dd277d7af4f8a33135bb160003a21bb8fced40c5",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/tower.png",
+      "bytes": 46208,
+      "sha256": "a9033af991854c63e033b1b8f20dee020ca840650b281fe8a4e9569bede50043",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/trail.png",
+      "bytes": 104479,
+      "sha256": "6739b4dd005d55af103f0044b8a66c4c87c702d4b9fa57bc47f3d72f87356ea4",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/tree.png",
+      "bytes": 34464,
+      "sha256": "0be987ed506cf91ac886f496d5f2264c8b651f81be6ddd7dc615c99de7d0aafb",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/water.png",
+      "bytes": 93862,
+      "sha256": "b74feec6633528d17fadd15c16e69bc0bb3b6fe238647779c6bb1ce0a4017748",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/terrain.png",
+      "bytes": 66997,
+      "sha256": "e3149c69224485c1aaf084c9ed38e3d0a1c26dcf24ffa914b08f3a37294e71d8",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/props.png",
+      "bytes": 271862,
+      "sha256": "ea4db775cacb0ef641a79911215e75d7bd7fed9890414a33bf067785f721987f",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/atlas.png",
+      "bytes": 355056,
+      "sha256": "55b508a7855e799567c1dde11be718af02121755536f51cd38a5b0cf79468755",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_boulder.png",
+      "bytes": 7181,
+      "sha256": "63eb3a1046e4796e38a4a4b184de1147702e8808923a107b62f0fde39abc3869",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_log.png",
+      "bytes": 10555,
+      "sha256": "f94f62f7805a111899edd43468c739f75fe34baf940a3c25c5a7af38c83f1003",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_pebble.png",
+      "bytes": 1384,
+      "sha256": "96dfb70200fe183bdef1d9f72acec904b42b18369e6eaccff1eb243cbd909601",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_shore.png",
+      "bytes": 12551,
+      "sha256": "aed1312eb47a7809a0f9806cf68688bb2f7f2aa7ba37599d31a143311cf8734a",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_shrub.png",
+      "bytes": 9082,
+      "sha256": "29a323ec379c62b10e2a6d80b2b4feb6a8c509f537b662fb764bfb468f018f00",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_tree.png",
+      "bytes": 62875,
+      "sha256": "dabedbfecb56f9adf28b932e45158dd3c56f7028d4163c56ad16fabf98d57ca0",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_tree_stump.png",
+      "bytes": 13211,
+      "sha256": "fddbd4680b43a33f3a3b6a9e68a42ab48e7dfce054ee7b4024c245a39dc354ce",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/foam.png",
+      "bytes": 16376,
+      "sha256": "7c3fa9f44f5446d2e509f59c3b2a8b5444bca40813bca0e65095bc688207322c",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/castle.png",
+      "bytes": 117272,
+      "sha256": "d4c8a6b16c910702a36e087602386abffdb2eb22d4a170bdb077499a0fac257c",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/house.png",
+      "bytes": 28346,
+      "sha256": "0e6e2b3e47dcbdfebcf6a92aa30b03eeba4f3b5075dcf853e7c27876f9992943",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/tower.png",
+      "bytes": 38399,
+      "sha256": "9ebe28bedefeac52c409fdb76ace5232def6139b67be0762a95deacaae9cd16a",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/buildings.png",
+      "bytes": 185524,
+      "sha256": "7361d974c54edb4c51af8d20075d6b1e220baa217aa71f251d63e857f04d03d8",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/foam-atlas.png",
+      "bytes": 19830,
+      "sha256": "ddd874040674be5ca78dee87ad212ea217ae8f2ec2bf83e9dae6253cae1b3def",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/ground-paths.png",
+      "bytes": 166865,
+      "sha256": "bde9ee8df7358d544fabf6124e9b0c040e54d131be60ec1aab54e16c581023a8",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/props.png",
+      "bytes": 35406,
+      "sha256": "1da487248884e7a77e232905cc0c12150a461e78ab44df7091b5236e23163baf",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/vegetation.png",
+      "bytes": 42912,
+      "sha256": "ae0250679686ebcdeadbb754c29060ba83ced88b14d459c2f801c76cc478d0be",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/whole-platforms.png",
+      "bytes": 3427528,
+      "sha256": "f3535ca70b8a45165393b6b45b4fb3d919183df1da942a7895ddac5baf884ae0",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/roads-connected.png",
+      "bytes": 133122,
+      "sha256": "335798678c09f81c2db1a26cb497c66581a54029fb88900da8b531db7af2c4d2",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/roads.png",
+      "bytes": 43386,
+      "sha256": "d44de1868c608ba1ec369954404b70fe2b1bfd8fe87437f7b2ac5865858e4d65",
+      "mime": "image/png"
     }
   ],
   "files": [
@@ -2205,13 +2897,13 @@
     },
     {
       "path": "js/00-preview-storage.js",
-      "bytes": 540,
-      "sha256": "176126f04aa44e21a192d87d9cb08dba6b8092b5f70c20b8cd33a8e65759b9b5"
+      "bytes": 686,
+      "sha256": "621f44bc620612ce77f66d5145407f0a42afc515f656c517ac78b672755398a6"
     },
     {
       "path": "css/game.css",
-      "bytes": 851,
-      "sha256": "b81b534f598b9bdc8bb5b17391538ff9c9aeb01db1e850bb66f154642bddb108"
+      "bytes": 4510,
+      "sha256": "f7724e4e85cde82dfa3a9c57a1d76ed0357046471e46c1ca6833a98b8fae0314"
     },
     {
       "path": "css/preview.css",
@@ -2220,8 +2912,8 @@
     },
     {
       "path": "js/01-game.js",
-      "bytes": 1353994,
-      "sha256": "f9d2ce0af3bc5b93206d01090ffb308c087a44f05e34f47af1b4eb150e6c0b22"
+      "bytes": 1363343,
+      "sha256": "03190d93e13ef9b5308641d7a63a3b3d9591505400f387ae36a13db26dd52d05"
     },
     {
       "path": "js/02-brood-boss.js",
@@ -2280,8 +2972,8 @@
     },
     {
       "path": "js/13-script.js",
-      "bytes": 37761,
-      "sha256": "ad1d6d6f32e0bb56be5cbcf2ea3c444e9d838f32d86813e9c482157b7320d2cf"
+      "bytes": 38128,
+      "sha256": "10dc844fa652744b5c510f6a3231ebb61c626ace5c0aaee561bf6dd5bc213b01"
     },
     {
       "path": "js/14-poison-fog.js",
@@ -2290,13 +2982,635 @@
     },
     {
       "path": "index.html",
-      "bytes": 1097,
-      "sha256": "3e067360d533c0657d5b002a57b9b5eedadc1636627bf22bbe7f86661966cd2e"
+      "bytes": 2756,
+      "sha256": "0eff30abfd2df6cf644ae6580b7fe4155c2c31c0e74ac387c6c56c7e09141e7b"
     },
     {
       "path": ".nojekyll",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "js/15-poison-timing.js",
+      "bytes": 3509,
+      "sha256": "ac0c155106f209e43cb6289bea86e8a4cdc27e9d49fdb0930fe356d99c85d5e4"
+    },
+    {
+      "path": "js/16-blightmother.js",
+      "bytes": 15454,
+      "sha256": "9c6b882ec05ece28057ea3c6461142856ad3242b5e22fe3ed689b838c9318f61"
+    },
+    {
+      "path": "js/17-blightmother-demo.js",
+      "bytes": 3275,
+      "sha256": "6b4bae8726d4d1dd515daeb301c9a342dc7aef605b4afbf372b02f45e460ab0b"
+    },
+    {
+      "path": "assets/bosses/blightmother/float.png",
+      "bytes": 488141,
+      "sha256": "ececeb07669b0c916380c8bc4b9021a8321d65dcb7c2f7498b6457f9ebe02564"
+    },
+    {
+      "path": "assets/bosses/blightmother/cast.png",
+      "bytes": 253640,
+      "sha256": "f287afe7b8d01849a1cd457fe6eaf6605d80ce04c59617f898432829e241408e"
+    },
+    {
+      "path": "js/blightmother-attacks.js",
+      "bytes": 4525,
+      "sha256": "6c7488802e59f81eb130e1d062ccc161fb0d10599bb617b7c03e3d0a5ba1b87c"
+    },
+    {
+      "path": "assets/bosses/blightmother/bolt-cast.png",
+      "bytes": 278294,
+      "sha256": "4b47d7b38796bc39e425efc8921934e9e50fcea4aa8e9624dd0948aede9f4276"
+    },
+    {
+      "path": "assets/bosses/blightmother/bolt-flight.png",
+      "bytes": 197872,
+      "sha256": "5b78b3262dbb0b2dfb3c82415adb0bde1c775bd42c400fa33375c6490819b947"
+    },
+    {
+      "path": "assets/bosses/blightmother/bolt-impact.png",
+      "bytes": 88181,
+      "sha256": "bd37bdcafec0f9c2720a78b53f19f2d7e52f30adef80574d2748abac9eb046ba"
+    },
+    {
+      "path": "assets/bosses/blightmother/bolt-launch.png",
+      "bytes": 62448,
+      "sha256": "d44cd3fc014648b42c5b3d392492e4cc0433911a653a5fd956c8795a9626296e"
+    },
+    {
+      "path": "assets/bosses/blightmother/meteor-fall.png",
+      "bytes": 206928,
+      "sha256": "75eb356beefac456d41b44a60b5845b28833176b179158286c4a1d380b59f7e4"
+    },
+    {
+      "path": "assets/bosses/blightmother/meteor-impact.png",
+      "bytes": 192839,
+      "sha256": "1d7ec536c8e30fa14828b78afff8141b0cf06dfe7f0f06577c9f37d528fbaffb"
+    },
+    {
+      "path": "js/18-stormward-effects.js",
+      "bytes": 5141,
+      "sha256": "df16374571315ed27ae5f2c1c337675dcfce930bdbe8f1a4a899cd8c12c9a00e"
+    },
+    {
+      "path": "js/19-stormward-weather.js",
+      "bytes": 6225,
+      "sha256": "cbe4f4bf85f08d50ac5e0c1916572d129cf980757676dd68eb797dddd3b0bd1d"
+    },
+    {
+      "path": "js/20-stormward-thunder.js",
+      "bytes": 5519,
+      "sha256": "d168b2c958324bcea36d85f05d1da8ae0e235052f5140a282ba311c5536a800a"
+    },
+    {
+      "path": "assets/effects/stormward/lightning-v2.png",
+      "bytes": 166308,
+      "sha256": "a1d0bfc095e65078b985d3e735328e192555fb1109ada5d72e0cfd8947b58973"
+    },
+    {
+      "path": "assets/effects/stormward/field-shock.png",
+      "bytes": 274681,
+      "sha256": "8bf75d1944a1d392253b515e47f8c9070fb162de6aa83c2cadead9390e897ae9"
+    },
+    {
+      "path": "js/21-turtle-water-ball.js",
+      "bytes": 5518,
+      "sha256": "660c4af290fefe16babde74037ad4261fe0ece844747aba24185d6ac5ebac9d8"
+    },
+    {
+      "path": "js/22-turtle-ball-demo.js",
+      "bytes": 3039,
+      "sha256": "fa745c1dccd765f0f8abbb8319bea60ed77451dd04ab896d78fc77ca18386ffd"
+    },
+    {
+      "path": "js/23-mastery-gate.js",
+      "bytes": 425,
+      "sha256": "88189fab15d606dcdff88cf973fa56bb994b171be81d0726f89c685503eb86b0"
+    },
+    {
+      "path": "js/24-fletcher.js",
+      "bytes": 850,
+      "sha256": "14d612af3e3b46ab214fc60360732f83c580e1521411d30194804c4a3bf9d6fa"
+    },
+    {
+      "path": "assets/images/fletcher-idle-d4841c9c05bae447.png",
+      "bytes": 6652,
+      "sha256": "d4841c9c05bae44724dcb093b1741a602cc25a9b33a665a1d90046a4bd9eb55e"
+    },
+    {
+      "path": "js/00-loading-screen.js",
+      "bytes": 2017,
+      "sha256": "7c915ab5b6269305fcf04e395950878a5fdb9de003913d9ddb03491990185bcc"
+    },
+    {
+      "path": "assets/images/loading-butterfly-flight.png",
+      "bytes": 30057,
+      "sha256": "f85ccbb7f910fca50d4fed8a2b2abba8192a6abc3c12ab3e767c1446ec98c30d"
+    },
+    {
+      "path": "assets/images/loading-paper-grain.svg",
+      "bytes": 732,
+      "sha256": "b8339e7838266fa66c0529ee56412929c4e18a369b6cfc644c3bdd3facbd8b14"
+    },
+    {
+      "path": "assets/images/loading-butterfly-flight-lime-yellow.png",
+      "bytes": 29391,
+      "sha256": "5dee6ee94025496e7f0cbe8535aa58f502bc590d02363d1dd51157d94c18bdd0"
+    },
+    {
+      "path": "assets/images/loading-butterfly-flight-sage-gold.png",
+      "bytes": 30695,
+      "sha256": "b2e5a258f0f3273dd91c0bfad65108b2af3034168d47d70d407e1c215a51a507"
+    },
+    {
+      "path": "js/crystal-chill-emitter.js",
+      "bytes": 4043,
+      "sha256": "ef851c87aabeae5664cad8000039856eb597851dd1021eb8bd45d96f76d8f6c7"
+    },
+    {
+      "path": "js/25-crystal-turtle.js",
+      "bytes": 3782,
+      "sha256": "64a0612273ad5fe1bce4476cd16b849e5359f5c03809cb6662fc561a52090666"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-01.png",
+      "bytes": 181262,
+      "sha256": "32919c752629215144dc56810d23d1ad2a00130116ae7e218c800662f1a41621"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-02.png",
+      "bytes": 179599,
+      "sha256": "d5f0d1bd92112a9ef02efb07717a9e232036109c9b62382a171925fba9ca9d7b"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-03.png",
+      "bytes": 180213,
+      "sha256": "7a39db7ad517be1ac8eb87fc793bdca6001ea6ad62e7edc5a1ed00c0cbda14c9"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-04.png",
+      "bytes": 178870,
+      "sha256": "554e6762b66b3130a6f5286b0b8dd660057b526913a0689a7c35a63c3692fa6b"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-05.png",
+      "bytes": 180587,
+      "sha256": "4e5c2be807637f5de34f55eef37aa070413a24969800d949f2687213f00fe7b9"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-06.png",
+      "bytes": 179648,
+      "sha256": "b541ca66a27a415319b40f32b592ab4c59e184b3716c2e57c2282fae90660114"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-07.png",
+      "bytes": 180577,
+      "sha256": "9a451532ba6d7f2b71dd6783fa8c024edc6d81a70124113b70ab1f07d61ea0f7"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/walk/turtle-walk-08.png",
+      "bytes": 179748,
+      "sha256": "9c837251eae3e7199b9c6110afbf058e88293ff9640254c969cb79c89477e6cd"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-01.png",
+      "bytes": 181262,
+      "sha256": "32919c752629215144dc56810d23d1ad2a00130116ae7e218c800662f1a41621"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-02.png",
+      "bytes": 180724,
+      "sha256": "268b249ecdeed74452bebe93ec8c951bdbad91e8a9f82b7b337909fb69c8cdd7"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-03.png",
+      "bytes": 180586,
+      "sha256": "a0b855634c5db9aa6514f4cd85b3caa664fdf353a3c50b493563c8f7bf1390d3"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-04.png",
+      "bytes": 180131,
+      "sha256": "3d2a282eca48097d21841914979c13e4ec9e1715f73d57369ff7732525adb40e"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-05.png",
+      "bytes": 180277,
+      "sha256": "0eb0d231f25b2e4060ec5cc5e87cb8bec5d70f24f79c74cdc60e5c3a567792a8"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-06.png",
+      "bytes": 183283,
+      "sha256": "b6ef21251f8ca28ed5968ee2d4734d6642ac2f3bfb7fe750b0dc574f5ee73661"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-07.png",
+      "bytes": 184694,
+      "sha256": "fad448d598a65191b53a10c7a81fd7462940082604e38f599766934b9e097e7d"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-08.png",
+      "bytes": 184478,
+      "sha256": "d64b7ca26c91bc21ff60b1896ad9ba4ff1a65adbeb6dfcb5dfc89a6e32f22420"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-09.png",
+      "bytes": 183177,
+      "sha256": "03a92e1249d98d8c67668f14378a2492782d686572bf45fd27e0823b1d116173"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-10.png",
+      "bytes": 181797,
+      "sha256": "54cd547be2357eec176ec5e229a53e68d35de1d88dce73b1cf1e81087dd071fe"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-11.png",
+      "bytes": 181043,
+      "sha256": "b662ae239a40e669da8a10fd654c06c75423b03186ad54dd40c8c694ec6f0ac3"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/bite/turtle-bite-12.png",
+      "bytes": 181262,
+      "sha256": "32919c752629215144dc56810d23d1ad2a00130116ae7e218c800662f1a41621"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-01.png",
+      "bytes": 179103,
+      "sha256": "ca3ab4305144cb0ffeeabe5bd353563f95e8b058568974f3fa0e9aa00191e234"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-02.png",
+      "bytes": 179283,
+      "sha256": "77f5924fcc8a008afe9ab3a07f3ae3cc106c66b0ea26ad171bbc5afa6f3ad3fe"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-03.png",
+      "bytes": 189509,
+      "sha256": "372f9e9de5ca6180f4a87a6af88b92a54df96704bc3f1c10fb1829b07d675b31"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-04.png",
+      "bytes": 192489,
+      "sha256": "d0237218bbe6ec5dea33d5af1505df050efead1ed164330cdb79a6e61e492bc7"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-05.png",
+      "bytes": 194533,
+      "sha256": "03490a694fbd77af7bdf8def6142dca8c505cdf9528907faa47f85566aade502"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-06.png",
+      "bytes": 197179,
+      "sha256": "947924c9fd0976a137f8be3d274b9b814075c92319dba54c5f45fd70023999e2"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-07.png",
+      "bytes": 195227,
+      "sha256": "1849843c6b18857b8d5f39269be4c92b9876c31dbfae71d42074f6e49223d262"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-08.png",
+      "bytes": 180630,
+      "sha256": "c696d4280b0a31d5a1daa164fec0ac8bfbf37698a55334945820b34815f6ade1"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/cast/turtle-super-09.png",
+      "bytes": 179103,
+      "sha256": "ca3ab4305144cb0ffeeabe5bd353563f95e8b058568974f3fa0e9aa00191e234"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-01.png",
+      "bytes": 63856,
+      "sha256": "861bba10ce63e6300dfeb4333a3debe9a689c7bf05faecb74086cf2c89fcdacd"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-02.png",
+      "bytes": 55993,
+      "sha256": "8188bb56ee52ec58263aa7817af2ed222f75134b1d8890b7c9e38c181f0452d6"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-03.png",
+      "bytes": 63713,
+      "sha256": "750d6beb1547e842499b292aafe5b2b609ae969b710ddab30da644f6f4fa7d93"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-04.png",
+      "bytes": 55597,
+      "sha256": "3c581e1b5dc8aaa3ab4a4114c616be657547c91c234ba066dfaa7fc2d8adbacb"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-05.png",
+      "bytes": 58965,
+      "sha256": "8cbd73692dfeab36d3a311644f805fb1f031b7b8b018a40f0eadfaea2d73ac77"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-06.png",
+      "bytes": 54622,
+      "sha256": "4315601173f62fd0f52cffdb47465918ce2ee44d54edf669662bc93a8428f519"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-07.png",
+      "bytes": 68470,
+      "sha256": "82193e7592be749b2c6a14cd152fdb67c2fe0f9c24a038b5aebc203bd348fc29"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-08.png",
+      "bytes": 78081,
+      "sha256": "a12fafacfd667ee559bfcc4119d9ee36969d0dab05954eff888bb216ee5c5a13"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-09.png",
+      "bytes": 75625,
+      "sha256": "6e9ea83cc3a5d319574def8c0aa01a0a57c6a0beb07820f083934cd5f027a8a8"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-10.png",
+      "bytes": 82465,
+      "sha256": "5f232881ab62e6e37d94211a950d3c2747d8d5d739c3bdfcf3fe9ac581140690"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/clouds/chill-cloud-11.png",
+      "bytes": 81733,
+      "sha256": "8197ffa89fcf2edccb240fc367697d2192e8f63d6b265ee55297d0c26f976710"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/water-laser-v1.png",
+      "bytes": 95529,
+      "sha256": "a28da53a060add39e72a46fc0d163e8f698749f05cb3c4c90f28859e78d4c967"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/water-laser-full-v2.png",
+      "bytes": 114968,
+      "sha256": "2ebbe8ccfcc743c22ba5d2513f60850a6ca5fac897207e63eba3daafaba02472"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/water-hose-strong-v2.png",
+      "bytes": 266081,
+      "sha256": "0a26b2eb769304a6026085d03eef550d3e574dbc2eec0e7562e39c5c5daa38f2"
+    },
+    {
+      "path": "assets/bosses/crystal-turtle/water-hose-strong-v2.json",
+      "bytes": 8865,
+      "sha256": "8972571e423f6980f850d6c0a41d11f19803919d1978c756c635dcd4b1d50f5e"
+    },
+    {
+      "path": "js/26-guttered-overworld.js",
+      "bytes": 15234,
+      "sha256": "5f04e4ef1972bd7db6b0a9b0d94f2cb65e213163395631069d3f4b6a7a99ecb7"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/art.json",
+      "bytes": 3758,
+      "sha256": "8e1d855cfaf5b20be964188b6dc04c352d6826d2489d1640ff47c7bf1eb3a687"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/bush1.png",
+      "bytes": 9455,
+      "sha256": "db5440c0c63597bf12d25118cc7a778aae67adec4f26783d3cef09f1eae1fdc7"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/bush2.png",
+      "bytes": 10594,
+      "sha256": "622545ec84536cb41ce90df751535fc69213f73b8189a5b8917acb1a9e3651b0"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/castle.png",
+      "bytes": 129393,
+      "sha256": "574ad155a5678a236c4eed643c3a84caf3a5d7f467ecbcac9b94a862d8a1b1ac"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/fern.png",
+      "bytes": 78282,
+      "sha256": "6edfb9af6a967d445b9254f69a4f79c7887a7fc42eed5755ac01316db8949201"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/fungi.png",
+      "bytes": 61748,
+      "sha256": "22f594e6eec7f8464d5d1029821099ef4b7043e8d2f41a3a629cd1090bd903d4"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/grass.png",
+      "bytes": 85151,
+      "sha256": "d6668bc876094fa986d6dc98e0a7d3d0c1e46dfce0d3280454f96ce4fd0bcbd1"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/house.png",
+      "bytes": 92366,
+      "sha256": "4e850fef7b1d15a44fffd6256bf0ffc90392e1f97605e2a9b04df68cbe449fac"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/moss.png",
+      "bytes": 61081,
+      "sha256": "a950c9af93776c8c99d58b4355893329a4fac2415bbd65a088285af64d1069e2"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/pillar.png",
+      "bytes": 63929,
+      "sha256": "3ba49d339994134fe1b38a0227d359522a2e7ef109692a7c9cfedaa15250a09e"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/README.md",
+      "bytes": 2343,
+      "sha256": "572e605cc3042aaf83468bd6f97d32f1784b976d24d28075b67d695169b16186"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/rock1.png",
+      "bytes": 4459,
+      "sha256": "4ab9d2b120873cb9f337967edb0d4962ee65f58881da6fe37f99afdf7edd8dea"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/rock2.png",
+      "bytes": 3350,
+      "sha256": "a9d5edeb62ae2dce64731ee3d6b568645b6475f99b0445b632b60e8939546ba4"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/root-rock.png",
+      "bytes": 78103,
+      "sha256": "2732ad4cd7b0772617e4d6334fceebfb82513ec346c2bdd7dcffa99009b82a34"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/root-stump.png",
+      "bytes": 78037,
+      "sha256": "2cbde1f559f3a15fb5fe6e1f30da8233922c27fab5ff962f65aeb5468cee0b1c"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/terrain.png",
+      "bytes": 364466,
+      "sha256": "21c0f6f081d6e5cd462c5f30dd277d7af4f8a33135bb160003a21bb8fced40c5"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/tower.png",
+      "bytes": 46208,
+      "sha256": "a9033af991854c63e033b1b8f20dee020ca840650b281fe8a4e9569bede50043"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/trail.png",
+      "bytes": 104479,
+      "sha256": "6739b4dd005d55af103f0044b8a66c4c87c702d4b9fa57bc47f3d72f87356ea4"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/tree.png",
+      "bytes": 34464,
+      "sha256": "0be987ed506cf91ac886f496d5f2264c8b651f81be6ddd7dc615c99de7d0aafb"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/water.png",
+      "bytes": 93862,
+      "sha256": "b74feec6633528d17fadd15c16e69bc0bb3b6fe238647779c6bb1ce0a4017748"
+    },
+    {
+      "path": "js/27-lamplit-overworld.js",
+      "bytes": 7368,
+      "sha256": "814076f56cf8231ece1747c8449995571a66e39a1a7ae19ba2460a5f786a8907"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/terrain.png",
+      "bytes": 66997,
+      "sha256": "e3149c69224485c1aaf084c9ed38e3d0a1c26dcf24ffa914b08f3a37294e71d8"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/props.png",
+      "bytes": 271862,
+      "sha256": "ea4db775cacb0ef641a79911215e75d7bd7fed9890414a33bf067785f721987f"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/art.json",
+      "bytes": 9646,
+      "sha256": "8f408ce53b4faa11658304180edd9327ee4f9c2a99437b2521d86f5664977be6"
+    },
+    {
+      "path": "js/28-ashen-overworld.js",
+      "bytes": 15443,
+      "sha256": "17f460b9d4c4b079779acdeaf053b0fb3c0ed441b114e254efe2c34278b2e2f1"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/art.json",
+      "bytes": 29078,
+      "sha256": "2ff86bc7a76c3afb7abdb1a5d949e21f524362297c88a866170c936d1a7abb9d"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/atlas.png",
+      "bytes": 355056,
+      "sha256": "55b508a7855e799567c1dde11be718af02121755536f51cd38a5b0cf79468755"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_boulder.png",
+      "bytes": 7181,
+      "sha256": "63eb3a1046e4796e38a4a4b184de1147702e8808923a107b62f0fde39abc3869"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_log.png",
+      "bytes": 10555,
+      "sha256": "f94f62f7805a111899edd43468c739f75fe34baf940a3c25c5a7af38c83f1003"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_pebble.png",
+      "bytes": 1384,
+      "sha256": "96dfb70200fe183bdef1d9f72acec904b42b18369e6eaccff1eb243cbd909601"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_shore.png",
+      "bytes": 12551,
+      "sha256": "aed1312eb47a7809a0f9806cf68688bb2f7f2aa7ba37599d31a143311cf8734a"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_shrub.png",
+      "bytes": 9082,
+      "sha256": "29a323ec379c62b10e2a6d80b2b4feb6a8c509f537b662fb764bfb468f018f00"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_tree.png",
+      "bytes": 62875,
+      "sha256": "dabedbfecb56f9adf28b932e45158dd3c56f7028d4163c56ad16fabf98d57ca0"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/snow_tree_stump.png",
+      "bytes": 13211,
+      "sha256": "fddbd4680b43a33f3a3b6a9e68a42ab48e7dfce054ee7b4024c245a39dc354ce"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/foam.png",
+      "bytes": 16376,
+      "sha256": "7c3fa9f44f5446d2e509f59c3b2a8b5444bca40813bca0e65095bc688207322c"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/castle.png",
+      "bytes": 117272,
+      "sha256": "d4c8a6b16c910702a36e087602386abffdb2eb22d4a170bdb077499a0fac257c"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/house.png",
+      "bytes": 28346,
+      "sha256": "0e6e2b3e47dcbdfebcf6a92aa30b03eeba4f3b5075dcf853e7c27876f9992943"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/tower.png",
+      "bytes": 38399,
+      "sha256": "9ebe28bedefeac52c409fdb76ace5232def6139b67be0762a95deacaae9cd16a"
+    },
+    {
+      "path": "js/28-ashen-art.js",
+      "bytes": 8443,
+      "sha256": "d3f6eba04807f5e0230aed3500d34a34b30612d51236622d2e9a4eb2936fab94"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/buildings.png",
+      "bytes": 185524,
+      "sha256": "7361d974c54edb4c51af8d20075d6b1e220baa217aa71f251d63e857f04d03d8"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/foam-atlas.png",
+      "bytes": 19830,
+      "sha256": "ddd874040674be5ca78dee87ad212ea217ae8f2ec2bf83e9dae6253cae1b3def"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/ground-paths.png",
+      "bytes": 166865,
+      "sha256": "bde9ee8df7358d544fabf6124e9b0c040e54d131be60ec1aab54e16c581023a8"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/props.png",
+      "bytes": 35406,
+      "sha256": "1da487248884e7a77e232905cc0c12150a461e78ab44df7091b5236e23163baf"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/vegetation.png",
+      "bytes": 42912,
+      "sha256": "ae0250679686ebcdeadbb754c29060ba83ced88b14d459c2f801c76cc478d0be"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/whole-art.json",
+      "bytes": 28866,
+      "sha256": "7dd2bcdf7b89f2886fdeb29c94db694d6709b1282bf174b8d11d72a28f9de951"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/whole-platforms.png",
+      "bytes": 3427528,
+      "sha256": "f3535ca70b8a45165393b6b45b4fb3d919183df1da942a7895ddac5baf884ae0"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/roads-connected.png",
+      "bytes": 133122,
+      "sha256": "335798678c09f81c2db1a26cb497c66581a54029fb88900da8b531db7af2c4d2"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/roads.png",
+      "bytes": 43386,
+      "sha256": "d44de1868c608ba1ec369954404b70fe2b1bfd8fe87437f7b2ac5865858e4d65"
     }
-  ]
+  ],
+  "release": {
+    "version": "131.56",
+    "title": "KEYWARD · v131.56 Supports V-VIII",
+    "date": "2026-11-10",
+    "editableSource": "KEYWARD-Web",
+    "standalone": {
+      "path": "../KEYWARD-v131.56.html",
+      "bytes": 41683784,
+      "sha256": "bb9c92f5190fdd25721ffc559d138b2cb078af7eb6727400326d7c4d58b2bd25"
+    },
+    "notes": "../KEYWARD-v131.56-RELEASE-NOTES.md"
+  }
 }

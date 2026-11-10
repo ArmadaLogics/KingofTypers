@@ -4,11 +4,28 @@
 <script  src="js/00-preview-storage.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KEYWARD · v131.11 Quiver Supplier</title>
+<title>KEYWARD · v131.56 Supports V-VIII</title>
 <link rel="stylesheet" href="css/game.css">
 <link rel="stylesheet" href="css/preview.css"></head>
 <body>
+<section id="loading-screen" aria-label="Loading game">
+  <canvas class="loading-paper" aria-hidden="true" width="0" height="0"></canvas>
+  <div class="loading-edge loading-edge-top" aria-hidden="true"></div>
+  <main class="loading-content">
+    <div class="loading-emblem" aria-hidden="true">
+      <div class="loading-pawn"></div>
+    </div>
+    <div class="loading-progress-block">
+      <div class="loading-track" role="progressbar" aria-label="Loading game art" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="loading-bar-center"><div class="loading-fill"></div></div>
+      </div>
+      <p id="loading-status" role="status">Loading...</p>
+    </div>
+  </main>
+  <div class="loading-edge loading-edge-bottom" aria-hidden="true"></div>
+</section>
 <div id="wrap"><canvas id="c" width="960" height="576"></canvas></div>
+<script src="js/00-loading-screen.js"></script>
 <script  src="js/01-game.js"></script>
 
 <script  src="js/02-brood-boss.js"></script><script  src="js/03-spirit-boss.js"></script><script  src="js/04-skull-cleave.js"></script><script  src="js/05-fire-arrow.js"></script>
@@ -27,8 +44,14 @@
 <script src="js/19-stormward-weather.js"></script>
 <script src="js/20-stormward-thunder.js"></script>
 <script src="js/21-turtle-water-ball.js"></script>
+<script src="js/crystal-chill-emitter.js"></script>
+<script src="js/25-crystal-turtle.js"></script>
 <script src="js/22-turtle-ball-demo.js"></script>
 <script src="js/24-fletcher.js"></script>
 <script src="js/23-mastery-gate.js"></script>
+<script src="js/26-guttered-overworld.js"></script>
+<script src="js/27-lamplit-overworld.js"></script>
+<script src="js/28-ashen-art.js"></script>
+<script src="js/28-ashen-overworld.js"></script>
 </body>
 </html>

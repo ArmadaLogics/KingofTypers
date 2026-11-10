@@ -35,6 +35,7 @@
   toast('FROZEN — keep typing! Movement returns in a moment.',1.2);
  };
  D.ground=function(cam){
+  if(D.frozen())iceGround({x:P.x,y:P.y,frzT:S.tw.freeze,uid:0},cam);
   const rn=S.tw?.rain,p=rn?.pocket;if(!p||rn.over)return;
   g.save();g.strokeStyle='rgba(162,247,186,.8)';g.lineWidth=2;
   g.fillStyle='rgba(117,231,169,.12)';g.beginPath();g.ellipse(p.x-cam.x,p.y-cam.y,20,10,0,0,Math.PI*2);g.fill();g.stroke();
@@ -92,9 +93,9 @@
   }
   if(D.frozen()){
    const x=P.x-cam.x,y=P.y-cam.y;
-   g.save();g.fillStyle='rgba(115,212,245,.38)';g.strokeStyle='#d1faff';g.lineWidth=2;
-   g.beginPath();g.moveTo(x-23,y+5);g.lineTo(x-28,y-31);g.lineTo(x-11,y-64);g.lineTo(x+19,y-57);g.lineTo(x+29,y-22);g.lineTo(x+22,y+5);g.closePath();g.fill();g.stroke();
-   g.beginPath();g.moveTo(x-11,y-64);g.lineTo(x+3,y-23);g.lineTo(x-23,y+5);g.moveTo(x+3,y-23);g.lineTo(x+22,y+5);g.stroke();
+   // Share the current Freeze shell instead of maintaining an older player-only shape.
+   iceShell({x:P.x,y:P.y,frzT:S.tw.freeze,uid:0},cam,FREEZE);
+   g.save();
    g.font='bold 11px system-ui';g.textAlign='center';g.fillStyle='#e1fcff';g.fillText('FROZEN '+S.tw.freeze.toFixed(1)+'s',x,y+22);g.restore();
   }
  };
