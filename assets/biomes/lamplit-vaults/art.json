@@ -1,0 +1,491 @@
+{
+  "art_source": "Chapter I native drawing + host_image palette",
+  "roadAtlas": {
+    "image": "roads.png",
+    "layer": "Baked over flat terrain, under raised terrain and scenery.",
+    "maskBits": {
+      "E": 2,
+      "N": 1,
+      "W": 8,
+      "S": 4
+    },
+    "columns": 4,
+    "rows": 4,
+    "tileSize": 64
+  },
+  "columns": 9,
+  "rows": 6,
+  "approvedRampSource": "Proposals/CrystalMine/Teal-Grass-Ramps-v1/Grass_Ramps_Atlas.png",
+  "terrainSource": "Proposals/LamplitVaultsAtlas-v2/Lamplit_Vaults_Terrain_Atlas.png",
+  "sourceFiles": {
+    "props.png": "Proposals/CrystalMine/Atlas-v2/Crystal_Mine_Props_Atlas.png",
+    "roads.png": "Proposals/LamplitVaultsRoads-v1/Lamplit_Vaults_Road_Atlas.png"
+  },
+  "acceptedReference": "exec-3d24e485-195c-487c-8c1c-9cdd32965717.png",
+  "files": [
+    {
+      "file": "props.png",
+      "sha256": "ea4db775cacb0ef641a79911215e75d7bd7fed9890414a33bf067785f721987f"
+    },
+    {
+      "file": "roads.png",
+      "sha256": "d44de1868c608ba1ec369954404b70fe2b1bfd8fe87437f7b2ac5865858e4d65"
+    },
+    {
+      "file": "terrain.png",
+      "sha256": "e3149c69224485c1aaf084c9ed38e3d0a1c26dcf24ffa914b08f3a37294e71d8"
+    }
+  ],
+  "originalRoute": "built-in image_gen",
+  "tileSize": 64,
+  "props": [
+    {
+      "id": 0,
+      "name": "crystal-tall",
+      "rect": {
+        "w": 128,
+        "x": 0,
+        "y": 0,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 85,
+        "x": 21,
+        "y": 8,
+        "h": 112
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 196,
+        "x": 66,
+        "y": 35,
+        "h": 258
+      },
+      "file": "prop-sprites/crystal-tall.png"
+    },
+    {
+      "id": 1,
+      "name": "crystal-medium",
+      "rect": {
+        "w": 128,
+        "x": 128,
+        "y": 0,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 84,
+        "x": 22,
+        "y": 29,
+        "h": 91
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 169,
+        "x": 75,
+        "y": 109,
+        "h": 183
+      },
+      "file": "prop-sprites/crystal-medium.png"
+    },
+    {
+      "id": 2,
+      "name": "crystal-small",
+      "rect": {
+        "w": 128,
+        "x": 256,
+        "y": 0,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 63,
+        "x": 32,
+        "y": 57,
+        "h": 63
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 127,
+        "x": 94,
+        "y": 160,
+        "h": 127
+      },
+      "file": "prop-sprites/crystal-small.png"
+    },
+    {
+      "id": 3,
+      "name": "rock-small",
+      "rect": {
+        "w": 128,
+        "x": 384,
+        "y": 0,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 50,
+        "x": 39,
+        "y": 80,
+        "h": 40
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 101,
+        "x": 108,
+        "y": 212,
+        "h": 81
+      },
+      "file": "prop-sprites/rock-small.png"
+    },
+    {
+      "id": 4,
+      "name": "rock-large",
+      "rect": {
+        "w": 128,
+        "x": 0,
+        "y": 128,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 112,
+        "x": 8,
+        "y": 25,
+        "h": 95
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 237,
+        "x": 44,
+        "y": 73,
+        "h": 202
+      },
+      "file": "prop-sprites/rock-large.png"
+    },
+    {
+      "id": 5,
+      "name": "mushrooms-small",
+      "rect": {
+        "w": 128,
+        "x": 128,
+        "y": 128,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 58,
+        "x": 35,
+        "y": 73,
+        "h": 47
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 116,
+        "x": 109,
+        "y": 169,
+        "h": 94
+      },
+      "file": "prop-sprites/mushrooms-small.png"
+    },
+    {
+      "id": 6,
+      "name": "mushrooms-tall",
+      "rect": {
+        "w": 128,
+        "x": 256,
+        "y": 128,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 68,
+        "x": 30,
+        "y": 52,
+        "h": 68
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 137,
+        "x": 90,
+        "y": 136,
+        "h": 136
+      },
+      "file": "prop-sprites/mushrooms-tall.png"
+    },
+    {
+      "id": 7,
+      "name": "planks",
+      "rect": {
+        "w": 128,
+        "x": 384,
+        "y": 128,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 90,
+        "x": 19,
+        "y": 55,
+        "h": 65
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 181,
+        "x": 67,
+        "y": 134,
+        "h": 130
+      },
+      "file": "prop-sprites/planks.png"
+    },
+    {
+      "id": 8,
+      "name": "mine-entrance",
+      "rect": {
+        "w": 128,
+        "x": 0,
+        "y": 256,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 112,
+        "x": 8,
+        "y": 29,
+        "h": 91
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 285,
+        "x": 16,
+        "y": 48,
+        "h": 232
+      },
+      "file": "prop-sprites/mine-entrance.png"
+    },
+    {
+      "id": 9,
+      "name": "timber-frame",
+      "rect": {
+        "w": 128,
+        "x": 128,
+        "y": 256,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 100,
+        "x": 14,
+        "y": 17,
+        "h": 103
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 201,
+        "x": 56,
+        "y": 67,
+        "h": 206
+      },
+      "file": "prop-sprites/timber-frame.png"
+    },
+    {
+      "id": 10,
+      "name": "support-post",
+      "rect": {
+        "w": 128,
+        "x": 256,
+        "y": 256,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 36,
+        "x": 46,
+        "y": 13,
+        "h": 107
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 72,
+        "x": 118,
+        "y": 63,
+        "h": 215
+      },
+      "file": "prop-sprites/support-post.png"
+    },
+    {
+      "id": 11,
+      "name": "minecart",
+      "rect": {
+        "w": 128,
+        "x": 384,
+        "y": 256,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 88,
+        "x": 20,
+        "y": 38,
+        "h": 82
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 176,
+        "x": 65,
+        "y": 116,
+        "h": 164
+      },
+      "file": "prop-sprites/minecart.png"
+    },
+    {
+      "id": 12,
+      "name": "rail-vertical",
+      "rect": {
+        "w": 128,
+        "x": 0,
+        "y": 384,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 66,
+        "x": 31,
+        "y": 8,
+        "h": 112
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 146,
+        "x": 82,
+        "y": 34,
+        "h": 245
+      },
+      "file": "prop-sprites/rail-vertical.png"
+    },
+    {
+      "id": 13,
+      "name": "rail-horizontal",
+      "rect": {
+        "w": 128,
+        "x": 128,
+        "y": 384,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 112,
+        "x": 8,
+        "y": 59,
+        "h": 61
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 237,
+        "x": 37,
+        "y": 101,
+        "h": 131
+      },
+      "file": "prop-sprites/rail-horizontal.png"
+    },
+    {
+      "id": 14,
+      "name": "rail-corner",
+      "rect": {
+        "w": 128,
+        "x": 256,
+        "y": 384,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 108,
+        "x": 10,
+        "y": 8,
+        "h": 112
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 227,
+        "x": 44,
+        "y": 49,
+        "h": 235
+      },
+      "file": "prop-sprites/rail-corner.png"
+    },
+    {
+      "id": 15,
+      "name": "torch",
+      "rect": {
+        "w": 128,
+        "x": 384,
+        "y": 384,
+        "h": 128
+      },
+      "anchor_px": {
+        "y": 120,
+        "x": 64
+      },
+      "content_rect": {
+        "w": 31,
+        "x": 48,
+        "y": 8,
+        "h": 112
+      },
+      "minimum_padding": 8,
+      "source_bounds": {
+        "w": 66,
+        "x": 122,
+        "y": 47,
+        "h": 233
+      },
+      "file": "prop-sprites/torch.png"
+    }
+  ]
+}

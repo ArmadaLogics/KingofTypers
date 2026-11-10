@@ -1,6 +1,7 @@
 /* Approved poison fog in normal gameplay. Art is loaded by the native preloader. */
 (() => {
-  const BUBBLE_DENSITY=.3, maps=new WeakMap();
+  const BUBBLE_DENSITY=.3, maps=new WeakMap(), overworlds=new WeakMap();
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const D={ready:false,map:null,enabled:false,textures:[],patches:[],bubbles:[],shapeBags:[[],[],[]],lastImage:-1,spawnClock:0};
   const active=(map=W)=>D.enabled&&D.map===map&&S.scene==='stage';
   function prepare(){
@@ -137,7 +138,84 @@
     }
     g.restore();
   }
-  window.PoisonFog={start,tick,draw,active,terrain:map=>active(map)?maps.get(map).cleanCanvas:map.canvas,
+  // Scenery has its own cache and never starts or changes the combat poison simulation.
+  const onOverworld=map=>S.scene==='over'&&S.chapter===2&&map===over;
+  function overworldScenery(map){
+    if(!onOverworld(map)||!prepare())return null;
+    if(overworlds.has(map))return overworlds.get(map);
+    const seeds=[];
+    for(let y=0;y<map.h;y++)for(let x=0;x<map.w;x++)if(map.def.t[y][x]==='%')seeds.push([x,y]);
+    const saved={chapter:FOL_CH,over:FOL_OVER,keep:FOL_KEEP};let cleanCanvas;
+    try{
+      FOL_CH=DEF().key;FOL_OVER=true;FOL_KEEP=NODES().map(p=>p.join(','));
+      cleanCanvas=buildMap({...map.def,t:map.def.t.map(row=>row.replace(/%/g,'.'))}).canvas;
+    }finally{FOL_CH=saved.chapter;FOL_OVER=saved.over;FOL_KEEP=saved.keep;}
+    const road=map.def.road||[],nodes=NODES(),post=POST(),patches=[],clearPath=new Path2D();
+    const roadSet=new Set(road.map(p=>p.join(',')));
+    for(const [x,y]of road){
+      const cx=(x+.5)*T,cy=(y+.5)*T;
+      clearPath.moveTo(cx+22,cy);clearPath.arc(cx,cy,22,0,Math.PI*2);clearPath.closePath();
+      if(roadSet.has((x+1)+','+y))clearPath.rect(cx,cy-22,T,44);
+      if(roadSet.has(x+','+(y+1)))clearPath.rect(cx-22,cy,44,T);
+    }
+    for(const [x,y]of [...nodes,...(post?[post]:[])]){
+      const cx=(x+.5)*T,cy=(y+.5)*T;
+      clearPath.moveTo(cx+54,cy);clearPath.arc(cx,cy,54,0,Math.PI*2);clearPath.closePath();
+    }
+    const hash=(x,y)=>{const n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n);};
+    const extra=[];
+    for(let y=0;y<map.h;y++)for(let x=0;x<map.w;x++){
+      const cell=map.grid[y][x];
+      if(map.def.t[y][x]==='.'&&cell.walk&&cell.level===0
+        &&!folShapeHit(map,(x+.5)*T,(y+.5)*T))extra.push([x,y]);
+    }
+    extra.sort((a,b)=>hash(a[0]+19,a[1]+37)-hash(b[0]+19,b[1]+37));
+    const candidates=[...seeds.map(tile=>({tile,ambient:false})),...extra.map(tile=>({tile,ambient:true}))];
+    let added=0;
+    for(const {tile:[x,y],ambient}of candidates){
+      if(ambient&&added>=24)break;
+      const gap=ambient?1.6:1.2,spacing=ambient?2.8:1.8;
+      if(roadSet.has(x+','+y)||nodes.some(p=>Math.hypot(p[0]-x,p[1]-y)<gap)
+        ||post&&Math.hypot(post[0]-x,post[1]-y)<gap
+        ||ambient&&road.some(p=>Math.hypot(p[0]-x,p[1]-y)<1.2)
+        ||patches.some(p=>Math.hypot(p.x-(x+.5)*T,p.y-(y+.5)*T)<T*spacing))continue;
+      const i=patches.length,width=(ambient?[176,208,160]:[192,160,224])[i%3];
+      patches.push({id:i,ambient,image:i%D.textures.length,x:(x+.5)*T,y:(y+.5)*T,width,height:width*(.80+.12*hash(x+3,y)),
+        angle:(hash(x,y+2)-.5)*.35,mirror:hash(x+7,y)<.5?-1:1,alpha:(ambient?.34:.46)+(ambient?.10:.08)*hash(x,y+9),
+        phase:hash(x,y)*Math.PI*2,motionRate:.7+.3*hash(x+1,y),born:-100});
+      if(ambient)added++;
+    }
+    const data={seeds,cleanCanvas,patches,clearPath};overworlds.set(map,data);return data;
+  }
+  function drawOverworld(map,cam){
+    const data=overworldScenery(map);if(!data)return;
+    const time=reduced.matches?0:S.t;
+    g.save();g.clip(tilePath(map,false));g.imageSmoothingEnabled=true;
+    for(const f of data.patches){
+      const pose=cloudPose(f,time);g.globalAlpha=pose.alpha;
+      g.save();g.translate(pose.x-cam.x,pose.y-cam.y);g.rotate(pose.angle);g.scale(f.mirror,1);
+      g.drawImage(D.textures[f.image],-pose.width/2,-pose.height/2,pose.width,pose.height);g.restore();
+      if(reduced.matches)continue;
+      // The same accepted bubble sheet, used sparsely as harmless map scenery.
+      const age=(S.t+f.phase*2)%(6+f.id%3),life=1.6;
+      if(age>=life)continue;
+      const p=age/life,frame=p<.25?0:p<.62?1:p<.82?2:3,size=24+f.id%3*3;
+      g.globalAlpha=.48*Math.min(1,age/.15)*(p>.82?(1-p)/.18:1);g.imageSmoothingEnabled=false;
+      g.drawImage(D.bubbleTexture,frame*64,0,64,64,pose.x-cam.x-size/2,pose.y-cam.y-size/2-22*p,size,size);
+      g.imageSmoothingEnabled=true;
+    }
+    // Repaint the original road and interaction footprints above the mist.
+    g.save();g.clip(data.clearPath);g.globalAlpha=1;g.imageSmoothingEnabled=false;
+    g.drawImage(data.cleanCanvas,-cam.x,-cam.y);g.restore();
+    g.restore();
+  }
+  function terrain(map){
+    const scenery=overworldScenery(map);
+    return scenery?scenery.cleanCanvas:active(map)?maps.get(map).cleanCanvas:map.canvas;
+  }
+  window.PoisonFog={start,tick,draw,active,terrain,drawOverworld,
+    overworldSnapshot:(map=over)=>{const data=overworldScenery(map);return {active:!!data,animated:!!data&&!reduced.matches,
+      seedCount:data?.seeds.length||0,clouds:data?.patches.length||0,additionalClouds:data?.patches.filter(p=>p.ambient).length||0};},
     snapshot:()=>({ready:D.ready,active:active(),bubbleDensity:BUBBLE_DENSITY,clouds:D.patches.length,bubbles:D.bubbles.length,
       patches:D.patches.map(f=>({id:f.id,tile:[...f.tile],image:f.image,group:f.group,size:f.size,pose:cloudPose(f)})),
       bubbleClouds:D.bubbles.map(b=>b.cloud)})};

@@ -5,6 +5,7 @@
   "description": "Editable KEYWARD game with external scripts and media; no build or install required",
   "scripts": {
     "start": "node tools/serve.cjs",
-    "check": "node tools/check.cjs"
+    "check": "node tools/check.cjs",
+    "export:html": "node tools/export-html.cjs"
   }
 }

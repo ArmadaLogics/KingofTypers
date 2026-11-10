@@ -56,7 +56,7 @@ const oKey=keyLetter;keyLetter=function(ch){const c=cur();
       return;}}
   return oKey(ch);};
 /* new names never start with an active counter word's letter */
-const oPick=pick;pick=function(tier,avoid){const extra=B.words.map(o=>o.w);return oPick(tier,extra.length?[...(avoid||[]),...extra]:avoid);};
+const oPick=pick;pick=function(tier,avoid,exact){const extra=B.words.map(o=>o.w);return oPick(tier,extra.length?[...(avoid||[]),...extra]:avoid,exact);};   /* v131.24: exact */
 /* ---- drawing ---- */
 function bar(c,line){const w=440,x=Math.round(VW/2-w/2),y=12,m=c.m;g.save();
   g.fillStyle='rgba(11,20,29,.93)';g.fillRect(x,y,w,74);g.strokeStyle='#4a5a3a';g.lineWidth=1;g.strokeRect(x+.5,y+.5,w-1,73);
@@ -275,8 +275,7 @@ LZ.tick=function(c,dt){const m=c.m,st=c.st;const d=Glowburst.states.get(m);
   if(c.half&&Glowburst.haunts)for(const o of Glowburst.haunts){if(o.dead)continue;for(const e of st.embers)if(!e.dead&&!e.claimed&&D(o,e)<30){e.dead=true;say('AN ORB SNUFFED THE EMBER',2);}}
   for(const e of st.embers)if(e.dead){B.dropWord(e.w);const i=S.lamps.indexOf(e.lamp);if(i>=0){S.lamps.splice(i,1);for(const s2 of mobs){if(s2.snuffTarget===i)s2.snuffTarget=null;else if(s2.snuffTarget>i)s2.snuffTarget--;}}}   /* v129.1: keep Snuffer targets in step */
   st.embers=st.embers.filter(e=>!e.dead);
-  /* fire on the ember's tile guards it for 3s */
-  for(const e of st.embers)if(!e.claimed&&!e.lit){for(const z of (FirstJob.zones||[]))if((z.key==='fireWall')&&D(z,e)<T*1.5){e.lit=3;}}};
+  };   /* v131.25: only the retired Fire Wall lit embers here */
 LZ.ground=function(c){const st=c.st;g.save();for(const e of st.embers){const a=e.claimed?1:Math.max(.25,e.t/LZ.LIFE);
     const gr=g.createRadialGradient(e.x,e.y,4,e.x,e.y,e.lamp.r);gr.addColorStop(0,'rgba(255,154,60,'+(.45*a)+')');gr.addColorStop(1,'rgba(255,154,60,0)');g.fillStyle=gr;g.beginPath();g.ellipse(e.x,e.y,e.lamp.r,e.lamp.r*.62,0,0,7);g.fill();
     g.fillStyle=e.claimed?'#ffd36b':'#ff9a3c';g.beginPath();g.arc(e.x,e.y,7,0,7);g.fill();g.fillStyle='#fff1a1';g.beginPath();g.arc(e.x,e.y,3,0,7);g.fill();

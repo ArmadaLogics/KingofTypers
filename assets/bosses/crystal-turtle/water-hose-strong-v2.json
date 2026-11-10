@@ -1,0 +1,467 @@
+{
+  "art_source": "host_image",
+  "route": "built-in image_gen",
+  "source": "generated-sheet.png",
+  "sourceSha256": "566f16d7f51a2bf1f8c3c1e6424274f5202db9eb60e0116a9f5450fad37f50e4",
+  "drawnKeyPoses": 8,
+  "frames": 30,
+  "durationMs": 3150,
+  "sheet": "strong-hose-cast-sheet.png",
+  "grid": [
+    4,
+    8
+  ],
+  "cell": [
+    416,
+    160
+  ],
+  "root": [
+    43,
+    80
+  ],
+  "sequence": [
+    {
+      "frame": 0,
+      "phase": "off",
+      "pressurePercent": 0,
+      "durationMs": 150
+    },
+    {
+      "frame": 1,
+      "phase": "build",
+      "pressurePercent": 8,
+      "durationMs": 150,
+      "sourcePose": 0
+    },
+    {
+      "frame": 2,
+      "phase": "build",
+      "pressurePercent": 18,
+      "durationMs": 150,
+      "sourcePose": 1
+    },
+    {
+      "frame": 3,
+      "phase": "build",
+      "pressurePercent": 35,
+      "durationMs": 150,
+      "sourcePose": 2
+    },
+    {
+      "frame": 4,
+      "phase": "build",
+      "pressurePercent": 55,
+      "durationMs": 150,
+      "sourcePose": 3
+    },
+    {
+      "frame": 5,
+      "phase": "build",
+      "pressurePercent": 75,
+      "durationMs": 150,
+      "sourcePose": 4
+    },
+    {
+      "frame": 6,
+      "phase": "build",
+      "pressurePercent": 100,
+      "durationMs": 150,
+      "sourcePose": 5
+    },
+    {
+      "frame": 7,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 5
+    },
+    {
+      "frame": 8,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 6
+    },
+    {
+      "frame": 9,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 7
+    },
+    {
+      "frame": 10,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 5
+    },
+    {
+      "frame": 11,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 6
+    },
+    {
+      "frame": 12,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 7
+    },
+    {
+      "frame": 13,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 5
+    },
+    {
+      "frame": 14,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 6
+    },
+    {
+      "frame": 15,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 7
+    },
+    {
+      "frame": 16,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 5
+    },
+    {
+      "frame": 17,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 6
+    },
+    {
+      "frame": 18,
+      "phase": "full",
+      "pressurePercent": 100,
+      "durationMs": 100,
+      "sourcePose": 7
+    },
+    {
+      "frame": 19,
+      "phase": "release",
+      "pressurePercent": 97,
+      "durationMs": 70,
+      "sourcePose": 5,
+      "tailX": 54.19
+    },
+    {
+      "frame": 20,
+      "phase": "release",
+      "pressurePercent": 90,
+      "durationMs": 70,
+      "sourcePose": 6,
+      "tailX": 80.30000000000001
+    },
+    {
+      "frame": 21,
+      "phase": "release",
+      "pressurePercent": 80,
+      "durationMs": 70,
+      "sourcePose": 7,
+      "tailX": 117.60000000000001
+    },
+    {
+      "frame": 22,
+      "phase": "release",
+      "pressurePercent": 67,
+      "durationMs": 70,
+      "sourcePose": 5,
+      "tailX": 166.09
+    },
+    {
+      "frame": 23,
+      "phase": "release",
+      "pressurePercent": 52,
+      "durationMs": 70,
+      "sourcePose": 6,
+      "tailX": 222.04
+    },
+    {
+      "frame": 24,
+      "phase": "release",
+      "pressurePercent": 36,
+      "durationMs": 70,
+      "sourcePose": 7,
+      "tailX": 281.72
+    },
+    {
+      "frame": 25,
+      "phase": "release",
+      "pressurePercent": 22,
+      "durationMs": 70,
+      "sourcePose": 5,
+      "tailX": 333.94
+    },
+    {
+      "frame": 26,
+      "phase": "release",
+      "pressurePercent": 11,
+      "durationMs": 70,
+      "sourcePose": 6,
+      "tailX": 374.97
+    },
+    {
+      "frame": 27,
+      "phase": "release",
+      "pressurePercent": 3,
+      "durationMs": 70,
+      "sourcePose": 7,
+      "tailX": 404.81
+    },
+    {
+      "frame": 28,
+      "phase": "release",
+      "pressurePercent": 0,
+      "durationMs": 70,
+      "sourcePose": 5,
+      "tailX": 416
+    },
+    {
+      "frame": 29,
+      "phase": "off",
+      "pressurePercent": 0,
+      "durationMs": 200
+    }
+  ],
+  "qa": {
+    "emptyStartAndEnd": true,
+    "binaryAlpha": true,
+    "noGlobalFade": true,
+    "eightDistinctDrawnStages": true,
+    "growthMeasured": [
+      {
+        "right": 108,
+        "height": 48,
+        "pixels": 885
+      },
+      {
+        "right": 152,
+        "height": 42,
+        "pixels": 1985
+      },
+      {
+        "right": 267,
+        "height": 67,
+        "pixels": 4530
+      },
+      {
+        "right": 366,
+        "height": 90,
+        "pixels": 8332
+      },
+      {
+        "right": 395,
+        "height": 92,
+        "pixels": 10064
+      },
+      {
+        "right": 388,
+        "height": 103,
+        "pixels": 10693
+      },
+      {
+        "right": 396,
+        "height": 106,
+        "pixels": 10238
+      },
+      {
+        "right": 383,
+        "height": 104,
+        "pixels": 9845
+      }
+    ],
+    "visualReview": "All six generated growth stages and full-pressure water/splash inspected in the finished contact sheet. Empty endpoints, eight distinct source poses, binary alpha and 3150ms GIF timing verified. Independent continuous playback inspection was not available."
+  },
+  "runtime": {
+    "geometry": [
+      null,
+      {
+        "start": 43,
+        "end": 84,
+        "halfHeight": 8.0
+      },
+      {
+        "start": 43,
+        "end": 129,
+        "halfHeight": 10.0
+      },
+      {
+        "start": 43,
+        "end": 223,
+        "halfHeight": 11.0
+      },
+      {
+        "start": 43,
+        "end": 331,
+        "halfHeight": 13.0
+      },
+      {
+        "start": 43,
+        "end": 367,
+        "halfHeight": 14.0
+      },
+      {
+        "start": 43,
+        "end": 380,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 43,
+        "end": 380,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 43,
+        "end": 375,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 43,
+        "end": 381,
+        "halfHeight": 14.0
+      },
+      {
+        "start": 43,
+        "end": 380,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 43,
+        "end": 375,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 43,
+        "end": 381,
+        "halfHeight": 14.0
+      },
+      {
+        "start": 43,
+        "end": 380,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 43,
+        "end": 375,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 43,
+        "end": 381,
+        "halfHeight": 14.0
+      },
+      {
+        "start": 43,
+        "end": 380,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 43,
+        "end": 375,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 43,
+        "end": 381,
+        "halfHeight": 14.0
+      },
+      {
+        "start": 52,
+        "end": 380,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 79,
+        "end": 375,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 116,
+        "end": 381,
+        "halfHeight": 14.0
+      },
+      {
+        "start": 164,
+        "end": 380,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 220,
+        "end": 375,
+        "halfHeight": 15.0
+      },
+      {
+        "start": 280,
+        "end": 381,
+        "halfHeight": 18.0
+      },
+      {
+        "start": 332,
+        "end": 380,
+        "halfHeight": 24.0
+      },
+      {
+        "start": 383,
+        "end": 389,
+        "halfHeight": 7.5
+      },
+      null,
+      null,
+      null
+    ],
+    "baseEnd": 381,
+    "baseCoreHeight": 30.0,
+    "startFrames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "fullFrames": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "stopFrames": [
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29
+    ]
+  }
+}
