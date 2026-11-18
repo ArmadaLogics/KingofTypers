@@ -1,0 +1,231 @@
+{
+  "source": "Assets\\Terrain\\Tileset\\NewThemes\\Tilemap_swamp.png",
+  "sourceSize": [
+    1536,
+    1024
+  ],
+  "sourceSHA256": "77b0ff253286e0bcb856ef555d72f3b4e8c8a1344d8ec4ba5de95378ef231c9d",
+  "runtimeFile": "assets/biomes/swamp-overworld/terrain.png",
+  "runtimeSize": [
+    576,
+    384
+  ],
+  "runtimeSHA256": "06a3461a6b36dec7297a74515b681326509263d8b378e1d4f28330eca020a590",
+  "cellSize": 64,
+  "grid": [
+    9,
+    6
+  ],
+  "art_source": "existing",
+  "resampling": "nearest",
+  "alpha": "exact Chapter I native contour masks; supplied swamp ground texture retained inside grass rims",
+  "mottleSoftening": {
+    "colorStudy": "Assets\\Terrain\\Tileset\\NewThemes\\Revisions\\SwampSoftMottle-v1\\Color_Study.png",
+    "route": "built-in image_gen edit, locally masked finishing",
+    "stage": "color-only pass before native geometry registration",
+    "blend": 0.4,
+    "changedSurfacePixels": 40720,
+    "darkSurfacePixelsBefore": 9074,
+    "darkSurfacePixelsAfter": 2664,
+    "darkPixelReduction": 0.7064,
+    "alphaIdentical": true,
+    "stoneAndRampsIdentical": true,
+    "fourPixelOutlineBandIdentical": true
+  },
+  "geometryRegistration": {
+    "reference": "Assets\\Terrain\\Tileset\\Tilemap_color1.png",
+    "referenceSHA256": "3ae8f00b92b4ecd46b63b14ad4117fdda42afcf485f340724db033f0e229be8e",
+    "method": "native contours and pixel clusters recolored to swamp; softer swamp texture inside native grass rim",
+    "alphaExactToReference": true,
+    "rampGeometryExactToReference": true,
+    "cliffPaletteColors": 6,
+    "surfaceInteriorPreserved": true,
+    "swampPalette": [
+      {
+        "from": [
+          155,
+          185,
+          78
+        ],
+        "to": [
+          116,
+          128,
+          61
+        ]
+      },
+      {
+        "from": [
+          128,
+          172,
+          94
+        ],
+        "to": [
+          90,
+          108,
+          57
+        ]
+      },
+      {
+        "from": [
+          184,
+          185,
+          88
+        ],
+        "to": [
+          143,
+          148,
+          77
+        ]
+      },
+      {
+        "from": [
+          198,
+          240,
+          219
+        ],
+        "to": [
+          163,
+          177,
+          116
+        ]
+      },
+      {
+        "from": [
+          97,
+          133,
+          89
+        ],
+        "to": [
+          91,
+          108,
+          54
+        ]
+      },
+      {
+        "from": [
+          102,
+          157,
+          157
+        ],
+        "to": [
+          88,
+          108,
+          87
+        ]
+      },
+      {
+        "from": [
+          140,
+          195,
+          196
+        ],
+        "to": [
+          125,
+          144,
+          118
+        ]
+      },
+      {
+        "from": [
+          80,
+          106,
+          105
+        ],
+        "to": [
+          58,
+          78,
+          61
+        ]
+      },
+      {
+        "from": [
+          60,
+          118,
+          98
+        ],
+        "to": [
+          68,
+          92,
+          43
+        ]
+      },
+      {
+        "from": [
+          53,
+          79,
+          89
+        ],
+        "to": [
+          40,
+          58,
+          42
+        ]
+      },
+      {
+        "from": [
+          22,
+          28,
+          46
+        ],
+        "to": [
+          24,
+          33,
+          27
+        ]
+      }
+    ],
+    "raisedTiles": {
+      "method": "authored outline and stone pixel masks, with softer texture applied to grass only",
+      "bevelSourceColor": [
+        140,
+        195,
+        196
+      ],
+      "bevelColor": [
+        106,
+        126,
+        104
+      ],
+      "bevelPixels": 3268
+    }
+  },
+  "tileRoles": {
+    "flatColumns": {
+      "left": 0,
+      "middle": 1,
+      "right": 2,
+      "single": 3
+    },
+    "flatRows": {
+      "top": 0,
+      "middle": 1,
+      "bottom": 2,
+      "single": 3
+    },
+    "raisedColumns": {
+      "left": 5,
+      "middle": 6,
+      "right": 7,
+      "single": 8
+    },
+    "raisedRows": {
+      "top": 0,
+      "middle": 1,
+      "bottomLip": 2,
+      "single": 3
+    },
+    "cliffRows": {
+      "land": 4,
+      "water": 5
+    },
+    "rampColumns": {
+      "left": 0,
+      "right": 3
+    },
+    "rampRows": [
+      4,
+      5
+    ]
+  },
+  "scope": "Chapter III overworld only; source artwork preserved"
+}

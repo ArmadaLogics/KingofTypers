@@ -1,43 +1,50 @@
 {
-  "art_source": "Chapter I native drawing + host_image palette",
-  "roadAtlas": {
-    "image": "roads.png",
-    "layer": "Baked over flat terrain, under raised terrain and scenery.",
-    "maskBits": {
-      "E": 2,
-      "N": 1,
-      "W": 8,
-      "S": 4
-    },
-    "columns": 4,
-    "rows": 4,
-    "tileSize": 64
-  },
+  "sourceAtlas": "Assets/Terrain/Tileset/NewThemes/DarkOptions/Tilemap_dark_moonlit.png",
+  "conversion": "Chapter I fine texture, subdued three-tone ground and fewer whole bright clusters. Native silhouettes, joins and ramp mapping retained.",
+  "sourceSha256": "327e27ad1a926e8c02527061530bb659b92fdaa61650f0f36ad9d1d032d08699",
   "columns": 9,
-  "rows": 6,
-  "approvedRampSource": "Proposals/CrystalMine/Teal-Grass-Ramps-v1/Grass_Ramps_Atlas.png",
-  "terrainSource": "Proposals/LamplitVaultsAtlas-v2/Lamplit_Vaults_Terrain_Atlas.png",
-  "sourceFiles": {
-    "props.png": "Proposals/CrystalMine/Atlas-v2/Crystal_Mine_Props_Atlas.png",
-    "roads.png": "Proposals/LamplitVaultsRoads-v1/Lamplit_Vaults_Road_Atlas.png"
+  "approvedRampSource": "Assets/Terrain/Tileset/NewThemes/DarkOptions/Tilemap_dark_moonlit.png",
+  "roadAtlas": {
+    "rows": 4,
+    "maskBits": {
+      "S": 4,
+      "W": 8,
+      "E": 2,
+      "N": 1
+    },
+    "layer": "Baked over flat terrain, under raised terrain and scenery.",
+    "image": "roads.png",
+    "tileSize": 64,
+    "columns": 4,
+    "palette": "Subdued slate gray with six shades."
   },
-  "acceptedReference": "exec-3d24e485-195c-487c-8c1c-9cdd32965717.png",
   "files": [
     {
-      "file": "props.png",
-      "sha256": "ea4db775cacb0ef641a79911215e75d7bd7fed9890414a33bf067785f721987f"
+      "sha256": "ea4db775cacb0ef641a79911215e75d7bd7fed9890414a33bf067785f721987f",
+      "file": "props.png"
     },
     {
-      "file": "roads.png",
-      "sha256": "d44de1868c608ba1ec369954404b70fe2b1bfd8fe87437f7b2ac5865858e4d65"
+      "sha256": "5e9cb352210427eef32dd05b1d4af47cb974f128527a25dedb438a17ec13f18a",
+      "file": "roads.png"
     },
     {
-      "file": "terrain.png",
-      "sha256": "e3149c69224485c1aaf084c9ed38e3d0a1c26dcf24ffa914b08f3a37294e71d8"
+      "sha256": "2e0e299c909ffb8c1b93c740ccfcd838739304f675fb0dfb7527ae9e7801e10e",
+      "file": "terrain.png"
+    },
+    {
+      "file": "cliff-variant.png",
+      "sha256": "2d132afb7d2573ef0ea49b397617df9f0029cb7bae85b14e317e58f85068e441"
     }
   ],
-  "originalRoute": "built-in image_gen",
+  "sourceFiles": {
+    "roads.png": "Proposals/LamplitVaultsRoads-v2/Lamplit_Vaults_Road_Atlas.png",
+    "props.png": "Proposals/CrystalMine/Atlas-v2/Crystal_Mine_Props_Atlas.png",
+    "cliff-variant.png": "Proposals/LamplitVaultsCliffs-v1/cliff-variant.png"
+  },
   "tileSize": 64,
+  "acceptedReference": "Assets/Terrain/Tileset/NewThemes/DarkOptions/Tilemap_dark_moonlit.png",
+  "rows": 6,
+  "art_source": "existing Chapter I drawing with generated color reference",
   "props": [
     {
       "id": 0,
@@ -487,5 +494,17 @@
       },
       "file": "prop-sprites/torch.png"
     }
-  ]
+  ],
+  "designReference": "KEYWARD-Web/assets/images/image-558588391e6dd91c.png",
+  "terrainSource": "Proposals/LamplitVaultsChapter1Texture-v1/Moonlit_Vaults_Terrain_Atlas.png",
+  "originalRoute": "built-in image_gen color study; palette-normalized native texture",
+  "cliffVariant": {
+    "image": "cliff-variant.png",
+    "tileSize": 64,
+    "rows": [
+      "land",
+      "water"
+    ],
+    "usage": "Alternate straight cliff face selected by map position."
+  }
 }

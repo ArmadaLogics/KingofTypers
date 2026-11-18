@@ -25,7 +25,8 @@ for (const item of manifest.files) {
 }
 assert.equal([...html.matchAll(/<script\b[^>]*src="([^"]+)"/g)].length, manifest.scripts.length);
 assert.equal([...html.matchAll(/<link\b[^>]*href="([^"]+)"/g)].length, manifest.styles.length);
-for (const item of [...manifest.scripts, ...manifest.styles]) assert.ok(html.includes(`"${item.path}"`));
+const linkedPaths=[...html.matchAll(/<(?:script|link)\b[^>]*(?:src|href)="([^"]+)"/g)].map(m=>m[1].split(/[?#]/)[0]);
+for (const item of [...manifest.scripts, ...manifest.styles]) assert.ok(linkedPaths.includes(item.path),`Missing linked file: ${item.path}`);
 if (sourceArg) {
   const source = fs.readFileSync(path.resolve(sourceArg), 'utf8');
   assert.equal(hash(Buffer.from(source)), manifest.source.sha256, 'Original source has changed');

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const reduced=matchMedia('(prefers-reduced-motion: reduce)'),maps=new WeakMap();
-  const native={build:buildMap,img:folImg,water:drawWater,sky:drawSky,minimap};
+  const native={build:buildMap,img:folImg,water:drawWater,minimap};
   const imageKeys={house:'gvHouse',tower:'gvTower',castle:'gvCastle',tree1:'gvTree',rock1:'gvRock1',rock2:'gvRock2',bush1:'gvBush1',bush2:'gvBush2'};
   const specs={
     house:[256,256,1,4,8,31,240,217],tower:[144,224,1,4,8,28,128,188],
@@ -11,24 +11,55 @@
     bush1:[96,80,1,4,8,20,80,52],bush2:[96,80,1,4,8,11,80,61]
   };
   const API=window.GutteredVaults={enabled:true,originalTiles:null};
-  const active=m=>API.enabled&&S.scene==='over'&&S.chapter===5&&maps.has(m);
-  const hash=(x,y)=>{const n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n);};
+  const active=m=>API.enabled&&S.scene==='over'&&S.chapter===5&&!S.hub&&maps.has(m);
+  // Tile, horizontal offset, inset from the south edge, and visible scale in world pixels.
+  const shorePlants=[
+    // West bank. Exposed roots and a pair of low plants frame the entry clearing.
+    ['gvRootStump',4,5,-4,9,65],
+    ['gvGrass',4,6,6,12,33],
+    ['gvFern',4,13,0,15,48],
+    ['gvGrass',4,14,1,26,35],
+    ['gvRootRock',5,16,-8,11,67],
+    ['gvFungi',6,16,-10,14,26],
+    // Northern shelf. A broken root and low ferns trace the point facing the channel.
+    ['gvFern',10,4,4,10,54],
+    ['gvRootStump',14,3,14,11,65],
+    ['gvGrass',15,3,11,17,37],
+    ['gvFern',18,3,-8,14,52],
+    ['gvRootRock',20,3,-12,8,67],
+    ['gvRootRock',17,6,-6,12,62],
+    ['gvFern',17,8,-10,21,45],
+    ['gvGrass',22,8,14,19,36],
+    // Eastern ledges. Leave a clear approach around the spire and the citadel.
+    ['gvRootStump',29,4,-13,14,60],
+    ['gvFern',30,4,-4,9,50],
+    ['gvGrass',32,4,-11,14,37],
+    ['gvFern',35,5,10,18,48],
+    ['gvRootRock',36,13,2,13,66],
+    ['gvFungi',36,14,-6,34,28],
+    ['gvFern',34,17,-8,14,49],
+    ['gvGrass',35,17,-2,9,38],
+    ['gvRootStump',36,17,-2,9,59],
+    // Pool and southern ledge. Leave the pine silhouettes and the middle bank open.
+    ['gvFern',17,18,10,15,46],
+    ['gvGrass',18,18,10,11,35],
+    ['gvRootRock',19,19,8,14,65],
+    ['gvFungi',20,19,8,20,28],
+    ['gvRootStump',11,19,10,13,65],
+    ['gvGrass',12,19,15,13,35],
+    ['gvFern',25,18,1,12,52],
+    ['gvGrass',26,18,-3,14,35],
+  ];
   let prepared=null;
   function prepare(){
     if(prepared)return prepared;
-    const required=['gvTerrain','gvWater','gvTrail',...Object.values(imageKeys),'gvGrass','gvFern','gvMoss','gvFungi','gvRootRock','gvRootStump'];
+    const required=['gvTerrain','gvTrail',...Object.values(imageKeys),'gvGrass','gvFern','gvMoss','gvFungi','gvRootRock','gvRootStump'];
     if(required.some(k=>!IMG[k]?.complete||IMG[k].naturalWidth<8))return null;
     const foam=document.createElement('canvas');foam.width=IMG.foam.width;foam.height=IMG.foam.height;
     const f=foam.getContext('2d');f.drawImage(IMG.foam,0,0);f.globalCompositeOperation='source-in';f.fillStyle='#214957';f.fillRect(0,0,foam.width,foam.height);foam.complete=true;
     const stillFoam=document.createElement('canvas');stillFoam.width=foam.width;stillFoam.height=foam.height;
     const sf=stillFoam.getContext('2d');for(let frame=0;frame<16;frame++)sf.drawImage(foam,0,0,192,192,frame*192,0,192,192);stillFoam.complete=true;
-    const clouds=[];
-    for(const key of ['poisonCloud01','poisonCloud03','poisonCloud05']){
-      const im=IMG[key];if(!im?.complete||im.naturalWidth<8)continue;
-      const c=document.createElement('canvas');c.width=im.width;c.height=im.height;
-      const x=c.getContext('2d');x.drawImage(im,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#d9dfe3';x.fillRect(0,0,c.width,c.height);clouds.push(c);
-    }
-    return prepared={foam,stillFoam,clouds,water:g.createPattern(IMG.gvWater,'repeat')};
+    return prepared={foam,stillFoam};
   }
   folImg=function(key){return key.endsWith('@vault')?IMG[imageKeys[folBase(key)]]||native.img(key):native.img(key);};
   function authoredMap(def){
@@ -36,66 +67,72 @@
     // Only the reviewed castle shelf is levelled; no island or route cell is relocated.
     for(let y=12;y<=14;y++)for(let x=30;x<=33;x++)if(t[y]?.[x]&&t[y][x]!=='~')t[y][x]='.';
     for(const row of d)for(let x=0;x<row.length;x++)if(row[x]==='H')row[x]=' ';
-    d[16][9]='H';
+    d[17][11]='H';
     for(const [x,y]of [[5,7],[16,17],[34,8],[22,18]]){
       if(t[y]?.[x]!=='.'||d[y][x]!==' ')continue;
       if(def.road.some(p=>Math.hypot(p[0]-x,p[1]-y)<1.7))continue;
       d[y][x]='T';
     }
+    // Give authored trees and buildings clearance from their nearest overlapping props.
+    for(const [x,y,tx,ty] of [[9,5,9,6],[35,8,36,9],[10,13,11,13],[15,16,14,17],[16,16,16,19]]){
+      const mark=d[y][x];
+      if((mark==='r'||mark==='b')&&d[ty][tx]===' '&&'.#'.includes(t[ty][tx])){
+        d[y][x]=' ';
+        d[ty][tx]=mark;
+      }
+    }
     return {...def,t:t.map(row=>row.join('')),d:d.map(row=>row.join(''))};
   }
-  const blitProp=(ctx,key,x,foot,width)=>{
-    const im=IMG[key],height=Math.round(width*im.height/im.width);
-    ctx.drawImage(im,Math.round(x-width/2),Math.round(foot-height),width,height);
-  };
+  function footingShadow(source,width,height,bottom,depth,drop){
+    const top=bottom-depth;
+    const footing=document.createElement('canvas');
+    footing.width=width;footing.height=depth;
+    const mask=footing.getContext('2d');
+    mask.imageSmoothingEnabled=false;
+    mask.drawImage(source,0,-top,width,height);
+    const pixels=mask.getImageData(0,0,width,depth);
+    for(let i=3;i<pixels.data.length;i+=4)pixels.data[i]=pixels.data[i]>=128?255:0;
+    mask.putImageData(pixels,0,0);
+
+    const margin=drop/2,stamp=document.createElement('canvas');
+    stamp.width=width+2*margin;stamp.height=depth+drop;
+    const shade=stamp.getContext('2d');
+    // Blighted Span offsets the foundation silhouette and uses Green March's shadow ink.
+    for(const [dx,dy] of [[-3,3],[3,3],[-4,5],[0,5],[4,5],[-2,8],[2,8]]){
+      shade.drawImage(footing,margin+Math.round(dx*drop/8),Math.round(dy*drop/8));
+    }
+    shade.globalCompositeOperation='source-in';
+    shade.fillStyle='rgba(22,28,46,0.27)';
+    shade.fillRect(0,0,stamp.width,stamp.height);
+    return {stamp,margin,top};
+  }
+  API.footingShadow=footingShadow;
+
+  function paintFoliageShadow(ctx,map,shadow,x,y,level,flip=false){
+    const {stamp,margin,top}=shadow;
+    const left=x-margin,upper=y+top;
+    const surface=new Path2D();
+    for(let row=Math.floor(upper/T);row<=Math.floor((upper+stamp.height-1)/T);row++){
+      for(let col=Math.floor(left/T);col<=Math.floor((left+stamp.width-1)/T);col++){
+        const cell=map.grid[row]?.[col];
+        if(cell?.level===level&&(cell.t==='flat'||cell.t==='elevated'))surface.rect(col*T,row*T,T,T);
+      }
+    }
+    ctx.save();
+    ctx.clip(surface);
+    ctx.globalCompositeOperation='source-atop';
+    if(flip){ctx.translate(left+stamp.width,0);ctx.scale(-1,1);}
+    ctx.drawImage(stamp,flip?0:left,upper);
+    ctx.restore();
+  }
   function groundLighting(ctx,it,radius,color,alpha){
     if(!it)return;const x=it.x*T+T/2,y=it.foot+9;
     ctx.save();ctx.globalCompositeOperation='screen';
     const glow=ctx.createRadialGradient(x,y,0,x,y,radius);glow.addColorStop(0,`rgba(${color},${alpha})`);glow.addColorStop(1,`rgba(${color},0)`);
     ctx.fillStyle=glow;ctx.fillRect(x-radius,y-radius,radius*2,radius*2);ctx.restore();
   }
-  function paintRaisedSurfaces(m,ctx=m.canvas.getContext('2d')){
-    const raised=(x,y)=>m.def.t[y]?.[x]==='#',land=(x,y)=>!!m.def.t[y]?.[x]&&m.def.t[y][x]!=='~';
-    const surface=document.createElement('canvas');surface.width=m.canvas.width;surface.height=m.canvas.height;
-    const x=surface.getContext('2d');x.imageSmoothingEnabled=false;
-    for(let ty=0;ty<m.h;ty++)for(let tx=0;tx<m.w;tx++)if(raised(tx,ty)){
-      // Rebuild over flat soil so a transparent ramp cut reveals the lower ground,
-      // rather than leaving the old rectangular raised tile underneath it.
-      const l=land(tx-1,ty),r=land(tx+1,ty),n=land(tx,ty-1),s=land(tx,ty+1);
-      ctx.clearRect(tx*T,ty*T,T,T);
-      ctx.drawImage(IMG.gvTerrain,(l&&r?1:r?0:l?2:3)*T,(n&&s?1:s?0:n?2:3)*T,T,T,tx*T,ty*T,T,T);
-      const left=raised(tx-1,ty),right=raised(tx+1,ty),north=raised(tx,ty-1);
-      // Rows 2/3 include a short blue face. The native cliff already supplies
-      // the full face below this cell, so those caps would create a second band.
-      const col=left&&right?6:right?5:left?7:8,row=north?1:0;
-      x.drawImage(IMG.gvTerrain,col*T,row*T,T,T,tx*T,ty*T,T,T);
-    }
-    const shadow=document.createElement('canvas');shadow.width=surface.width;shadow.height=surface.height;
-    const sx=shadow.getContext('2d');sx.drawImage(surface,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#071018';sx.fillRect(0,0,shadow.width,shadow.height);
-    // Shadow follows the assembled alpha silhouette, not rectangular per-tile strokes.
-    ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=.85;
-    for(const [dx,dy]of [[-2,0],[2,0],[0,-2],[0,2]])ctx.drawImage(shadow,dx,dy);
-    ctx.globalAlpha=1;ctx.drawImage(surface,0,0);
-    for(let ty=0;ty<m.h;ty++)for(let tx=0;tx<m.w;tx++)if(m.def.t[ty][tx]==='/'){
-      // Replace the upper cell after the plateau outline is complete. Cutting
-      // a hole in that outline would draw an L-shaped rim around the diagonal.
-      ctx.drawImage(IMG.gvTerrain,T,T,T,T,tx*T,(ty-1)*T,T,T);
-      const slope=document.createElement('canvas');slope.width=T;slope.height=T*2;
-      const rx=slope.getContext('2d');rx.imageSmoothingEnabled=false;
-      rx.drawImage(IMG.gvTerrain,0,4*T,T,T,0,0,T,T);
-      rx.drawImage(IMG.gvTerrain,0,5*T,T,T,0,T,T,T);
-      const cut=document.createElement('canvas');cut.width=T;cut.height=T*2;
-      const cx=cut.getContext('2d');cx.drawImage(slope,0,0);cx.globalCompositeOperation='source-in';cx.fillStyle='#071018';cx.fillRect(0,0,T,T*2);
-      ctx.save();ctx.beginPath();ctx.rect(tx*T,(ty-1)*T,T,T*2);ctx.clip();ctx.globalAlpha=.85;
-      ctx.drawImage(cut,tx*T-4,(ty-1)*T);ctx.drawImage(cut,tx*T,(ty-1)*T-4);
-      ctx.globalAlpha=1;ctx.drawImage(slope,tx*T,(ty-1)*T);ctx.restore();
-    }
-    ctx.restore();
-  }
-  API.paintRaisedSurfaces=paintRaisedSurfaces;
   function decorate(m,items){
     const ctx=m.canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
-    paintRaisedSurfaces(m,ctx);
     const road=new Set(m.def.road.map(n=>n.join(','))),nearRoad=(x,y,gap=1.2)=>m.def.road.some(p=>Math.hypot(p[0]-x,p[1]-y)<gap);
     const roadSafe=(x,y)=>NODES().every(p=>Math.hypot(p[0]-x,p[1]-y)>1.6)&&!nearRoad(x,y);
     for(const [x,y]of m.def.road){
@@ -105,26 +142,46 @@
     const house=m.stand.find(it=>it.k==='house'),castle=m.stand.find(it=>it.k==='castle');
     groundLighting(ctx,house,100,'207,116,49',.18);groundLighting(ctx,castle,100,'204,105,42',.13);
     for(const it of m.stand.filter(it=>it.k==='tower'))groundLighting(ctx,it,64,'204,105,42',.12);
+    const plantShadows=new Map();
+    function plantShadow(source,width,height,bottom,depth,drop){
+      if(!plantShadows.has(source))plantShadows.set(source,footingShadow(source,width,height,bottom,depth,drop));
+      return plantShadows.get(source);
+    }
+    for(const it of items){
+      const tree=it.k==='tree1',bush=it.k==='bush1'||it.k==='bush2';
+      if(!it.key.endsWith('@vault')||(!tree&&!bush))continue;
+      const [width,height,,,,top,,bodyHeight]=it.sp;
+      const shadow=plantShadow(folImg(it.key),width,height,top+bodyHeight,tree?18:12,tree?6:4);
+      paintFoliageShadow(ctx,m,shadow,it.px,it.py,m.grid[it.y][it.x].level,it.flip);
+    }
     // Repaint native props above the trail and lights, so the road never lies over a sprite.
     for(const it of items)folBlit(ctx,it,0);
     const land=(x,y)=>m.def.t[y]?.[x]&&m.def.t[y][x]!=='~';
-    const buildings=m.stand.filter(it=>['house','tower','castle'].includes(it.k));
-    const blocked=(cx,foot,width,height)=>buildings.some(it=>{const b=folBox(it);return cx+width/2>b.x-16&&cx-width/2<b.x+b.w+16&&foot>b.y-10&&foot-height<b.y+b.h+12;});
+    const occupied=items.map(folBox);
+    const ramps=[];
+    for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){
+      if(m.grid[y][x].t==='stair')ramps.push([x,y]);
+    }
     let props=items.length;
-    const mist=[];
-    for(let y=1;y<m.h-1;y++)for(let x=1;x<m.w-1;x++){
-      if(!land(x,y)||m.grid[y][x].t==='cliff'||m.grid[y][x].t==='stair')continue;
-      const rim=!land(x-1,y)||!land(x+1,y)||!land(x,y-1)||!land(x,y+1),q=hash(x,y);
-      if(rim&&q>.38&&roadSafe(x,y)){
-        const key=q>.92?'gvRootRock':q>.84?'gvRootStump':q>.68?'gvFern':'gvGrass';
-        const width=key.startsWith('gvRoot')?72:key==='gvFern'?56:42,cx=(x+.5)*T,foot=(y+1)*T-10;
-        const im=IMG[key],height=width*im.height/im.width;
-        if(!blocked(cx,foot,width,height)){blitProp(ctx,'gvMoss',cx,foot+3,74);blitProp(ctx,key,cx,foot,width);props+=2;
-          if(q>.93&&!blocked(cx+30,foot,34,45)){blitProp(ctx,'gvFungi',cx+30,foot,34);props++;}}
+    for(const [key,x,y,offset,inset,width] of shorePlants){
+      const cell=m.grid[y]?.[x];
+      if(!cell?.walk||cell.t!=='flat'||!roadSafe(x,y)||ramps.some(([rx,ry])=>Math.hypot(rx-x,ry-y)<1.5))continue;
+      const im=IMG[key],height=Math.round(width*im.height/im.width);
+      const left=Math.round((x+.5)*T+offset-width/2),foot=(y+1)*T-inset,top=foot-height;
+      const supported=[left+width*.18,left+width*.82].every(px=>{
+        const support=m.grid[Math.floor((foot-5)/T)]?.[Math.floor(px/T)];
+        return support?.t==='flat'&&support.walk;
+      });
+      if(!supported||occupied.some(b=>left<b.x+b.w+8&&left+width+8>b.x&&top<b.y+b.h+8&&foot+8>b.y))continue;
+      if(key.startsWith('gvRoot')){
+        ctx.drawImage(IMG.gvMoss,left+Math.round(width*.12),foot-18,Math.round(width*.76),18);
       }
-      if(q>.80&&m.grid[y][x].walk&&m.grid[y][x].level===0&&roadSafe(x,y)&&!blocked((x+.5)*T,(y+.5)*T,200,160)
-        &&mist.every(p=>Math.hypot(p.x-(x+.5)*T,p.y-(y+.5)*T)>T*3.5))
-        mist.push({x:(x+.5)*T,y:(y+.5)*T,phase:q*6.283,image:mist.length%3,width:210+q*45});
+      const bottom=height-Math.round(10*width/im.width);
+      const shadow=plantShadow(im,width,height,bottom,Math.min(12,bottom),4);
+      paintFoliageShadow(ctx,m,shadow,left,top,cell.level);
+      ctx.drawImage(im,left,top,width,height);
+      occupied.push({x:left,y:top,w:width,h:height});
+      props++;
     }
     // A short cliff skirt sits in water, behind the original shoreline alpha. It never changes collision.
     const composite=document.createElement('canvas');composite.width=m.canvas.width;composite.height=m.canvas.height;
@@ -135,19 +192,12 @@
     }
     c.drawImage(m.canvas,0,0);
     c.save();c.globalCompositeOperation='source-atop';c.fillStyle='rgba(8,18,30,.14)';c.fillRect(0,0,composite.width,composite.height);c.restore();m.canvas=composite;
-    const ground=new Path2D(),clear=new Path2D();
-    for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++)if(land(x,y))ground.rect(x*T,y*T,T,T);
-    for(const [x,y]of m.def.road)clear.rect(x*T+8,y*T+8,T-16,T-16);
-    // POST is derived from `over`, which is assigned only after this build returns.
-    // The supplier already sits inside the protected authored road strip.
-    for(const [x,y]of NODES()){clear.moveTo((x+.5)*T+52,(y+.5)*T);clear.arc((x+.5)*T,(y+.5)*T,52,0,Math.PI*2);}
-    for(const it of buildings){const b=folBox(it);clear.rect(b.x-12,b.y-12,b.w+24,b.h+36);}
-    return {house,castle,props,mist:mist.slice(0,10),ground,clear,trees:items.filter(it=>it.k.startsWith('tree')).length};
+    return {house,castle,props,trees:items.filter(it=>it.k.startsWith('tree')).length};
   }
   buildMap=function(def){
     if(!API.enabled||FOL_CH!=='VI'||!FOL_OVER||!prepare())return native.build(def);
     const authored=authoredMap(def),oldKit=FOL_KIT.VI,oldAtlas=IMG.tm3,oldSpecs={},oldBlit=folBlit,items=[];
-    for(const [key,spec]of Object.entries(specs)){oldSpecs[key]=DSPEC[key];DSPEC[key]=spec;}
+    for(const [key,spec]of Object.entries({...specs,...window.GutteredStructures?.specs})){oldSpecs[key]=DSPEC[key];DSPEC[key]=spec;}
     FOL_KIT.VI={...oldKit,H:['house@vault'],C:['castle@vault'],S:['tower@vault'],T:['tree1@vault'],r:['rock1@vault','rock2@vault'],b:['bush1@vault','bush2@vault']};
     IMG.tm3=IMG.gvTerrain;
     // Capture the native prop list while it creates the authoritative collision map.
@@ -160,31 +210,162 @@
   };
   drawWater=function(m,V){
     if(!active(m))return native.water(m,V);
-    const art=prepare(),previous=IMG.foam,time=reduced.matches?0:S.t;
-    art.water.setTransform(new DOMMatrix().translate(time*1.4,0));
-    // Fill the entire visible ocean, including space beyond the map on wide displays.
-    g.fillStyle=art.water;g.fillRect(-V.ox/V.z,-V.oy/V.z,VW/V.z,VH/V.z);
-    try{IMG.foam=reduced.matches?art.stillFoam:art.foam;return native.water({...m,def:{...m.def,sea:art.water}},V);}
+    const art=prepare(),previous=IMG.foam;
+    try{IMG.foam=reduced.matches?art.stillFoam:art.foam;return native.water(m,V);}
     finally{IMG.foam=previous;}
   };
-  drawSky=function(m){
-    if(!active(m))return native.sky(m);
-    const data=maps.get(m),art=prepare(),time=reduced.matches?0:S.t;
-    // Harmless scenery only. No reference to the poison spread, Ward drain or combat torch state.
-    if(S.sky&&art.clouds.length){
-      g.save();g.clip(data.ground);g.imageSmoothingEnabled=true;g.globalAlpha=.075;
-      for(const f of data.mist){const x=f.x+Math.sin(time*.22+f.phase)*8,y=f.y+Math.sin(time*.15+f.phase)*4;
-        g.drawImage(art.clouds[f.image%art.clouds.length],x-f.width/2,y-f.width*.38,f.width,f.width*.76);}
-      g.restore();g.save();g.clip(data.clear);g.drawImage(m.canvas,0,0);g.restore();
+  const ambient = [.63,.80,1.04];
+  const bounce = [.46,.94,1.23];
+  // Elliptical moonlight over the channel, with spill on the west approach and vault.
+  const lights = [
+    {x:20.4,y:9.7,rx:8.7,ry:15.5,angle:-.31,strength:1.04},
+    {x:25,y:13,rx:12,ry:4.8,angle:-.29,strength:.40},
+    {x:32.3,y:12.6,rx:6.9,ry:5,angle:.05,strength:.43},
+    {x:7.5,y:9,rx:8.4,ry:6.2,angle:.21,strength:.19},
+  ].map(light => ({...light, cos:Math.cos(light.angle), sin:Math.sin(light.angle)}));
+  const mistBanks = [
+    [10.4,5.0,5.3,.82,-.11,.11],
+    [17.3,6.4,4.6,.58,.32,.11],
+    [18.9,9.9,4.1,.64,.38,.14],
+    [24.5,8.2,3.6,.68,-.40,.13],
+    [25.3,10.1,3.6,.54,-.18,.08],
+    [19.3,14.7,4.1,.55,-.22,.12],
+    [27.9,17.9,4.9,.66,-.19,.11],
+    [32.7,11.9,3.9,.48,-.14,.11],
+    [34.5,15.9,4.4,.66,.14,.08],
+  ];
+
+  function lightAt(x,y){
+    let total = 0;
+    for(const light of lights){
+      const dx=x-light.x, dy=y-light.y;
+      const u=(dx*light.cos+dy*light.sin)/light.rx;
+      const v=(-dx*light.sin+dy*light.cos)/light.ry;
+      const falloff=Math.max(0,1-u*u-v*v);
+      total+=light.strength*falloff*falloff;
     }
-    if(data.castle){
-      const it=data.castle,amount=.10+(reduced.matches?0:.012*Math.sin(time*4));
-      g.save();g.globalCompositeOperation='screen';
-      for(const x of [it.px+76,it.px+276]){
-        const y=it.py+115,glow=g.createRadialGradient(x,y,1,x,y,43);
-        glow.addColorStop(0,`rgba(55,150,250,${amount})`);glow.addColorStop(1,'rgba(40,125,245,0)');g.fillStyle=glow;g.fillRect(x-43,y-43,86,86);
-      }g.restore();
+    return Math.min(1.26,total);
+  }
+
+  function tintTerrain(source){
+    const lit=document.createElement("canvas");
+    lit.width=source.width;
+    lit.height=source.height;
+    const ctx=lit.getContext("2d");
+    ctx.drawImage(source,0,0);
+    const frame=ctx.getImageData(0,0,lit.width,lit.height);
+    const pixels=frame.data;
+    const step=16;
+    const stride=Math.ceil(lit.width/step)+1;
+    const rows=Math.ceil(lit.height/step)+1;
+    const field=new Float32Array(stride*rows);
+    for(let row=0;row<rows;row++)for(let col=0;col<stride;col++){
+      field[row*stride+col]=lightAt(col*step/T,row*step/T);
     }
+    for(let y=0;y<lit.height;y++){
+      const row=Math.floor(y/step)*stride;
+      const fy=(y%step)/step;
+      for(let x=0;x<lit.width;x++){
+        const i=(y*lit.width+x)*4;
+        if(!pixels[i+3])continue;
+        const cell=row+Math.floor(x/step), fx=(x%step)/step;
+        const top=field[cell]*(1-fx)+field[cell+1]*fx;
+        const below=field[cell+stride]*(1-fx)+field[cell+stride+1]*fx;
+        const light=top*(1-fy)+below*fy;
+        const r=pixels[i], green=pixels[i+1], b=pixels[i+2];
+        const luma=.213*r+.715*green+.072*b;
+        const strength=light*(.69+.31*Math.min(1,luma/85));
+        const vivid=Math.max(r,green,b)-Math.min(r,green,b);
+        const preserve=Math.max(0,Math.min(.9,(vivid-43)/104));
+        const fire=Math.max(0,Math.min(.35,(r-b-32)/170));
+        for(let channel=0;channel<3;channel++){
+          const base=pixels[i+channel];
+          const cooled=base*ambient[channel]+luma*strength*bounce[channel];
+          const flame=base*(1-fire)+luma*fire;
+          pixels[i+channel]=Math.round(cooled*(1-preserve)+flame*preserve);
+        }
+      }
+    }
+    ctx.putImageData(frame,0,0);
+    return lit;
+  }
+
+  function addMist(lit){
+    const fog=document.createElement("canvas");
+    fog.width=lit.width;
+    fog.height=lit.height;
+    const ctx=fog.getContext("2d");
+    for(const [x,y,rx,ry,angle,strength] of mistBanks){
+      ctx.save();
+      ctx.translate(x*T,y*T);
+      ctx.rotate(angle);
+      ctx.scale(rx*T,ry*T);
+      const soft=ctx.createRadialGradient(0,0,0,0,0,1);
+      soft.addColorStop(0,"rgba(134,194,228,"+strength+")");
+      soft.addColorStop(.46,"rgba(111,176,218,"+strength*.55+")");
+      soft.addColorStop(1,"rgba(91,150,198,0)");
+      ctx.fillStyle=soft;
+      ctx.fillRect(-1,-1,2,2);
+      ctx.restore();
+    }
+    ctx.globalCompositeOperation="destination-in";
+    ctx.drawImage(lit,0,0);
+    ctx.globalCompositeOperation="destination-over";
+    ctx.drawImage(lit,0,0);
+    return fog;
+  }
+
+  const actorSheets = new Set(["arIdle", "arRun", "arShoot", "fletchIdle"]);
+  const actorTints = new WeakMap();
+
+  function litActor(key,source,x,y){
+    if(!actorSheets.has(key)||!source.naturalWidth||!active(over))return;
+    // Quantize local light to keep a bounded sprite cache while walking.
+    const step=Math.round(Math.min(1,lightAt(x/T,y/T))*5);
+    let variants=actorTints.get(source);
+    if(!variants){variants=new Map();actorTints.set(source,variants);}
+    if(variants.has(step))return variants.get(step);
+
+    const canvas=document.createElement("canvas");
+    canvas.width=source.naturalWidth;
+    canvas.height=source.naturalHeight;
+    const ctx=canvas.getContext("2d");
+    ctx.drawImage(source,0,0);
+    const frame=ctx.getImageData(0,0,canvas.width,canvas.height);
+    const pixels=frame.data, light=step/5;
+    for(let i=0;i<pixels.length;i+=4){
+      if(!pixels[i+3])continue;
+      const red=pixels[i],green=pixels[i+1],blue=pixels[i+2];
+      const luma=.213*red+.715*green+.072*blue;
+      const chroma=Math.max(red,green,blue)-Math.min(red,green,blue);
+      const neutral=1-Math.min(1,chroma/90);
+      const mix=.18+.10*light;
+      const shine=light*(.07+.14*neutral)*luma;
+      pixels[i]=(red+(luma-red)*mix)*.78+shine*.36;
+      pixels[i+1]=(green+(luma-green)*mix)*.84+luma*.022+shine*.98;
+      pixels[i+2]=(blue+(luma-blue)*mix)*.94+luma*.102+shine*1.42;
+    }
+    ctx.putImageData(frame,0,0);
+    variants.set(step,canvas);
+    return canvas;
+  }
+
+  const litSurfaces = new WeakMap();
+  API.lightAt = (x,y) => lightAt(x/T,y/T);
+  API.litActor = litActor;
+  API.litTerrain = (map, surface) => {
+    if (!active(map)) return;
+    let layers = litSurfaces.get(surface);
+    if (!layers) {
+      const lit = tintTerrain(surface);
+      layers = {lit, mist: addMist(lit)};
+      litSurfaces.set(surface, layers);
+    }
+    return S.sky ? layers.mist : layers.lit;
+  };
+  const nativeSkyOver = drawSkyOver;
+  drawSkyOver = map => {
+    if (!active(map)) nativeSkyOver(map);
   };
   minimap=function(m){
     if(!active(m))return native.minimap(m);
@@ -206,8 +387,8 @@
   API.snapshot=function(){
     const data=maps.get(over),it=data?.house,castle=data?.castle;
     const inset=it&&folBox(it),land=(x,y)=>over?.def.t[Math.floor(y/T)]?.[Math.floor(x/T)]==='.';
-    return {active:active(over),animated:active(over)&&!reduced.matches,mistAlpha:.075,mistSource:'poisonCloud',harmless:true,
-      clouds:data?.mist.length||0,torches:data?2:0,flameColor:'blue',trailTiles:16,props:data?.props||0,trees:data?.trees||0,
+    return {active:active(over),animated:active(over)&&!reduced.matches,mistAlpha:Math.max(...mistBanks.map(bank=>bank[5])),mistSource:'moonlight',harmless:true,
+      clouds:data?mistBanks.length:0,torches:data?2:0,flameColor:'blue',trailTiles:16,props:data?.props||0,trees:data?.trees||0,
       house:it?{x:it.x,y:it.y,height:it.sp[7],inland:land(inset.x,it.foot+20)&&land(inset.x+inset.w,it.foot+20)}:null,
       castle:castle?{x:castle.x,y:castle.y,grounded:land(castle.x*T,castle.foot+20)&&land((castle.x+1)*T,castle.foot+20)}:null};
   };
