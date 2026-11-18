@@ -10,7 +10,7 @@ if(path.extname(output).toLowerCase()!=='.html')throw Error('Choose an .html out
 if(fs.existsSync(output)&&!process.argv.includes('--overwrite'))throw Error('Output already exists. Use --overwrite to replace it explicitly.');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.json'),'utf8'));
 const read=name=>{
- const target=path.resolve(root,name);
+ const target=path.resolve(root,name.split(/[?#]/)[0]);
  if(!target.startsWith(root+path.sep))throw Error('Path outside game folder: '+name);
  return fs.readFileSync(target);
 };
@@ -45,6 +45,8 @@ if(Object.keys(dynamicMedia).length){
  new vm.Script(resolver,{filename:'standalone-dynamic-image-resolver'});
  html=html.replace('<head>','<head>\n<script>'+resolver+'</script>');scripts++;
 }
+const previewArg=process.argv.find(arg=>arg.startsWith('--preview='));
+if(previewArg){const preview=previewArg.slice(10);if(!/^[a-z0-9-]+$/i.test(preview))throw Error('Invalid preview hash');html=html.replace('<head>','<head>\n<script>if(!location.hash)location.hash='+JSON.stringify(preview)+';</script>');scripts++;}
 // Validate the actual HTML boundaries after escaping inline closing-script text.
 const inline=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
 if(inline.length!==scripts)throw Error('Inline script boundaries changed during export.');

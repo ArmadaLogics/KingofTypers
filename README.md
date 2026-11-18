@@ -2,7 +2,7 @@
 
 This is the editable, split version of the current game. No build step, npm install, framework, or external library is needed to host this version.
 
-Current version: **v131.56 Supports V-VIII** (three Monk or Healer supports in every Chapter V-VIII stage, four in VI-10; Supply Clock with a shorter supplier timer and longer words each stage; Wildfire and Frost Nova as passive upgrades of Burn and Freeze with a 0.5 / 1 tile spread; Fire Wall preview; two-tile ramps in place of stairs on every chapter; Chapter VIII Muster buildings removed; quiver giver shown on its wood stand), built on v131.37-v131.55. The parent `index.html` and `KEYWARD-v131.56.html` have the same game code, but they do not include this folder's loading screen. See [release notes](../KEYWARD-v131.56-RELEASE-NOTES.md).
+Current version: **v131.56 Supports V-VIII** (three Monk or Healer supports in every Chapter V-VIII stage, four in VI-10; Supply Clock with a shorter supplier timer and longer words each stage; Wildfire and Frost Nova as passive upgrades of Burn and Freeze with a 0.5 / 1 tile spread; Fire Wall preview; two-tile ramps; Chapter VIII Muster buildings removed; the quiver giver on its wood stand). Built on v131.37-v131.55. Release notes: [../KEYWARD-v131.56-RELEASE-NOTES.md](../KEYWARD-v131.56-RELEASE-NOTES.md).
 
 The page shell uses classic scripts, stylesheets and external media files, listed in `manifest.json`. Existing images and music retain their original bytes and quality. The optional standalone embeds all of them in one HTML file.
 
@@ -10,7 +10,11 @@ The page shell uses classic scripts, stylesheets and external media files, liste
 
 The Lamplit road atlas now replaces the painted road band along the same 94 authored road cells. Straight, corner, end and junction tiles are baked into the map canvas at build time. A missing road atlas uses the prior painted-road fallback; the original water rendering is retained.
 
+**Lamplit scenery update, 10 November 2026:** Wooden entrances, timber/cart props, planks, supports and torches are removed from the Chapter V overworld. Their solid footprints are removed too. The current moonlit terrain, roads, natural crystal/rock/fungi scenery and supplier remain. Verification and genuine runtime captures are in `../Proposals/LamplitVaultsNoWood-v1/`.
+
 The loading screen appears directly from the page shell, before the main game script arrives. It uses the existing RegularPaper artwork with added grain and fibers, the original six-frame running pawn holding its axe, centered above the bar, and the asset pack's wooden BigBar_Base with matching BigBar_Fill. The bar is at most 648px wide and 17.85px tall, shrinking to fit smaller screens, preserving the end caps and stretching only the middle. Its only visible text is “Loading...” below the bar. Progress follows the existing image completion count and the screen clears immediately when the game is ready. Open `#loading-preview` to inspect it at 64%. Portrait/landscape layouts and a reduced-motion still pose are supported. The active paper-grain asset is `assets/images/loading-paper-grain.svg`. The butterfly artwork and original standalone exports are preserved.
+
+**Local art update, 10 November 2026:** Chapter III's Blighted Span overworld uses the supplied swamp ground texture, with softened mottling and corrected grass/cliff/ramp registration on Chapter I's exact 64px tile geometry. Open `#swamp-overworld` through the preview server for a direct review with temporary saves. The update is in this split build; older standalone HTML exports are unchanged. See `assets/biomes/swamp-overworld/README.md` for source hashes and verification.
 
 ## Put it on GitHub Pages
 

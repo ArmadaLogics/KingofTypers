@@ -1,0 +1,86 @@
+{
+  "sourceSha256": "f0f5bf152e08091b91c534b92f6a8c42887235d2f0308461c56c8e5482e22c0c",
+  "flameSha256": "f124e5c0c287dcefede8b153eb7749fd405d433768fb59bb2be679df32041a8b",
+  "route": "built-in ImageGen for the building art; existing approved flame strip",
+  "buildings": {
+    "castle": {
+      "file": "floodlock-citadel.png",
+      "spec": [
+        352,
+        264,
+        1,
+        4,
+        8,
+        8,
+        336,
+        248
+      ],
+      "sourceRect": [
+        76,
+        172,
+        734,
+        658
+      ],
+      "sconces": [
+        [
+          113,
+          173
+        ],
+        [
+          242,
+          173
+        ]
+      ]
+    },
+    "tower": {
+      "file": "tidewatch-spire.png",
+      "spec": [
+        122,
+        244,
+        1,
+        4,
+        8,
+        8,
+        106,
+        228
+      ],
+      "sourceRect": [
+        940,
+        26,
+        1237,
+        665
+      ]
+    },
+    "house": {
+      "file": "wickkeeper-cottage.png",
+      "spec": [
+        197,
+        214,
+        1,
+        4,
+        8,
+        8,
+        181,
+        198
+      ],
+      "sourceRect": [
+        1622,
+        252,
+        1990,
+        655
+      ]
+    }
+  },
+  "flame": {
+    "size": [
+      32,
+      48
+    ],
+    "anchor": [
+      16,
+      42
+    ],
+    "frames": 8,
+    "fps": 12
+  }
+}

@@ -140,6 +140,43 @@
   }
   // Scenery has its own cache and never starts or changes the combat poison simulation.
   const onOverworld=map=>S.scene==='over'&&S.chapter===2&&map===over;
+  const ventShadows=[],ventMist=[];
+  let ventGlow;
+  function ventArt(){
+    if(ventGlow)return;
+    for(const cloud of D.textures){
+      const mist=document.createElement('canvas');mist.width=cloud.width;mist.height=cloud.height;
+      const ctx=mist.getContext('2d');ctx.drawImage(cloud,0,0);
+      const image=ctx.getImageData(0,0,mist.width,mist.height);
+      // The source clouds have very low alpha. Build a denser scenery-only copy.
+      for(let i=3;i<image.data.length;i+=4)image.data[i]*=1.85;
+      ctx.putImageData(image,0,0);
+      ctx.globalCompositeOperation='source-in';ctx.fillStyle='#bad965';ctx.fillRect(0,0,mist.width,mist.height);
+      ventMist.push(mist);
+      const shadow=document.createElement('canvas');shadow.width=mist.width;shadow.height=mist.height;
+      const ink=shadow.getContext('2d');ink.drawImage(mist,0,0);
+      ink.globalCompositeOperation='source-in';ink.fillStyle='#3c3c50';ink.fillRect(0,0,shadow.width,shadow.height);
+      ventShadows.push(shadow);
+    }
+    ventGlow=document.createElement('canvas');ventGlow.width=96;ventGlow.height=48;
+    const ctx=ventGlow.getContext('2d');ctx.scale(1,.5);
+    const light=ctx.createRadialGradient(48,48,0,48,48,48);
+    light.addColorStop(0,'rgba(162,194,69,.45)');light.addColorStop(.46,'rgba(146,177,59,.23)');
+    light.addColorStop(1,'rgba(146,177,59,0)');ctx.fillStyle=light;ctx.fillRect(0,0,96,96);
+  }
+  function drawVent(f,pose,cam,time){
+    const x=pose.x-cam.x,y=pose.y-cam.y,w=pose.width,h=pose.height;
+    g.globalAlpha=.76+.16*Math.sin(time*.72+f.phase);
+    g.drawImage(ventGlow,x-w*.51,y-h*.14,w*1.02,h*.46);
+    g.globalAlpha=.51;
+    g.drawImage(ventShadows[f.image],x-w*.52,y-h*.11,w*1.04,h*.36);
+
+    const period=6.5+f.id%3,p=(time+f.phase)%period/period;
+    const wispWidth=w*(.53+p*.35),wispHeight=h*(.30+p*.18);
+    const wispX=x+12+p*38,wispY=y-28-p*80;
+    g.globalAlpha=.72*Math.sin(Math.PI*p)**2;
+    g.drawImage(ventMist[(f.image+3)%ventMist.length],wispX-wispWidth/2,wispY-wispHeight/2,wispWidth,wispHeight);
+  }
   function overworldScenery(map){
     if(!onOverworld(map)||!prepare())return null;
     if(overworlds.has(map))return overworlds.get(map);
@@ -150,18 +187,8 @@
       FOL_CH=DEF().key;FOL_OVER=true;FOL_KEEP=NODES().map(p=>p.join(','));
       cleanCanvas=buildMap({...map.def,t:map.def.t.map(row=>row.replace(/%/g,'.'))}).canvas;
     }finally{FOL_CH=saved.chapter;FOL_OVER=saved.over;FOL_KEEP=saved.keep;}
-    const road=map.def.road||[],nodes=NODES(),post=POST(),patches=[],clearPath=new Path2D();
+    const road=map.def.road||[],nodes=NODES(),post=POST(),patches=[];
     const roadSet=new Set(road.map(p=>p.join(',')));
-    for(const [x,y]of road){
-      const cx=(x+.5)*T,cy=(y+.5)*T;
-      clearPath.moveTo(cx+22,cy);clearPath.arc(cx,cy,22,0,Math.PI*2);clearPath.closePath();
-      if(roadSet.has((x+1)+','+y))clearPath.rect(cx,cy-22,T,44);
-      if(roadSet.has(x+','+(y+1)))clearPath.rect(cx-22,cy,44,T);
-    }
-    for(const [x,y]of [...nodes,...(post?[post]:[])]){
-      const cx=(x+.5)*T,cy=(y+.5)*T;
-      clearPath.moveTo(cx+54,cy);clearPath.arc(cx,cy,54,0,Math.PI*2);clearPath.closePath();
-    }
     const hash=(x,y)=>{const n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n);};
     const extra=[];
     for(let y=0;y<map.h;y++)for(let x=0;x<map.w;x++){
@@ -185,28 +212,41 @@
         phase:hash(x,y)*Math.PI*2,motionRate:.7+.3*hash(x+1,y),born:-100});
       if(ambient)added++;
     }
-    const data={seeds,cleanCanvas,patches,clearPath};overworlds.set(map,data);return data;
+    const vents=patches.filter(p=>!p.ambient).length;
+    if(vents)ventArt();
+    const data={seeds,cleanCanvas,patches,vents};overworlds.set(map,data);return data;
   }
   function drawOverworld(map,cam){
     const data=overworldScenery(map);if(!data)return;
-    const time=reduced.matches?0:S.t;
-    g.save();g.clip(tilePath(map,false));g.imageSmoothingEnabled=true;
-    for(const f of data.patches){
-      const pose=cloudPose(f,time);g.globalAlpha=pose.alpha;
+    const still=reduced.matches,time=still?0:S.t;
+    const view=viewFor(map);
+    // The markers and player are drawn after this layer. Let wisps fade naturally
+    // across the route and shoreline instead of clipping them to tile boundaries.
+    const visible=data.patches.filter(f=>{
+      const x=f.x*view.z+view.ox,y=f.y*view.z+view.oy,margin=(f.width+48)*view.z;
+      return x>=-margin&&y>=-margin&&x<=VW+margin&&y<=VH+margin;
+    });
+    g.save();g.imageSmoothingEnabled=true;
+    for(const f of visible){
+      const pose=cloudPose(f,time);
+      if(!f.ambient)drawVent(f,pose,cam,time);
+      g.globalAlpha=pose.alpha*(f.ambient?.80:1.12);
       g.save();g.translate(pose.x-cam.x,pose.y-cam.y);g.rotate(pose.angle);g.scale(f.mirror,1);
-      g.drawImage(D.textures[f.image],-pose.width/2,-pose.height/2,pose.width,pose.height);g.restore();
-      if(reduced.matches)continue;
-      // The same accepted bubble sheet, used sparsely as harmless map scenery.
-      const age=(S.t+f.phase*2)%(6+f.id%3),life=1.6;
-      if(age>=life)continue;
-      const p=age/life,frame=p<.25?0:p<.62?1:p<.82?2:3,size=24+f.id%3*3;
-      g.globalAlpha=.48*Math.min(1,age/.15)*(p>.82?(1-p)/.18:1);g.imageSmoothingEnabled=false;
-      g.drawImage(D.bubbleTexture,frame*64,0,64,64,pose.x-cam.x-size/2,pose.y-cam.y-size/2-22*p,size,size);
-      g.imageSmoothingEnabled=true;
+      const height=pose.height*(f.ambient?1:.76);
+      const cloud=f.ambient?D.textures[f.image]:ventMist[f.image];
+      g.drawImage(cloud,-pose.width/2,-height/2,pose.width,height);g.restore();
     }
-    // Repaint the original road and interaction footprints above the mist.
-    g.save();g.clip(data.clearPath);g.globalAlpha=1;g.imageSmoothingEnabled=false;
-    g.drawImage(data.cleanCanvas,-cam.x,-cam.y);g.restore();
+    // Draw the original four-frame bubbles over all the haze, below actors and markers.
+    g.imageSmoothingEnabled=false;
+    if(!still)for(const f of visible){
+      if(f.ambient)continue;
+      const age=(time+f.phase*2)%(4.1+f.id%3*.6),life=1.65;
+      if(age>=life)continue;
+      const p=age/life,frame=p<.25?0:p<.62?1:p<.82?2:3,size=35+f.id%3*5+6*p;
+      const x=f.x+Math.sin(f.phase)*24+Math.sin(p*Math.PI)*7,y=f.y+12-p*32;
+      g.globalAlpha=.84*Math.min(1,age/.14,(1-p)/.15);
+      g.drawImage(D.bubbleTexture,frame*64,0,64,64,x-cam.x-size/2,y-cam.y-size/2,size,size);
+    }
     g.restore();
   }
   function terrain(map){
@@ -215,7 +255,8 @@
   }
   window.PoisonFog={start,tick,draw,active,terrain,drawOverworld,
     overworldSnapshot:(map=over)=>{const data=overworldScenery(map);return {active:!!data,animated:!!data&&!reduced.matches,
-      seedCount:data?.seeds.length||0,clouds:data?.patches.length||0,additionalClouds:data?.patches.filter(p=>p.ambient).length||0};},
+      seedCount:data?.seeds.length||0,clouds:data?.patches.length||0,additionalClouds:data?.patches.filter(p=>p.ambient).length||0,
+      vents:data?.vents||0};},
     snapshot:()=>({ready:D.ready,active:active(),bubbleDensity:BUBBLE_DENSITY,clouds:D.patches.length,bubbles:D.bubbles.length,
       patches:D.patches.map(f=>({id:f.id,tile:[...f.tile],image:f.image,group:f.group,size:f.size,pose:cloudPose(f)})),
       bubbleClouds:D.bubbles.map(b=>b.cloud)})};

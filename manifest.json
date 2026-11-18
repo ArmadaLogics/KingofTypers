@@ -21,7 +21,7 @@
       "path": "js/01-game.js",
       "tag": "script",
       "attributes": " ",
-      "generatedTag": "<script  src=\"js/01-game.js\"></script>"
+      "generatedTag": "<script  src=\"js/01-game.js?v=132.1\"></script>"
     },
     {
       "path": "js/02-brood-boss.js",
@@ -183,7 +183,7 @@
       "path": "js/26-guttered-overworld.js",
       "tag": "script",
       "attributes": "",
-      "generatedTag": "<script src=\"js/26-guttered-overworld.js\"></script>"
+      "generatedTag": "<script src=\"js/26-guttered-overworld.js?v=131.56-guttered-shoreline-layout\"></script>"
     },
     {
       "path": "js/27-lamplit-overworld.js",
@@ -202,6 +202,24 @@
       "tag": "script",
       "attributes": "",
       "generatedTag": "<script src=\"js/28-ashen-overworld.js\"></script>"
+    },
+    {
+      "path": "js/29-swamp-overworld.js",
+      "tag": "script",
+      "attributes": "",
+      "generatedTag": "<script src=\"js/29-swamp-overworld.js\"></script>"
+    },
+    {
+      "path": "js/30-guttered-structures.js",
+      "tag": "script",
+      "attributes": "",
+      "generatedTag": "<script src=\"js/30-guttered-structures.js?v=132.1\"></script>"
+    },
+    {
+      "path": "js/31-chapter-select.js",
+      "tag": "script",
+      "attributes": "",
+      "generatedTag": "<script src=\"js/31-chapter-select.js?v=131.56-chapters\"></script>"
     }
   ],
   "styles": [
@@ -216,6 +234,12 @@
       "tag": "style",
       "attributes": "",
       "generatedTag": "<link rel=\"stylesheet\" href=\"css/preview.css\">"
+    },
+    {
+      "path": "css/chapter-select.css",
+      "tag": "style",
+      "attributes": "",
+      "generatedTag": "<link rel=\"stylesheet\" href=\"css/chapter-select.css?v=131.56-chapter-portraits\">"
     }
   ],
   "assets": [
@@ -1783,8 +1807,8 @@
     },
     {
       "path": "assets/biomes/guttered-vaults/terrain.png",
-      "bytes": 364466,
-      "sha256": "21c0f6f081d6e5cd462c5f30dd277d7af4f8a33135bb160003a21bb8fced40c5",
+      "bytes": 194203,
+      "sha256": "d2fd7297338b417243a5370175b7600f4e349396bb863d09899618c3161ada83",
       "mime": "image/png"
     },
     {
@@ -1813,8 +1837,8 @@
     },
     {
       "path": "assets/biomes/lamplit-vaults/terrain.png",
-      "bytes": 66997,
-      "sha256": "e3149c69224485c1aaf084c9ed38e3d0a1c26dcf24ffa914b08f3a37294e71d8",
+      "bytes": 43919,
+      "sha256": "2e0e299c909ffb8c1b93c740ccfcd838739304f675fb0dfb7527ae9e7801e10e",
       "mime": "image/png"
     },
     {
@@ -1933,15 +1957,159 @@
     },
     {
       "path": "assets/biomes/ashen-reach/roads-connected.png",
-      "bytes": 133122,
-      "sha256": "335798678c09f81c2db1a26cb497c66581a54029fb88900da8b531db7af2c4d2",
+      "bytes": 28538,
+      "sha256": "3e660113717e5e051f7ab3f5612125ce7b99efb1d7b0903033182b79f82b910f",
       "mime": "image/png"
     },
     {
       "path": "assets/biomes/lamplit-vaults/roads.png",
-      "bytes": 43386,
-      "sha256": "d44de1868c608ba1ec369954404b70fe2b1bfd8fe87437f7b2ac5865858e4d65",
+      "bytes": 10872,
+      "sha256": "5e9cb352210427eef32dd05b1d4af47cb974f128527a25dedb438a17ec13f18a",
       "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/buildings-castle-v2.png",
+      "bytes": 202560,
+      "sha256": "8681f8bb31f98afed137b3270ee4b17b5f871f87e2c3fb80ab7e375885f0677a",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/terrain.png",
+      "bytes": 256294,
+      "sha256": "06a3461a6b36dec7297a74515b681326509263d8b378e1d4f28330eca020a590",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/swamp_house1.png",
+      "bytes": 30303,
+      "sha256": "2e502d29e463a67ddd90489fba3c1444c8663b5232b9e0e5ed8007ae9d45da4c",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/swamp_house2.png",
+      "bytes": 32911,
+      "sha256": "5781d830730d7129d0529ee23920daa927a8d584e2561239a1c2e317b3fa5c18",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/swamp_tower.png",
+      "bytes": 54422,
+      "sha256": "c6ff6d9ce82e112541da9d5b47b16858753450a6d42cc9570e5cd1ee8621251e",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/swamp_castle.png",
+      "bytes": 107238,
+      "sha256": "8d6080a3162b2f40702151973b1d68e3e64fc021e704b7cfbb1ae41ad7a87bf7",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/moss-sage-tips.png",
+      "bytes": 7966,
+      "sha256": "bf6348778fe1e42d2b1cfb8b6c3d3a5d4de9b6a6ce33430687e10d609c63e64f",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/roads.png",
+      "bytes": 42350,
+      "sha256": "97a356805e112471b24ad5772e0c8aaa45720eb1796d79562ddb61563f2b1596",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/buildings-biome48.png",
+      "bytes": 448507,
+      "sha256": "943bd222746456a745b900def9ee57a4c3f397d85e9e4a3b9ccbe7c699f00480",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/cliff-variant.png",
+      "bytes": 2077,
+      "sha256": "2d132afb7d2573ef0ea49b397617df9f0029cb7bae85b14e317e58f85068e441",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/blue-lantern.png",
+      "bytes": 1420,
+      "sha256": "312e500eef2acc559268f5bc274a7d63a0bf941e8113a960adfe96fe33d23ec5",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v2/wickkeeper-cottage.png",
+      "bytes": 66351,
+      "sha256": "2e0a356c03072120b53e62b04f6a75f94dcf3726617a7c24e38c5955c4ccc24d",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v2/tidewatch-spire.png",
+      "bytes": 46693,
+      "sha256": "8c6fd559c16f6f2605a863e8fb94e904b29abbb9b18ab97b5255ec6d88e6d475",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v2/floodlock-citadel.png",
+      "bytes": 144885,
+      "sha256": "df5d15a019241a4a20b9caf6f35eac53d4ea6a3a11adce977aacaa91ce7dda6a",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v2/blue-sconce-flame.png",
+      "bytes": 8990,
+      "sha256": "f124e5c0c287dcefede8b153eb7749fd405d433768fb59bb2be679df32041a8b",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/chapter-select/backdrop.webp",
+      "bytes": 45060,
+      "sha256": "ad772111d01db680ffac115e916256c097fac1f0df9d5da089f5577d1f505d7a",
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/chapter-select/blightmother.webp",
+      "bytes": 68286,
+      "sha256": "1ecdeecaa1d984a20c48559233b42262214aec5422f3054f4fcf3d7ccb76e2b0",
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/chapter-select/lizard.webp",
+      "bytes": 1276,
+      "sha256": "6a3e23f8dc0e1cc98762109c6fc47f4c632de39587628d87d294b307f26d7b42",
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/chapter-select/marshal.webp",
+      "bytes": 2356,
+      "sha256": "f8d47a0bbf14bf6cb3949f6586030cb36573915f6e6bd56c44045581a4b95de0",
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/chapter-select/minotaur.webp",
+      "bytes": 2000,
+      "sha256": "50897e608f17969508dff20d9b8b745ccae2c88b168035de721735847d877e8c",
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/chapter-select/reaper.webp",
+      "bytes": 1214,
+      "sha256": "1157d7a5f50d1e93f82cd2529edae4b58c4663414de3875c1c85b9704831b506",
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/chapter-select/shaman.webp",
+      "bytes": 1178,
+      "sha256": "1d4d87741bccf0973e31c7d4eeffac2d4acd44c60818fd0ea8ff7963587aa4a3",
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/chapter-select/skull.webp",
+      "bytes": 1116,
+      "sha256": "42d04d13fda677608e56e0a78f214628171602108e74147f206d9b911b14c78b",
+      "mime": "image/webp"
+    },
+    {
+      "path": "assets/chapter-select/turtle.webp",
+      "bytes": 2008,
+      "sha256": "8f697a367670842a6b69503244389008fb5e75446e6621dfa1a2ba352ad5e085",
+      "mime": "image/webp"
     }
   ],
   "files": [
@@ -2897,8 +3065,8 @@
     },
     {
       "path": "js/00-preview-storage.js",
-      "bytes": 686,
-      "sha256": "621f44bc620612ce77f66d5145407f0a42afc515f656c517ac78b672755398a6"
+      "bytes": 705,
+      "sha256": "b9f735ed4905349d8266c8b2d20e2d83994976221f246143139318eda09d66d7"
     },
     {
       "path": "css/game.css",
@@ -2912,8 +3080,8 @@
     },
     {
       "path": "js/01-game.js",
-      "bytes": 1363343,
-      "sha256": "03190d93e13ef9b5308641d7a63a3b3d9591505400f387ae36a13db26dd52d05"
+      "bytes": 1379870,
+      "sha256": "828a28c46f1266ae387964602d41bfe0610f6399f317d06bb95bcbf538507e0b"
     },
     {
       "path": "js/02-brood-boss.js",
@@ -2977,13 +3145,13 @@
     },
     {
       "path": "js/14-poison-fog.js",
-      "bytes": 8323,
-      "sha256": "95bc8d3b439180a26f2eae30566797ea17626e82bc4531c12ecd71897cc13501"
+      "bytes": 14908,
+      "sha256": "30f148db08026967044d4da84d2d9ed1adf7af565881d3eba6a80b5d96293a42"
     },
     {
       "path": "index.html",
-      "bytes": 2756,
-      "sha256": "0eff30abfd2df6cf644ae6580b7fe4155c2c31c0e74ac387c6c56c7e09141e7b"
+      "bytes": 4825,
+      "sha256": "f850142c5049284faa1bdd108c9dca60618c3170a79032d2ef92e066f666cd43"
     },
     {
       "path": ".nojekyll",
@@ -3357,13 +3525,13 @@
     },
     {
       "path": "js/26-guttered-overworld.js",
-      "bytes": 15234,
-      "sha256": "5f04e4ef1972bd7db6b0a9b0d94f2cb65e213163395631069d3f4b6a7a99ecb7"
+      "bytes": 19732,
+      "sha256": "b69a170b2a562ba1230204c5f2b0298175b30db5be205ba0a3e7d0cbd470a2dd"
     },
     {
       "path": "assets/biomes/guttered-vaults/art.json",
-      "bytes": 3758,
-      "sha256": "8e1d855cfaf5b20be964188b6dc04c352d6826d2489d1640ff47c7bf1eb3a687"
+      "bytes": 2796,
+      "sha256": "4f73c949dde8e5884a967c334d0d3d6773a06f67b7ba5f2866e515ab2e047303"
     },
     {
       "path": "assets/biomes/guttered-vaults/bush1.png",
@@ -3412,8 +3580,8 @@
     },
     {
       "path": "assets/biomes/guttered-vaults/README.md",
-      "bytes": 2343,
-      "sha256": "572e605cc3042aaf83468bd6f97d32f1784b976d24d28075b67d695169b16186"
+      "bytes": 2642,
+      "sha256": "e9793bb52487ab5e03cbab0ed91ebe6146e996cb6043de5bd7e74261c6ccba22"
     },
     {
       "path": "assets/biomes/guttered-vaults/rock1.png",
@@ -3437,8 +3605,8 @@
     },
     {
       "path": "assets/biomes/guttered-vaults/terrain.png",
-      "bytes": 364466,
-      "sha256": "21c0f6f081d6e5cd462c5f30dd277d7af4f8a33135bb160003a21bb8fced40c5"
+      "bytes": 194203,
+      "sha256": "d2fd7297338b417243a5370175b7600f4e349396bb863d09899618c3161ada83"
     },
     {
       "path": "assets/biomes/guttered-vaults/tower.png",
@@ -3462,13 +3630,13 @@
     },
     {
       "path": "js/27-lamplit-overworld.js",
-      "bytes": 7368,
-      "sha256": "814076f56cf8231ece1747c8449995571a66e39a1a7ae19ba2460a5f786a8907"
+      "bytes": 16212,
+      "sha256": "9b8ebfbf19bdcf55d447d8f40cbe4181a4443fc44e411ab67f53fc5ef1377ae0"
     },
     {
       "path": "assets/biomes/lamplit-vaults/terrain.png",
-      "bytes": 66997,
-      "sha256": "e3149c69224485c1aaf084c9ed38e3d0a1c26dcf24ffa914b08f3a37294e71d8"
+      "bytes": 43919,
+      "sha256": "2e0e299c909ffb8c1b93c740ccfcd838739304f675fb0dfb7527ae9e7801e10e"
     },
     {
       "path": "assets/biomes/lamplit-vaults/props.png",
@@ -3477,18 +3645,18 @@
     },
     {
       "path": "assets/biomes/lamplit-vaults/art.json",
-      "bytes": 9646,
-      "sha256": "8f408ce53b4faa11658304180edd9327ee4f9c2a99437b2521d86f5664977be6"
+      "bytes": 10125,
+      "sha256": "d1cbba85b42589a2d721e81570f49ac23f2a544324ec90b8a512d69f25964176"
     },
     {
       "path": "js/28-ashen-overworld.js",
-      "bytes": 15443,
-      "sha256": "17f460b9d4c4b079779acdeaf053b0fb3c0ed441b114e254efe2c34278b2e2f1"
+      "bytes": 22601,
+      "sha256": "219b07f98afcdee30b9d2cf04ab2107f06e6354591b27edbf40bb15ca4ad792c"
     },
     {
       "path": "assets/biomes/ashen-reach/art.json",
-      "bytes": 29078,
-      "sha256": "2ff86bc7a76c3afb7abdb1a5d949e21f524362297c88a866170c936d1a7abb9d"
+      "bytes": 25195,
+      "sha256": "1ae9ba55cdb449728a4e778345fc219ba82a2457d842c4b6795565dc99200d07"
     },
     {
       "path": "assets/biomes/ashen-reach/atlas.png",
@@ -3552,8 +3720,8 @@
     },
     {
       "path": "js/28-ashen-art.js",
-      "bytes": 8443,
-      "sha256": "d3f6eba04807f5e0230aed3500d34a34b30612d51236622d2e9a4eb2936fab94"
+      "bytes": 7563,
+      "sha256": "dd02bea6ef66ee402bc41c8a5cab90429bac872e23c4cf5f65890b603c418e9d"
     },
     {
       "path": "assets/biomes/ashen-reach/buildings.png",
@@ -3582,8 +3750,8 @@
     },
     {
       "path": "assets/biomes/ashen-reach/whole-art.json",
-      "bytes": 28866,
-      "sha256": "7dd2bcdf7b89f2886fdeb29c94db694d6709b1282bf174b8d11d72a28f9de951"
+      "bytes": 24983,
+      "sha256": "f14ab73cb1607b211c55d4411f45649e4a5fa1c7eae15cbf0080d568e6d441ff"
     },
     {
       "path": "assets/biomes/ashen-reach/whole-platforms.png",
@@ -3592,13 +3760,168 @@
     },
     {
       "path": "assets/biomes/ashen-reach/roads-connected.png",
-      "bytes": 133122,
-      "sha256": "335798678c09f81c2db1a26cb497c66581a54029fb88900da8b531db7af2c4d2"
+      "bytes": 28538,
+      "sha256": "3e660113717e5e051f7ab3f5612125ce7b99efb1d7b0903033182b79f82b910f"
     },
     {
       "path": "assets/biomes/lamplit-vaults/roads.png",
-      "bytes": 43386,
-      "sha256": "d44de1868c608ba1ec369954404b70fe2b1bfd8fe87437f7b2ac5865858e4d65"
+      "bytes": 10872,
+      "sha256": "5e9cb352210427eef32dd05b1d4af47cb974f128527a25dedb438a17ec13f18a"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/buildings-castle-v2.png",
+      "bytes": 202560,
+      "sha256": "8681f8bb31f98afed137b3270ee4b17b5f871f87e2c3fb80ab7e375885f0677a"
+    },
+    {
+      "path": "js/29-swamp-overworld.js",
+      "bytes": 9477,
+      "sha256": "ca1543a84273dfc052d2d1879697d63c1fb5c507a0c772dc665db81eaf6048b5"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/terrain.png",
+      "bytes": 256294,
+      "sha256": "06a3461a6b36dec7297a74515b681326509263d8b378e1d4f28330eca020a590"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/atlas-provenance.json",
+      "bytes": 4522,
+      "sha256": "8ae6f1f3b25bf96d6fee7a416fc48e875df2eecb1d95e8522b96971568babbdb"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/README.md",
+      "bytes": 5581,
+      "sha256": "198e1079ba04891bbdac266aa9d1a40461d311ddfcd0b14bd6f20bf550b77f07"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/swamp_house1.png",
+      "bytes": 30303,
+      "sha256": "2e502d29e463a67ddd90489fba3c1444c8663b5232b9e0e5ed8007ae9d45da4c"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/swamp_house2.png",
+      "bytes": 32911,
+      "sha256": "5781d830730d7129d0529ee23920daa927a8d584e2561239a1c2e317b3fa5c18"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/swamp_tower.png",
+      "bytes": 54422,
+      "sha256": "c6ff6d9ce82e112541da9d5b47b16858753450a6d42cc9570e5cd1ee8621251e"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/swamp_castle.png",
+      "bytes": 107238,
+      "sha256": "8d6080a3162b2f40702151973b1d68e3e64fc021e704b7cfbb1ae41ad7a87bf7"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/moss-sage-tips.png",
+      "bytes": 7966,
+      "sha256": "bf6348778fe1e42d2b1cfb8b6c3d3a5d4de9b6a6ce33430687e10d609c63e64f"
+    },
+    {
+      "path": "assets/biomes/swamp-overworld/roads.png",
+      "bytes": 42350,
+      "sha256": "97a356805e112471b24ad5772e0c8aaa45720eb1796d79562ddb61563f2b1596"
+    },
+    {
+      "path": "assets/biomes/ashen-reach/buildings-biome48.png",
+      "bytes": 448507,
+      "sha256": "943bd222746456a745b900def9ee57a4c3f397d85e9e4a3b9ccbe7c699f00480"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/cliff-variant.png",
+      "bytes": 2077,
+      "sha256": "2d132afb7d2573ef0ea49b397617df9f0029cb7bae85b14e317e58f85068e441"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/blue-lantern.png",
+      "bytes": 1420,
+      "sha256": "312e500eef2acc559268f5bc274a7d63a0bf941e8113a960adfe96fe33d23ec5"
+    },
+    {
+      "path": "js/30-guttered-structures.js",
+      "bytes": 7840,
+      "sha256": "ca5cacb33eff768837eec71ee3c86b61c8b4790e9a05b7b72f0dcbc81d28fce9"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v2/wickkeeper-cottage.png",
+      "bytes": 66351,
+      "sha256": "2e0a356c03072120b53e62b04f6a75f94dcf3726617a7c24e38c5955c4ccc24d"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v2/tidewatch-spire.png",
+      "bytes": 46693,
+      "sha256": "8c6fd559c16f6f2605a863e8fb94e904b29abbb9b18ab97b5255ec6d88e6d475"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v2/floodlock-citadel.png",
+      "bytes": 144885,
+      "sha256": "df5d15a019241a4a20b9caf6f35eac53d4ea6a3a11adce977aacaa91ce7dda6a"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v2/blue-sconce-flame.png",
+      "bytes": 8990,
+      "sha256": "f124e5c0c287dcefede8b153eb7749fd405d433768fb59bb2be679df32041a8b"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v2/art.json",
+      "bytes": 1410,
+      "sha256": "ef21a6f33ea195c14c4592a91eca8d9b313281ed2e7de5c2a142f45f500ad08d"
+    },
+    {
+      "path": "css/chapter-select.css",
+      "bytes": 14486,
+      "sha256": "c41d18924e068c0229959146d8aa9c26fca3b4e72ab7998c7509622157cde5eb"
+    },
+    {
+      "path": "js/31-chapter-select.js",
+      "bytes": 13087,
+      "sha256": "948f3e3eda9efab29df2e6f3b1808a131f393b9f2701a920a450e6dadee4a15a"
+    },
+    {
+      "path": "assets/chapter-select/backdrop.webp",
+      "bytes": 45060,
+      "sha256": "ad772111d01db680ffac115e916256c097fac1f0df9d5da089f5577d1f505d7a"
+    },
+    {
+      "path": "assets/chapter-select/blightmother.webp",
+      "bytes": 68286,
+      "sha256": "1ecdeecaa1d984a20c48559233b42262214aec5422f3054f4fcf3d7ccb76e2b0"
+    },
+    {
+      "path": "assets/chapter-select/lizard.webp",
+      "bytes": 1276,
+      "sha256": "6a3e23f8dc0e1cc98762109c6fc47f4c632de39587628d87d294b307f26d7b42"
+    },
+    {
+      "path": "assets/chapter-select/marshal.webp",
+      "bytes": 2356,
+      "sha256": "f8d47a0bbf14bf6cb3949f6586030cb36573915f6e6bd56c44045581a4b95de0"
+    },
+    {
+      "path": "assets/chapter-select/minotaur.webp",
+      "bytes": 2000,
+      "sha256": "50897e608f17969508dff20d9b8b745ccae2c88b168035de721735847d877e8c"
+    },
+    {
+      "path": "assets/chapter-select/reaper.webp",
+      "bytes": 1214,
+      "sha256": "1157d7a5f50d1e93f82cd2529edae4b58c4663414de3875c1c85b9704831b506"
+    },
+    {
+      "path": "assets/chapter-select/shaman.webp",
+      "bytes": 1178,
+      "sha256": "1d4d87741bccf0973e31c7d4eeffac2d4acd44c60818fd0ea8ff7963587aa4a3"
+    },
+    {
+      "path": "assets/chapter-select/skull.webp",
+      "bytes": 1116,
+      "sha256": "42d04d13fda677608e56e0a78f214628171602108e74147f206d9b911b14c78b"
+    },
+    {
+      "path": "assets/chapter-select/turtle.webp",
+      "bytes": 2008,
+      "sha256": "8f697a367670842a6b69503244389008fb5e75446e6621dfa1a2ba352ad5e085"
     }
   ],
   "release": {

@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script  src="js/00-preview-storage.js"></script>
+<script  src="js/00-preview-storage.js?v=131.56-swamp1"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KEYWARD · v131.56 Supports V-VIII</title>
-<link rel="stylesheet" href="css/game.css">
-<link rel="stylesheet" href="css/preview.css"></head>
+<title>KEYWARD · v132.1</title>
+<link rel="stylesheet" href="css/game.css?v=131.56">
+<link rel="stylesheet" href="css/preview.css?v=131.56">
+<link rel="stylesheet" href="css/chapter-select.css?v=131.56-chapter-portraits">
+</head>
 <body>
 <section id="loading-screen" aria-label="Loading game">
   <canvas class="loading-paper" aria-hidden="true" width="0" height="0"></canvas>
@@ -24,34 +26,62 @@
   </main>
   <div class="loading-edge loading-edge-bottom" aria-hidden="true"></div>
 </section>
-<div id="wrap"><canvas id="c" width="960" height="576"></canvas></div>
-<script src="js/00-loading-screen.js"></script>
-<script  src="js/01-game.js"></script>
+<div id="wrap"><canvas id="c" width="960" height="576" tabindex="-1"></canvas></div>
+<dialog id="chapter-selection" aria-labelledby="chapter-selection-heading">
+  <div class="kw-shell">
+    <section class="kw-game">
+      <header class="kw-heading">
+        <button class="kw-main-menu" type="button" aria-label="Main menu" aria-keyshortcuts="Escape">
+          <span class="kw-back-plate" aria-hidden="true"><span class="kw-back-arrow"></span></span>
+        </button>
+        <div class="kw-wordmark">KEYWARD</div>
+        <h2 id="chapter-selection-heading">Choose a chapter</h2>
+        <div class="kw-divider" aria-hidden="true"><span></span></div>
+      </header>
+      <div class="kw-gallery" role="group" aria-label="Chapter cards"></div>
+      <div class="kw-navigation" role="group" aria-label="Browse chapters">
+        <button class="kw-arrow" data-direction="-1" type="button" aria-label="Previous chapter">‹</button>
+        <span class="kw-index" aria-hidden="true"></span>
+        <button class="kw-arrow" data-direction="1" type="button" aria-label="Next chapter">›</button>
+      </div>
+      <div class="kw-action">
+        <div class="kw-caption" aria-live="polite"></div>
+        <button class="kw-enter" type="button">Enter chapter <span aria-hidden="true">→</span></button>
+      </div>
+      <p class="kw-star-rules">Earn a star for clearing a stage, another at 90% accuracy, and another for finishing with at least half your Ward.</p>
+    </section>
+  </div>
+</dialog>
+<script src="js/00-loading-screen.js?v=131.56"></script>
+<script  src="js/01-game.js?v=132.1"></script>
 
-<script  src="js/02-brood-boss.js"></script><script  src="js/03-spirit-boss.js"></script><script  src="js/04-skull-cleave.js"></script><script  src="js/05-fire-arrow.js"></script>
-<!-- v98: Lizard Glow Orbs, ice arrow art, golden thunder arrow art --><script  src="js/06-glowburst.js"></script><script  src="js/07-ice-arrow.js"></script><script  src="js/08-thunder.js"></script>
-<script  src="js/09-haunt-burst.js"></script>
-<script  src="js/10-lancer-preview.js"></script>
-<script  src="js/11-troll-preview.js"></script>
-<script  src="js/12-script.js"></script>
-<script  src="js/13-script.js"></script>
-<script  src="js/14-poison-fog.js"></script>
-<script src="js/15-poison-timing.js"></script>
-<script src="js/blightmother-attacks.js"></script>
-<script src="js/16-blightmother.js"></script>
-<script src="js/17-blightmother-demo.js"></script>
-<script src="js/18-stormward-effects.js"></script>
-<script src="js/19-stormward-weather.js"></script>
-<script src="js/20-stormward-thunder.js"></script>
-<script src="js/21-turtle-water-ball.js"></script>
-<script src="js/crystal-chill-emitter.js"></script>
-<script src="js/25-crystal-turtle.js"></script>
-<script src="js/22-turtle-ball-demo.js"></script>
-<script src="js/24-fletcher.js"></script>
-<script src="js/23-mastery-gate.js"></script>
-<script src="js/26-guttered-overworld.js"></script>
-<script src="js/27-lamplit-overworld.js"></script>
-<script src="js/28-ashen-art.js"></script>
-<script src="js/28-ashen-overworld.js"></script>
+<script  src="js/02-brood-boss.js?v=131.56"></script><script  src="js/03-spirit-boss.js?v=131.56"></script><script  src="js/04-skull-cleave.js?v=131.56"></script><script  src="js/05-fire-arrow.js?v=131.56"></script>
+<!-- v98: Lizard Glow Orbs, ice arrow art, golden thunder arrow art --><script  src="js/06-glowburst.js?v=131.56"></script><script  src="js/07-ice-arrow.js?v=131.56"></script><script  src="js/08-thunder.js?v=131.56"></script>
+<script  src="js/09-haunt-burst.js?v=131.56"></script>
+<script  src="js/10-lancer-preview.js?v=131.56"></script>
+<script  src="js/11-troll-preview.js?v=131.56"></script>
+<script  src="js/12-script.js?v=131.56"></script>
+<script  src="js/13-script.js?v=131.56"></script>
+<script  src="js/14-poison-fog.js?v=131.56"></script>
+<script src="js/15-poison-timing.js?v=131.56"></script>
+<script src="js/blightmother-attacks.js?v=131.56"></script>
+<script src="js/16-blightmother.js?v=131.56"></script>
+<script src="js/17-blightmother-demo.js?v=131.56"></script>
+<script src="js/18-stormward-effects.js?v=131.56"></script>
+<script src="js/19-stormward-weather.js?v=131.56"></script>
+<script src="js/20-stormward-thunder.js?v=131.56"></script>
+<script src="js/21-turtle-water-ball.js?v=131.56"></script>
+<script src="js/crystal-chill-emitter.js?v=131.56"></script>
+<script src="js/25-crystal-turtle.js?v=131.56"></script>
+<script src="js/22-turtle-ball-demo.js?v=131.56"></script>
+<script src="js/24-fletcher.js?v=131.56"></script>
+<script src="js/23-mastery-gate.js?v=131.56"></script>
+<script src="js/26-guttered-overworld.js?v=131.56-guttered-shoreline-layout"></script>
+<script src="js/27-lamplit-overworld.js?v=131.56-lamplit-body-light"></script>
+<script src="js/28-ashen-art.js?v=131.56"></script>
+<script src="js/28-ashen-overworld.js?v=131.56"></script>
+<script src="js/29-swamp-overworld.js?v=131.56-swamp1"></script>
+<script src="js/30-guttered-structures.js?v=132.1"></script>
+<script src="js/31-chapter-select.js?v=131.56-chapters"></script>
 </body>
 </html>

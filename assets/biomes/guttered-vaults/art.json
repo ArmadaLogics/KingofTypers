@@ -2,148 +2,6 @@
   "art_source": "host_image",
   "route": "image_gen",
   "basis": "Reviewed Guttered Vaults proposals; no game screenshot used as map terrain",
-  "terrainRegions": [
-    [
-      6,
-      0,
-      188,
-      187,
-      0,
-      0,
-      192,
-      192
-    ],
-    [
-      204,
-      4,
-      61,
-      183,
-      192,
-      0,
-      64,
-      192
-    ],
-    [
-      7,
-      193,
-      187,
-      55,
-      0,
-      192,
-      192,
-      64
-    ],
-    [
-      204,
-      193,
-      61,
-      55,
-      192,
-      192,
-      64,
-      64
-    ],
-    [
-      7,
-      253,
-      61,
-      120,
-      0,
-      256,
-      64,
-      128
-    ],
-    [
-      197,
-      253,
-      65,
-      120,
-      192,
-      256,
-      64,
-      128
-    ],
-    [
-      322,
-      0,
-      187,
-      189,
-      320,
-      0,
-      192,
-      192
-    ],
-    [
-      516,
-      2,
-      58,
-      187,
-      512,
-      0,
-      64,
-      192
-    ],
-    [
-      322,
-      193,
-      187,
-      56,
-      320,
-      192,
-      192,
-      64
-    ],
-    [
-      516,
-      193,
-      56,
-      56,
-      512,
-      192,
-      64,
-      64
-    ],
-    [
-      322,
-      249,
-      187,
-      59,
-      320,
-      256,
-      192,
-      64
-    ],
-    [
-      516,
-      249,
-      56,
-      59,
-      512,
-      256,
-      64,
-      64
-    ],
-    [
-      324,
-      310,
-      185,
-      62,
-      320,
-      320,
-      192,
-      64
-    ],
-    [
-      516,
-      310,
-      57,
-      62,
-      512,
-      320,
-      64,
-      64
-    ]
-  ],
   "spriteSpecs": {
     "house": [
       256,
@@ -238,9 +96,8 @@
     }
   },
   "sourceHashes": {
-    "terrain": "53d7e7c222699b99b863ecb96e8129017f0e2456b6852bf13760f0b7b155809f",
+    "terrain": "d2fd7297338b417243a5370175b7600f4e349396bb863d09899618c3161ada83",
     "nativeMask": "3ae8f00b92b4ecd46b63b14ad4117fdda42afcf485f340724db033f0e229be8e",
-    "water": "01c437d46e5201593a5d379e8bf336f725540b373dea7a2b8e147e15bb8acdc6",
     "tree": "0be987ed506cf91ac886f496d5f2264c8b651f81be6ddd7dc615c99de7d0aafb",
     "buildings": "4be1db28b3c3b6dcc76e81b3d5c32756164cd4a726ac2faf2b7d9a6aa35c5ae8",
     "trail": "290750282771540da968b297a4a8a041f0fe4946c3941bb6ec031549f185f6f6",
@@ -253,5 +110,18 @@
     "root-rock": "2732ad4cd7b0772617e4d6334fceebfb82513ec346c2bdd7dcffa99009b82a34",
     "fungi": "22f594e6eec7f8464d5d1029821099ef4b7043e8d2f41a3a629cd1090bd903d4",
     "moss": "a950c9af93776c8c99d58b4355893329a4fac2415bbd65a088285af64d1069e2"
+  },
+  "terrain": {
+    "source": "Proposals/GutteredVaults/Flooded-Overworld-v1/Tilemap_guttered_vaults.png",
+    "reference": "assets/biomes/swamp-overworld/terrain.png",
+    "referenceSha256": "06a3461a6b36dec7297a74515b681326509263d8b378e1d4f28330eca020a590",
+    "width": 576,
+    "height": 384,
+    "tileSize": 64,
+    "artSource": "Chapter III swamp atlas, recolored for Chapter VI"
+  },
+  "water": {
+    "color": "#0b0f16",
+    "source": "Chapter VI overworld map definition"
   }
 }
