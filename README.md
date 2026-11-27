@@ -2,6 +2,8 @@
 
 This is the editable, split version of the current game. No build step, npm install, framework, or external library is needed to host this version.
 
+Double-click `PLAY-WRAITH.cmd` to see the Threefold Wraith in Chapter V’s final arena, The Last Lamp. On an already running server, open `#wraith-demo`. Click **Float walk** to watch the wraith patrol or **Replay cast** to watch it drain a lantern. To start with the walk, open `?wraith=float#wraith-demo`. Arrow keys move the archer. This preview uses temporary saves.
+
 Current version: **v131.56 Supports V-VIII** (three Monk or Healer supports in every Chapter V-VIII stage, four in VI-10; Supply Clock with a shorter supplier timer and longer words each stage; Wildfire and Frost Nova as passive upgrades of Burn and Freeze with a 0.5 / 1 tile spread; Fire Wall preview; two-tile ramps; Chapter VIII Muster buildings removed; the quiver giver on its wood stand). Built on v131.37-v131.55. Release notes: [../KEYWARD-v131.56-RELEASE-NOTES.md](../KEYWARD-v131.56-RELEASE-NOTES.md).
 
 The page shell uses classic scripts, stylesheets and external media files, listed in `manifest.json`. Existing images and music retain their original bytes and quality. The optional standalone embeds all of them in one HTML file.
