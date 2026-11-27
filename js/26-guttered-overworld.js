@@ -50,22 +50,48 @@
     ['gvFern',25,18,1,12,52],
     ['gvGrass',26,18,-3,14,35],
   ];
-  let prepared=null;
+  let prepared=null,preparedTerrainSource=null;
   function prepare(){
-    if(prepared)return prepared;
+    if(prepared&&preparedTerrainSource===IMG.gvTerrain)return prepared;
     const required=['gvTerrain','gvTrail',...Object.values(imageKeys),'gvGrass','gvFern','gvMoss','gvFungi','gvRootRock','gvRootStump'];
     if(required.some(k=>!IMG[k]?.complete||IMG[k].naturalWidth<8))return null;
     const foam=document.createElement('canvas');foam.width=IMG.foam.width;foam.height=IMG.foam.height;
     const f=foam.getContext('2d');f.drawImage(IMG.foam,0,0);f.globalCompositeOperation='source-in';f.fillStyle='#214957';f.fillRect(0,0,foam.width,foam.height);foam.complete=true;
     const stillFoam=document.createElement('canvas');stillFoam.width=foam.width;stillFoam.height=foam.height;
     const sf=stillFoam.getContext('2d');for(let frame=0;frame<16;frame++)sf.drawImage(foam,0,0,192,192,frame*192,0,192,192);stillFoam.complete=true;
-    return prepared={foam,stillFoam};
+    preparedTerrainSource=IMG.gvTerrain;
+    return prepared={foam,stillFoam,terrain:IMG.gvTerrain};
   }
   folImg=function(key){return key.endsWith('@vault')?IMG[imageKeys[folBase(key)]]||native.img(key):native.img(key);};
   function authoredMap(def){
     const t=def.t.map(row=>[...row]),d=def.d.map(row=>[...row]);
-    // Only the reviewed castle shelf is levelled; no island or route cell is relocated.
+    // Level the reviewed castle shelf. Interior stairs move to clear shelf
+    // edges so the native builder can draw continuous cliff fronts.
     for(let y=12;y<=14;y++)for(let x=30;x<=33;x++)if(t[y]?.[x]&&t[y][x]!=='~')t[y][x]='.';
+    for(const [oldX,lowerY,edgeX] of [[8,14,10],[26,7,23],[32,7,29],[13,15,16],[26,15,24]]){
+      t[lowerY][oldX]='.';
+      t[lowerY-1][edgeX]='/';
+      t[lowerY][edgeX]='/';
+    }
+    // Vary the four north-bank shelves around their existing ramp landings.
+    for(const y of [5,6]){
+      t[y][10]='#'; // Wider terrace for the west spire.
+      t[y][12]='.'; // Narrower shelf beside the channel.
+    }
+    for(let x=24;x<=27;x++)t[4][x]='#'; // Deeper east spire terrace.
+    // The smaller northeast shelf steps in to a two-tile front, with room
+    // beside the west-edge ramp and a shoulder retained behind its landing.
+    t[5][33]='.';
+    t[6][32]='.';
+    t[6][33]='.';
+
+    // Separate the silhouettes of the lower shelves. Keep the cottage-side
+    // shelf broad, the middle shelf shallow, and the southeast shelf stepped.
+    for(let x=12;x<=15;x++)t[13][x]='.';
+    t[14][12]='.';
+    t[13][27]='.';
+    t[13][28]='.';
+    t[14][28]='.';
     for(const row of d)for(let x=0;x<row.length;x++)if(row[x]==='H')row[x]=' ';
     d[17][11]='H';
     for(const [x,y]of [[5,7],[16,17],[34,8],[22,18]]){
@@ -83,7 +109,7 @@
     }
     return {...def,t:t.map(row=>row.join('')),d:d.map(row=>row.join(''))};
   }
-  function footingShadow(source,width,height,bottom,depth,drop){
+  function footingShadow(source,width,height,bottom,depth,drop,opacity){
     const top=bottom-depth;
     const footing=document.createElement('canvas');
     footing.width=width;footing.height=depth;
@@ -94,15 +120,15 @@
     for(let i=3;i<pixels.data.length;i+=4)pixels.data[i]=pixels.data[i]>=128?255:0;
     mask.putImageData(pixels,0,0);
 
-    const margin=drop/2,stamp=document.createElement('canvas');
+    const margin=Math.ceil(drop/2),stamp=document.createElement('canvas');
     stamp.width=width+2*margin;stamp.height=depth+drop;
     const shade=stamp.getContext('2d');
-    // Blighted Span offsets the foundation silhouette and uses Green March's shadow ink.
+    // Use Green March's blue-gray shadow ink and widen the actual base contour.
     for(const [dx,dy] of [[-3,3],[3,3],[-4,5],[0,5],[4,5],[-2,8],[2,8]]){
       shade.drawImage(footing,margin+Math.round(dx*drop/8),Math.round(dy*drop/8));
     }
     shade.globalCompositeOperation='source-in';
-    shade.fillStyle='rgba(22,28,46,0.27)';
+    shade.fillStyle=`rgba(22,28,46,${opacity})`;
     shade.fillRect(0,0,stamp.width,stamp.height);
     return {stamp,margin,top};
   }
@@ -110,7 +136,7 @@
 
   function paintFoliageShadow(ctx,map,shadow,x,y,level,flip=false){
     const {stamp,margin,top}=shadow;
-    const left=x-margin,upper=y+top;
+    const left=Math.round(x-margin),upper=Math.round(y+top);
     const surface=new Path2D();
     for(let row=Math.floor(upper/T);row<=Math.floor((upper+stamp.height-1)/T);row++){
       for(let col=Math.floor(left/T);col<=Math.floor((left+stamp.width-1)/T);col++){
@@ -125,12 +151,6 @@
     ctx.drawImage(stamp,flip?0:left,upper);
     ctx.restore();
   }
-  function groundLighting(ctx,it,radius,color,alpha){
-    if(!it)return;const x=it.x*T+T/2,y=it.foot+9;
-    ctx.save();ctx.globalCompositeOperation='screen';
-    const glow=ctx.createRadialGradient(x,y,0,x,y,radius);glow.addColorStop(0,`rgba(${color},${alpha})`);glow.addColorStop(1,`rgba(${color},0)`);
-    ctx.fillStyle=glow;ctx.fillRect(x-radius,y-radius,radius*2,radius*2);ctx.restore();
-  }
   function decorate(m,items){
     const ctx=m.canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
     const road=new Set(m.def.road.map(n=>n.join(','))),nearRoad=(x,y,gap=1.2)=>m.def.road.some(p=>Math.hypot(p[0]-x,p[1]-y)<gap);
@@ -140,23 +160,23 @@
       ctx.drawImage(IMG.gvTrail,mask%4*T,Math.floor(mask/4)*T,T,T,x*T,y*T,T,T);
     }
     const house=m.stand.find(it=>it.k==='house'),castle=m.stand.find(it=>it.k==='castle');
-    groundLighting(ctx,house,100,'207,116,49',.18);groundLighting(ctx,castle,100,'204,105,42',.13);
-    for(const it of m.stand.filter(it=>it.k==='tower'))groundLighting(ctx,it,64,'204,105,42',.12);
-    const plantShadows=new Map();
-    function plantShadow(source,width,height,bottom,depth,drop){
-      if(!plantShadows.has(source))plantShadows.set(source,footingShadow(source,width,height,bottom,depth,drop));
-      return plantShadows.get(source);
+    const plantShadows=new Map(),bakedFoliage=new WeakSet();
+    function propShadow(source,width,height,bottom,depth,drop,opacity){
+      if(!plantShadows.has(source))plantShadows.set(source,new Map());
+      const sizes=plantShadows.get(source),key=[width,height,bottom,depth,drop,opacity].join(',');
+      if(!sizes.has(key))sizes.set(key,footingShadow(source,width,height,bottom,depth,drop,opacity));
+      return sizes.get(key);
     }
     for(const it of items){
-      const tree=it.k==='tree1',bush=it.k==='bush1'||it.k==='bush2';
-      if(!it.key.endsWith('@vault')||(!tree&&!bush))continue;
+      const tree=it.k==='tree1',bush=it.k==='bush1'||it.k==='bush2',rock=it.k==='rock1'||it.k==='rock2';
+      if(!it.key.endsWith('@vault')||(!tree&&!bush&&!rock))continue;
+      bakedFoliage.add(it);
       const [width,height,,,,top,,bodyHeight]=it.sp;
-      const shadow=plantShadow(folImg(it.key),width,height,top+bodyHeight,tree?18:12,tree?6:4);
+      const shadow=propShadow(folImg(it.key),width,height,top+bodyHeight,tree?24:12,tree?12:7,tree?.50:.43);
       paintFoliageShadow(ctx,m,shadow,it.px,it.py,m.grid[it.y][it.x].level,it.flip);
     }
     // Repaint native props above the trail and lights, so the road never lies over a sprite.
     for(const it of items)folBlit(ctx,it,0);
-    const land=(x,y)=>m.def.t[y]?.[x]&&m.def.t[y][x]!=='~';
     const occupied=items.map(folBox);
     const ramps=[];
     for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){
@@ -177,29 +197,23 @@
         ctx.drawImage(IMG.gvMoss,left+Math.round(width*.12),foot-18,Math.round(width*.76),18);
       }
       const bottom=height-Math.round(10*width/im.width);
-      const shadow=plantShadow(im,width,height,bottom,Math.min(12,bottom),4);
+      const rooted=key.startsWith('gvRoot');
+      const shadow=propShadow(im,width,height,bottom,Math.min(rooted?15:9,bottom),rooted?8:5,rooted?.46:.35);
       paintFoliageShadow(ctx,m,shadow,left,top,cell.level);
       ctx.drawImage(im,left,top,width,height);
       occupied.push({x:left,y:top,w:width,h:height});
       props++;
     }
-    // A short cliff skirt sits in water, behind the original shoreline alpha. It never changes collision.
-    const composite=document.createElement('canvas');composite.width=m.canvas.width;composite.height=m.canvas.height;
-    const c=composite.getContext('2d');c.imageSmoothingEnabled=false;
-    for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++)if(land(x,y)&&!land(x,y+1)){
-      const left=land(x-1,y)&&!land(x-1,y+1),right=land(x+1,y)&&!land(x+1,y+1),col=left&&right?6:right?5:left?7:8;
-      c.drawImage(IMG.gvTerrain,col*T,5*T,T,T,x*T,(y+1)*T-5,T,34);
-    }
-    c.drawImage(m.canvas,0,0);
-    c.save();c.globalCompositeOperation='source-atop';c.fillStyle='rgba(8,18,30,.14)';c.fillRect(0,0,composite.width,composite.height);c.restore();m.canvas=composite;
-    return {house,castle,props,trees:items.filter(it=>it.k.startsWith('tree')).length};
+    ctx.save();ctx.globalCompositeOperation='source-atop';
+    ctx.fillStyle='rgba(8,18,30,.14)';ctx.fillRect(0,0,m.canvas.width,m.canvas.height);ctx.restore();
+    return {house,castle,props,bakedFoliage,trees:items.filter(it=>it.k.startsWith('tree')).length};
   }
   buildMap=function(def){
     if(!API.enabled||FOL_CH!=='VI'||!FOL_OVER||!prepare())return native.build(def);
     const authored=authoredMap(def),oldKit=FOL_KIT.VI,oldAtlas=IMG.tm3,oldSpecs={},oldBlit=folBlit,items=[];
     for(const [key,spec]of Object.entries({...specs,...window.GutteredStructures?.specs})){oldSpecs[key]=DSPEC[key];DSPEC[key]=spec;}
     FOL_KIT.VI={...oldKit,H:['house@vault'],C:['castle@vault'],S:['tower@vault'],T:['tree1@vault'],r:['rock1@vault','rock2@vault'],b:['bush1@vault','bush2@vault']};
-    IMG.tm3=IMG.gvTerrain;
+    IMG.tm3=prepare().terrain;
     // Capture the native prop list while it creates the authoritative collision map.
     folBlit=function(ctx,it,frame){if(ctx!==g)items.push(it);return oldBlit(ctx,it,frame);};
     let m;
@@ -247,7 +261,8 @@
     return Math.min(1.26,total);
   }
 
-  function tintTerrain(source){
+  function tintTerrain(source,originX=0,originY=0,exposure=1,preserveLights=false,ambientMix=0){
+    const ambientFill=[34,52,70];
     const lit=document.createElement("canvas");
     lit.width=source.width;
     lit.height=source.height;
@@ -260,7 +275,7 @@
     const rows=Math.ceil(lit.height/step)+1;
     const field=new Float32Array(stride*rows);
     for(let row=0;row<rows;row++)for(let col=0;col<stride;col++){
-      field[row*stride+col]=lightAt(col*step/T,row*step/T);
+      field[row*stride+col]=lightAt((originX+col*step)/T,(originY+row*step)/T);
     }
     for(let y=0;y<lit.height;y++){
       const row=Math.floor(y/step)*stride;
@@ -272,17 +287,21 @@
         const top=field[cell]*(1-fx)+field[cell+1]*fx;
         const below=field[cell+stride]*(1-fx)+field[cell+stride+1]*fx;
         const light=top*(1-fy)+below*fy;
-        const r=pixels[i], green=pixels[i+1], b=pixels[i+2];
+        const rawR=pixels[i],rawG=pixels[i+1],rawB=pixels[i+2];
+        const r=rawR*exposure, green=rawG*exposure, b=rawB*exposure;
         const luma=.213*r+.715*green+.072*b;
         const strength=light*(.69+.31*Math.min(1,luma/85));
         const vivid=Math.max(r,green,b)-Math.min(r,green,b);
         const preserve=Math.max(0,Math.min(.9,(vivid-43)/104));
         const fire=Math.max(0,Math.min(.35,(r-b-32)/170));
+        const ember=preserveLights?Math.max(0,Math.min(1,(rawR-154)/82,(rawR-rawB-75)/98,(rawG-54)/56)):0;
         for(let channel=0;channel<3;channel++){
-          const base=pixels[i+channel];
+          const original=pixels[i+channel],base=original*exposure;
           const cooled=base*ambient[channel]+luma*strength*bounce[channel];
           const flame=base*(1-fire)+luma*fire;
-          pixels[i+channel]=Math.round(cooled*(1-preserve)+flame*preserve);
+          const shaded=cooled*(1-preserve)+flame*preserve;
+          const reflected=shaded*(1-ambientMix)+ambientFill[channel]*ambientMix;
+          pixels[i+channel]=Math.round(reflected*(1-ember)+original*ember);
         }
       }
     }
@@ -324,7 +343,16 @@
     const step=Math.round(Math.min(1,lightAt(x/T,y/T))*5);
     let variants=actorTints.get(source);
     if(!variants){variants=new Map();actorTints.set(source,variants);}
-    if(variants.has(step))return variants.get(step);
+    const spill=window.GutteredStructures?.lightAtGround?.(over,x,y)??[0,0,0];
+    // Keep color steps small while capping the number of full sheets in memory.
+    const levels=spill.map(value=>Math.round(value*48));
+    const variant=[step,...levels].join(',');
+    if(variants.has(variant)){
+      const cached=variants.get(variant);
+      variants.delete(variant);variants.set(variant,cached);
+      return cached;
+    }
+    const reflected=levels.map(value=>value/48*.65);
 
     const canvas=document.createElement("canvas");
     canvas.width=source.naturalWidth;
@@ -344,24 +372,55 @@
       pixels[i]=(red+(luma-red)*mix)*.78+shine*.36;
       pixels[i+1]=(green+(luma-green)*mix)*.84+luma*.022+shine*.98;
       pixels[i+2]=(blue+(luma-blue)*mix)*.94+luma*.102+shine*1.42;
+      const response=.18+.82*Math.min(1,luma/120);
+      for(let c=0;c<3;c++)pixels[i+c]+=(255-pixels[i+c])*reflected[c]*response;
     }
     ctx.putImageData(frame,0,0);
-    variants.set(step,canvas);
+    if(variants.size>=12)variants.delete(variants.keys().next().value);
+    variants.set(variant,canvas);
     return canvas;
   }
 
   const litSurfaces = new WeakMap();
   API.lightAt = (x,y) => lightAt(x/T,y/T);
+  // Buildings receive the same ambient color and spatial moonlight as baked trees.
+  // Exposure controls reflected light only; source texture and alpha stay intact.
+  API.litScenery = (source,x,y) => tintTerrain(source,x,y,.56,true,.32);
   API.litActor = litActor;
   API.litTerrain = (map, surface) => {
     if (!active(map)) return;
+    surface=window.GutteredStructures?.groundSurface?.(map,surface)??surface;
     let layers = litSurfaces.get(surface);
     if (!layers) {
-      const lit = tintTerrain(surface);
+      const ambient=tintTerrain(surface);
+      const lit=window.GutteredStructures?.illuminateGround?.(map,ambient)??ambient;
       layers = {lit, mist: addMist(lit)};
       litSurfaces.set(surface, layers);
     }
     return S.sky ? layers.mist : layers.lit;
+  };
+  const litFoliage = new WeakMap();
+  API.litProp = it => {
+    if(!active(over)||!maps.get(over).bakedFoliage.has(it))return;
+    const surface=window.PoisonFog ? PoisonFog.terrain(over) : over.canvas;
+    const terrain=API.litTerrain(over,surface);
+    let sprites=litFoliage.get(terrain);
+    if(!sprites){sprites=new WeakMap();litFoliage.set(terrain,sprites);}
+    if(sprites.has(it))return sprites.get(it);
+
+    // Reuse the baked pixels so the canopy redraw matches moonlight, spill and mist.
+    // Mask out the ground so only the prop can cover the archer.
+    const [width,height]=it.sp;
+    const sprite=document.createElement('canvas');sprite.width=width;sprite.height=height;
+    const ctx=sprite.getContext('2d');ctx.imageSmoothingEnabled=false;
+    ctx.save();
+    if(it.flip){ctx.translate(width,0);ctx.scale(-1,1);}
+    ctx.drawImage(terrain,it.px,it.py,width,height,0,0,width,height);
+    ctx.restore();
+    ctx.globalCompositeOperation='destination-in';
+    ctx.drawImage(folImg(it.key),0,0,width,height,0,0,width,height);
+    sprites.set(it,sprite);
+    return sprite;
   };
   const nativeSkyOver = drawSkyOver;
   drawSkyOver = map => {

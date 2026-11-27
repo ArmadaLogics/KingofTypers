@@ -1,0 +1,101 @@
+{
+  "route": "Built-in ImageGen style transfer; Sharp alpha-preserving crop and registration",
+  "source": "Proposals/GutteredVaults/Structures-ChapterIII-Style-v1/source-sheet.png",
+  "prompt": "Proposals/GutteredVaults/Structures-ChapterIII-Style-v1/prompt.txt",
+  "sourceSha256": "77ab10b2604ddae388cfceb8681eedc8c7a5200b02bcd7f62e0af76d04953485",
+  "styleReferences": [
+    "swamp-overworld/swamp_castle.png",
+    "swamp-overworld/swamp_house1.png"
+  ],
+  "buildings": {
+    "castle": {
+      "file": "floodlock-citadel.png",
+      "width": 336,
+      "height": 248,
+      "sourceRect": {
+        "left": 76,
+        "top": 34,
+        "width": 928,
+        "height": 657
+      },
+      "spec": [
+        352,
+        264,
+        1,
+        4,
+        8,
+        8,
+        336,
+        248
+      ],
+      "sha256": "dbfdc99ba3bd4d2fcf60a763464a9a5871b20d7f55add39daa24812e9402d51b",
+      "sconces": [
+        [
+          116,
+          177
+        ],
+        [
+          238,
+          177
+        ]
+      ]
+    },
+    "tower": {
+      "file": "tidewatch-spire.png",
+      "width": 106,
+      "height": 228,
+      "sourceRect": {
+        "left": 1109,
+        "top": 25,
+        "width": 297,
+        "height": 646
+      },
+      "spec": [
+        122,
+        244,
+        1,
+        4,
+        8,
+        8,
+        106,
+        228
+      ],
+      "sha256": "1a6649f2add5173ba373251f0e8c202d196824c4ed12cbd0081340623680fd72"
+    },
+    "house": {
+      "file": "wickkeeper-cottage.png",
+      "width": 181,
+      "height": 198,
+      "sourceRect": {
+        "left": 1547,
+        "top": 109,
+        "width": 511,
+        "height": 558
+      },
+      "spec": [
+        197,
+        214,
+        1,
+        4,
+        8,
+        8,
+        181,
+        198
+      ],
+      "sha256": "200468e43900196f9275c778c0fa821f27601717282b791ccec1399e2aa55864"
+    }
+  },
+  "flame": {
+    "size": [
+      32,
+      48
+    ],
+    "anchor": [
+      16,
+      42
+    ],
+    "frames": 8,
+    "fps": 12,
+    "sha256": "f124e5c0c287dcefede8b153eb7749fd405d433768fb59bb2be679df32041a8b"
+  }
+}

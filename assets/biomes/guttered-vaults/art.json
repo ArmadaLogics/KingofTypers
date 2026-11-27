@@ -112,13 +112,22 @@
     "moss": "a950c9af93776c8c99d58b4355893329a4fac2415bbd65a088285af64d1069e2"
   },
   "terrain": {
-    "source": "Proposals/GutteredVaults/Flooded-Overworld-v1/Tilemap_guttered_vaults.png",
+    "source": "KEYWARD-Web/assets/biomes/guttered-vaults/terrain.png",
     "reference": "assets/biomes/swamp-overworld/terrain.png",
     "referenceSha256": "06a3461a6b36dec7297a74515b681326509263d8b378e1d4f28330eca020a590",
     "width": 576,
     "height": 384,
     "tileSize": 64,
-    "artSource": "Chapter III swamp atlas, recolored for Chapter VI"
+    "artSource": "Approved v132.1 textured Guttered Vaults atlas",
+    "runtime": "terrain-cliff-joins.png",
+    "provenance": "Proposals/GutteredVaults/Flooded-Overworld-v1/Tilemap_guttered_vaults.png",
+    "runtimeTreatment": {
+      "scope": "Chapter VI overworld only",
+      "method": "Shared stone and edge palette across caps, cliff faces, shoreline skirts, and both ramp orientations. Original grass texture sampled onto the ramps.",
+      "preserve": "Chapter I alpha masks, authored cells, original source PNG, roads, props, and moonlight",
+      "script": "_build/prepare-guttered-cliff-joins.cjs"
+    },
+    "runtimeSha256": "d3249bdba630f129c958ff92d86ef1f257e48eddf96cabf9e148786888b65ee6"
   },
   "water": {
     "color": "#0b0f16",

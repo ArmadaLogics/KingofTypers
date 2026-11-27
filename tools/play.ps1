@@ -1,6 +1,6 @@
 # KEYWARD local launcher: serves this folder at http://localhost:PORT/ and opens the browser.
 # Needs only Windows PowerShell (built into Windows). Close the window to stop.
-param([switch]$NoBrowser)
+param([switch]$NoBrowser, [switch]$WraithPreview)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
 $types = @{
@@ -19,7 +19,10 @@ if (-not $listener) { Write-Host 'Could not open a local port between 8080 and 8
 $url = "http://localhost:$port/"
 Write-Host "KEYWARD is running at $url"
 Write-Host 'Keep this window open while you play. Close it to stop.'
-if (-not $NoBrowser) { Start-Process $url }
+if (-not $NoBrowser) {
+  if ($WraithPreview) { Start-Process "${url}#wraith-demo" }
+  else { Start-Process $url }
+}
 while ($listener.IsListening) {
   $ctx = $listener.GetContext(); $res = $ctx.Response
   try {

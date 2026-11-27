@@ -8,7 +8,7 @@ window.BossRes=(()=>{
   const SKILLS={fire:'Burn',ice:'Freeze',electric:'Thunder',poison:'Venom Arrow',wind:'Gust Arrow'};
   const BARRED=new Set(['MN','TU','LC']);   /* these three draw their own bar at y=14 */
   let seen=new WeakSet(), stageKey='', seenTier=new Set();
-  try{ const R=window.FirstJob?.RESIST||{}; for(const k in R){ const e=BESTIARY?.[k]; if(e&&e.rule&&!/RESISTS/.test(e.rule)) e.rule+=" RESISTS "+NAME[R[k]]+": "+SKILLS[R[k]]+(['MN','TU','SR','SM','SK','LZ','LC','TR'].includes(k)?" does half damage and cannot stun or hold it.":" does half."); } }catch(e){}
+  try{ const R=window.FirstJob?.RESIST||{}; for(const k in R){ const e=BESTIARY?.[k]; if(e&&e.rule&&!/ resists /.test(e.rule)) e.rule+=" It resists "+NAME[R[k]].toLowerCase()+", so "+SKILLS[R[k]]+" does only half damage"+(['MN','TU','SR','SM','SK','LZ','LC','TR'].includes(k)?" and can't stop it in its tracks.":"."); } }catch(e){}
   function draw(){
     const J=window.FirstJob; if(!J||S.endless) return;
     const key=S.chapter+':'+S.stage; if(key!==stageKey){stageKey=key;seen=new WeakSet();}

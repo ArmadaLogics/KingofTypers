@@ -1,4 +1,4 @@
-/* Chapter V overworld: subdued Chapter I texture, moonlit colors and natural crystal/rock/fungi scenery. */
+/* Chapter V overworld: subdued Chapter I texture, moonlit colors and fungi. */
 (() => {
  'use strict';
  const reduced=matchMedia('(prefers-reduced-motion: reduce)'),maps=new WeakMap(),props=new WeakMap();
@@ -33,6 +33,9 @@
  const actorKeys=new Set(['arIdle','arRun','arShoot','fletchIdle']),actorTints=new WeakMap();
  const lanternLightRadius=300,lanternHaloRadius=108;
  const lanternTiles=[[5,8],[11,8],[17,4],[27,4],[31,8],[27,15],[21,17],[4,14]];
+ const pineKey='tree1@lamplit-moonlit';
+ const pineTiles=[[7,8],[33,9],[15,17]];
+ const pineReady=()=>IMG.lvPine?.complete&&IMG.lvPine.naturalWidth===1536&&IMG.lvPine.naturalHeight===256;
  const lanternReady=()=>IMG.lvLantern?.complete&&IMG.lvLantern.naturalWidth===28&&IMG.lvLantern.naturalHeight===37;
  const readyArt=()=>[['lvTerrain',576,384],['lvProps',512,512]].every(([key,w,h])=>IMG[key]?.complete&&IMG[key].naturalWidth===w&&IMG[key].naturalHeight===h);
  const readyRoadArt=()=>IMG.lvRoads?.complete&&IMG.lvRoads.naturalWidth===256&&IMG.lvRoads.naturalHeight===256;
@@ -49,6 +52,14 @@
   return nativeCliff(ctx,atlas,column,row,x,y);
  };
  const woodenScenery=key=>['house','castle','wood','torch','bkBar','bkArc','bkTow'].includes(folBase(key))||folBase(key).startsWith('stump');
+ const rockVariant=(x,y)=>(x*13+y*7)%5;
+ // Some authored rock slots render mushrooms. Keep those slots.
+ const mushroomSlot=(x,y)=>[1,2].includes(rockVariant(x,y));
+ const removedScenery=(key,x,y)=>{
+  const base=folBase(key);
+  return base==='tower'||base.startsWith('tree')||base.startsWith('wrock')||
+   (base.startsWith('rock')&&!mushroomSlot(x,y));
+ };
  drawMapRoadAtlas=function(ctx,def){
   if(!API.enabled||FOL_CH!=='V'||!FOL_OVER||!readyArt()||!readyRoadArt())return native.road(ctx,def);
   const on=new Set(def.road.map(([x,y])=>x+','+y));
@@ -70,15 +81,12 @@
   ctx.drawImage(IMG.lvProps,sx,sy,sw,sh,x,y,width,h);
  };
  function appearance(it){
-  const k=it.k,box=folBox(it),cx=box.x+box.w/2,foot=it.foot+(k.startsWith('wrock')?4:-4);
-  if(k==='tower')return {id:0,cx,foot,width:Math.min(116,box.w)};
-  if(k.startsWith('tree'))return {id:0,cx,foot,width:Math.min(116,box.w)};
-  if(k.startsWith('wrock'))return {id:2,cx,foot,width:Math.max(26,Math.min(46,box.w+4))};
+  const k=it.k,box=folBox(it),cx=box.x+box.w/2,foot=it.foot-4;
   if(k.startsWith('rock')){
-   const pick=(it.x*13+it.y*7)%5,id=pick===0?1:pick===1?6:pick===2?5:pick===3?4:3;
-   return {id,cx,foot,width:Math.max(30,Math.min(64,box.w+4))};
+   const id=rockVariant(it.x,it.y)===1?6:5;
+   return {id,cx,foot,width:Math.round(Math.max(30,Math.min(64,box.w+4))*.65)};
   }
-  if(k.startsWith('bush'))return {id:5,cx,foot,width:Math.min(64,box.w)};
+  if(k.startsWith('bush'))return {id:5,cx,foot,width:Math.round(Math.min(64,box.w)*.65)};
   return null;
  }
  function drawProp(ctx,it){
@@ -87,11 +95,8 @@
   else sprite(ctx,p.id,p.cx,p.foot,p.width);
   return true;
  }
- folBlit=function(ctx,it,frame){return active(over)&&props.has(it)?drawProp(ctx,it):native.blit(ctx,it,frame);};
- function crystalLight(p){
-  const radius=Math.max(54,p.width*(p.id===2?2.4:2.85));
-  return {x:p.cx,y:p.foot-8,radius,strength:p.id===0?1:p.id===1?.75:.53,crystal:true};
- }
+ const stageProps=new WeakSet();
+ folBlit=function(ctx,it,frame){return (active(over)||API.enabled&&stageProps.has(it))&&props.has(it)?drawProp(ctx,it):native.blit(ctx,it,frame);};
  function glow(ctx,{x,y,radius,strength},color){
   const light=ctx.createRadialGradient(x,y,0,x,y,radius);
   light.addColorStop(0,`rgba(${color},${strength})`);
@@ -107,7 +112,7 @@
   const field=lightField.getContext('2d');
   field.scale(.25,.25);
   field.globalCompositeOperation='lighter';
-  for(const light of lights)glow(field,light,light.crystal?'18,199,244':'39,149,237');
+  for(const light of lights)glow(field,light,'39,149,237');
   return field.getImageData(0,0,lightField.width,lightField.height);
  }
  function lightIndex(field,x,y){
@@ -160,36 +165,89 @@
   ctx.drawImage(IMG.lvLantern,-16,-51,39,51);
   ctx.restore();
  }
- function paintReflections(m,lights){
-  const canvas=document.createElement('canvas');canvas.width=m.w*T;canvas.height=m.h*T;
-  const ctx=canvas.getContext('2d');ctx.save();ctx.beginPath();
-  for(const [y,row] of m.grid.entries())for(const [x,cell] of row.entries()){
-   if(cell.t==='water')ctx.rect(x*T,y*T,T,T);
-  }
-  ctx.clip();
-  for(const [i,light] of lights.entries()){
-   if(!light.crystal)continue;
-   const {x,y,radius,strength}=light;
-   ctx.save();ctx.translate(x,y);ctx.scale(.46,1);
-   glow(ctx,{x:0,y:0,radius:radius*.9,strength:strength*.40},'10,130,197');
-   ctx.restore();
-   const rows=Math.round(radius/5);
-   for(let j=-rows;j<=rows;j++){
-    const falloff=(1-Math.abs(j)/(rows+1))**1.5;
-    const width=falloff*(9+folHash('reflection:'+i+','+j)%29);
-    ctx.fillStyle=`rgba(55,194,235,${strength*falloff*.58})`;
-    ctx.fillRect(Math.round(x-width/2+Math.sin(j*2+i)*5),Math.round(y+j*5),Math.round(width),j%3===0?2:1);
-   }
-  }
-  ctx.restore();return canvas;
+ /* Chapter V stages (Keyward Environment 03) match the overworld: its moonlit atlas, its blue pines and its
+    mushrooms (every rock or bush slot draws as a mushroom, as on the overworld). No crystals, stones or
+    water rocks. Matched by name, like the Chapter III swamp stages. Fire bowls, darkness and words are unchanged. */
+ const isVaultStage=def=>/^s5_\d+$/.test(def?.name||'');
+ // A lighter grade than the overworld's: stages already sit under the chapter's darkness, so the floor
+ // only shifts toward moon blue; it is never dimmed.
+ function gradeStage(ctx){
+  const {width,height}=ctx.canvas,image=ctx.getImageData(0,0,width,height),px=image.data;
+  for(let i=0;i<px.length;i+=4){if(!px[i+3])continue;px[i]*=.84;px[i+1]*=.92;px[i+2]=Math.min(255,px[i+2]*1.06);}
+  ctx.putImageData(image,0,0);
  }
+ function buildVaultStage(def){
+  const previousBlit=folBlit,oldLo=IMG['tm'+def.lo],oldHi=IMG['tm'+def.hi];
+  if(pineReady())FOL_CACHE[pineKey]=IMG.lvPine;
+  folBlit=function(ctx,it,frame){
+   if(ctx===g)return previousBlit(ctx,it,frame);
+   const p=appearance(it);
+   if(!p)return previousBlit(ctx,it,frame);
+   props.set(it,p);stageProps.add(it);
+   // Give the native collision builder the same bounds as the visible mushroom, as the overworld does.
+   const [, , sw,sh]=rects[p.id],height=Math.round(p.width*sh/sw);
+   it.px=Math.round(p.cx-p.width/2);it.py=Math.round(p.foot-height);
+   it.sp=[p.width,height,1,0,0,0,p.width,height];
+   return drawProp(ctx,it);
+  };
+  IMG['tm'+def.lo]=IMG.lvTerrain;IMG['tm'+def.hi]=IMG.lvTerrain;
+  try{
+   const m=native.build({...def,d:def.d.map(row=>row.replace(/w/g,' '))});
+   gradeStage(m.canvas.getContext('2d'));
+   return m;
+  }finally{folBlit=previousBlit;IMG['tm'+def.lo]=oldLo;IMG['tm'+def.hi]=oldHi;}
+ }
+ /* Chapter V stages light with the overworld's blue lantern in place of the fire bowl (Keyward Environment 03).
+    Same tiles, light radius, gutter warning and snuffing: only the lamp and the colour of its light change.
+    js/01-game.js asks API.lampWash() for the colour of the glow under each lit lamp. */
+ const nativeLampBowl=drawLampBowl;
+ const lanternStage=()=>API.enabled&&FOL_CH==='V'&&!FOL_OVER&&isVaultStage(W?.def)&&lanternReady();
+ API.lampWash=()=>lanternStage()?'51,171,255':null;
+ drawLampBowl=function(L,index){
+  if(!lanternStage())return nativeLampBowl(L,index);
+  // Lit: lantern and halo. Guttering: the halo fades over the warning. Out: the lantern with no halo.
+  const fade=L.out>0?0:L.tele>0?Math.max(.12,Math.min(1,L.tele/GUT_TELE)):1;
+  const x=Math.round(L.x),y=Math.round(L.y+8);
+  g.save();
+  if(fade>0){g.globalCompositeOperation='lighter';glow(g,{x:x+12,y:y-32,radius:lanternHaloRadius,strength:.28*fade},'51,171,255');}
+  g.globalCompositeOperation='source-over';g.imageSmoothingEnabled=false;
+  g.translate(x,y);
+  g.fillStyle='rgba(9,15,28,.5)';g.beginPath();g.ellipse(0,1,11,4,0,0,Math.PI*2);g.fill();
+  // Always the lantern in its own colours; only its glow fades while guttering and is gone when out (user, 26 Nov).
+  g.drawImage(IMG.lvLantern,-16,-51,39,51);
+  g.restore();
+ };
  buildMap=function(def){
+  if(API.enabled&&FOL_CH==='V'&&!FOL_OVER&&isVaultStage(def)&&readyArt())return buildVaultStage(def);
   if(!API.enabled||FOL_CH!=='V'||!FOL_OVER||!readyArt())return native.build(def);
   const previousBlit=folBlit,oldLo=IMG['tm'+def.lo],oldHi=IMG['tm'+def.hi],oldDress=FOL_DRESS[def.name],items=[];
-  // Remove wooden placements before the native build so their collision footprints disappear too.
-  const cleanDef={...def,sea:'#060e19',t:platformTerrain,d:def.d.map(row=>row.replace(/[HC]/g,' '))};
-  FOL_DRESS[def.name]=(oldDress||[]).filter(it=>!woodenScenery(it[0]));
-  folBlit=function(ctx,it,frame){if(ctx!==g){items.push(it);return true;}return previousBlit(ctx,it,frame);};
+  // Filter removed scenery before collision, lighting and reflection caches are built.
+  const cleanDef={...def,sea:'#060e19',t:platformTerrain,d:def.d.map((row,y)=>
+   row.replace(/[HCTSwr]/g,(cell,x)=>cell==='r'&&mushroomSlot(x,y)?'r':' '))};
+  FOL_DRESS[def.name]=(oldDress||[]).filter(([key,x,y])=>!woodenScenery(key)&&!removedScenery(key,x,y));
+  if(pineReady()){
+   // Use Chapter I's native tree1 frame, bounds and trunk collision with the blue atlas.
+   FOL_CACHE[pineKey]=IMG.lvPine;
+   const occupied=new Set([...def.road,...lanternTiles,...FOL_DRESS[def.name].map(([,x,y])=>[x,y])].map(tile=>tile.join(',')));
+   for(const [x,y] of pineTiles){
+    if(cleanDef.t[y]?.[x]==='.'&&cleanDef.t[y-1]?.[x]!=='#'&&cleanDef.d[y]?.[x]===' '&&!occupied.has(x+','+y)){
+     FOL_DRESS[def.name].push([pineKey,x,y]);
+    }
+   }
+  }
+  folBlit=function(ctx,it,frame){
+   if(ctx===g)return previousBlit(ctx,it,frame);
+   items.push(it);
+   const p=appearance(it);
+   if(p){
+    props.set(it,p);
+    // Give the native collision builder the same bounds as the visible sprite.
+    const [, , sw,sh]=rects[p.id],height=Math.round(p.width*sh/sw);
+    it.px=Math.round(p.cx-p.width/2);it.py=Math.round(p.foot-height);
+    it.sp=[p.width,height,1,0,0,0,p.width,height];
+   }
+   return true;
+  };
   IMG['tm'+def.lo]=IMG.lvTerrain;IMG['tm'+def.hi]=IMG.lvTerrain;
   let m;
   try{m=native.build(cleanDef);}finally{
@@ -201,30 +259,23 @@
   const ctx=m.canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
   const lights=[],lanterns=placeLanterns(m,items);
   let count=0;
-  for(const it of items){
-   const p=appearance(it);
-   if(!p)continue;
-   props.set(it,p);count++;
-   if(p.id<=2)lights.push(crystalLight(p));
-  }
   for(const lantern of lanterns)lights.push({x:lantern.x+(lantern.flip?-9:9),y:lantern.y-7,radius:lanternLightRadius,strength:.53});
   const lightField=makeLightField(m.canvas,lights);
   shadeSurface(ctx,lightField);
   for(const it of items){
    const p=props.get(it);
-   if(p&&p.id>2)shadeProp(p,lightField);
+   if(p){shadeProp(p,lightField);count++;}
+   else if(it.key===pineKey)count++;
    drawProp(ctx,it);
   }
   for(const lantern of lanterns)drawLantern(ctx,lantern);
-  maps.set(m,{props:count,lights,lanterns,lightField,
-   reflections:paintReflections(m,lights),roads:readyRoadArt()?(def.road?.length||0):0});return m;
+  maps.set(m,{props:count,lights,lanterns,lightField,roads:readyRoadArt()?(def.road?.length||0):0});return m;
  };
  drawWater=function(m,V){
   if(!active(m))return native.water(m,V);
   const old=foamOn;
   g.save();g.globalAlpha*=.50;
   try{if(reduced.matches)foamOn=false;native.water(m,V);}finally{foamOn=old;g.restore();}
-  g.drawImage(maps.get(m).reflections,0,0);
  };
  API.actorLight=(x,y)=>{
   if(!active(over))return;
@@ -303,7 +354,7 @@
   terrainSource:'Assets/Terrain/Tileset/NewThemes/DarkOptions/Tilemap_dark_moonlit.png',
   waterStyle:'original',
   roadAtlas:'assets/biomes/lamplit-vaults/roads.png',roadTiles:maps.get(over)?.roads||0,
-  woodenScenery:false,blueLanterns:maps.get(over)?.lanterns.length||0,lanternLightRadius,
+  woodenScenery:false,largeCrystals:false,crystals:false,blueLanterns:maps.get(over)?.lanterns.length||0,lanternLightRadius,
   animated:active(over)&&!reduced.matches,platformShapes:6});
  if(location.hash==='#lamplit-vaults'){
   const boot=setInterval(()=>{if(!ready||loaded<total)return;clearInterval(boot);enterChapter(4);S.card=null;S.cardQ=[];S.cardHold=null;S.hint=null;},60);

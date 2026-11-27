@@ -9,7 +9,7 @@
       "path": "js/00-preview-storage.js",
       "tag": "script",
       "attributes": " ",
-      "generatedTag": "<script  src=\"js/00-preview-storage.js\"></script>"
+      "generatedTag": "<script  src=\"js/00-preview-storage.js?v=wraith-demo\"></script>"
     },
     {
       "path": "js/00-loading-screen.js",
@@ -21,7 +21,7 @@
       "path": "js/01-game.js",
       "tag": "script",
       "attributes": " ",
-      "generatedTag": "<script  src=\"js/01-game.js?v=132.1\"></script>"
+      "generatedTag": "<script  src=\"js/01-game.js?v=132.18-wraith-demo\"></script>"
     },
     {
       "path": "js/02-brood-boss.js",
@@ -183,7 +183,7 @@
       "path": "js/26-guttered-overworld.js",
       "tag": "script",
       "attributes": "",
-      "generatedTag": "<script src=\"js/26-guttered-overworld.js?v=131.56-guttered-shoreline-layout\"></script>"
+      "generatedTag": "<script src=\"js/26-guttered-overworld.js?v=132.18-clean-shore\"></script>"
     },
     {
       "path": "js/27-lamplit-overworld.js",
@@ -213,13 +213,19 @@
       "path": "js/30-guttered-structures.js",
       "tag": "script",
       "attributes": "",
-      "generatedTag": "<script src=\"js/30-guttered-structures.js?v=132.1\"></script>"
+      "generatedTag": "<script src=\"js/30-guttered-structures.js?v=132.11-spire-shadow\"></script>"
     },
     {
       "path": "js/31-chapter-select.js",
       "tag": "script",
       "attributes": "",
       "generatedTag": "<script src=\"js/31-chapter-select.js?v=131.56-chapters\"></script>"
+    },
+    {
+      "path": "js/32-wraith-demo.js",
+      "tag": "script",
+      "attributes": " ",
+      "generatedTag": "<script src=\"js/32-wraith-demo.js?v=2\"></script>"
     }
   ],
   "styles": [
@@ -233,7 +239,7 @@
       "path": "css/preview.css",
       "tag": "style",
       "attributes": "",
-      "generatedTag": "<link rel=\"stylesheet\" href=\"css/preview.css\">"
+      "generatedTag": "<link rel=\"stylesheet\" href=\"css/preview.css?v=wraith-demo\">"
     },
     {
       "path": "css/chapter-select.css",
@@ -2110,6 +2116,66 @@
       "bytes": 2008,
       "sha256": "8f697a367670842a6b69503244389008fb5e75446e6621dfa1a2ba352ad5e085",
       "mime": "image/webp"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/terrain-natural-v3.png",
+      "bytes": 298490,
+      "sha256": "ed05a87fc187d2b6242f28971c3435529b97ff327f32f49a698b23563064a813",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/terrain-natural-v4.png",
+      "bytes": 309603,
+      "sha256": "3db358c7b7aa87fc01698c77d9c62a6adcdeb12907da6e14bd4557a7cec227bd",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v3/blue-sconce-flame.png",
+      "bytes": 8990,
+      "sha256": "f124e5c0c287dcefede8b153eb7749fd405d433768fb59bb2be679df32041a8b",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v3/floodlock-citadel.png",
+      "bytes": 195494,
+      "sha256": "dbfdc99ba3bd4d2fcf60a763464a9a5871b20d7f55add39daa24812e9402d51b",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v3/tidewatch-spire.png",
+      "bytes": 57626,
+      "sha256": "1a6649f2add5173ba373251f0e8c202d196824c4ed12cbd0081340623680fd72",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v3/wickkeeper-cottage.png",
+      "bytes": 81025,
+      "sha256": "200468e43900196f9275c778c0fa821f27601717282b791ccec1399e2aa55864",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/terrain-cliff-joins.png",
+      "bytes": 259330,
+      "sha256": "d3249bdba630f129c958ff92d86ef1f257e48eddf96cabf9e148786888b65ee6",
+      "mime": "image/png"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/moonlit-pine.png",
+      "bytes": 25883,
+      "sha256": "c346f9d728f11c7464768cc13cd70aea37074f723b6385d3a051ab74f709a408",
+      "mime": "image/png"
+    },
+    {
+      "mime": "image/png",
+      "path": "assets/bosses/threefold-wraith/teal-cast.png",
+      "bytes": 414548,
+      "sha256": "35797acddcd4dc38c15d0acc44d636b8311e1b2726da743db7703813a88e6f1a"
+    },
+    {
+      "mime": "image/png",
+      "path": "assets/bosses/threefold-wraith/teal-float-walk.png",
+      "bytes": 436717,
+      "sha256": "1453feb113454cbdebf3c595d3629f09d3bc0795091a83541a74f0c52bed8d24"
     }
   ],
   "files": [
@@ -3065,8 +3131,8 @@
     },
     {
       "path": "js/00-preview-storage.js",
-      "bytes": 705,
-      "sha256": "b9f735ed4905349d8266c8b2d20e2d83994976221f246143139318eda09d66d7"
+      "bytes": 720,
+      "sha256": "061ffa40f44133a7916fd141b6cfa5f7b977c113228e7f71b28e98becf38ce60"
     },
     {
       "path": "css/game.css",
@@ -3075,13 +3141,13 @@
     },
     {
       "path": "css/preview.css",
-      "bytes": 754,
-      "sha256": "c25fe06d892ecc394beafa9452e72da4bc2b6b8902d925eced49cf98f60afbd7"
+      "bytes": 1321,
+      "sha256": "9dbf871f94c623b12e53a5aa0e3c210297b16e1eb32695abcd4e34ed1463b8e5"
     },
     {
       "path": "js/01-game.js",
-      "bytes": 1379870,
-      "sha256": "828a28c46f1266ae387964602d41bfe0610f6399f317d06bb95bcbf538507e0b"
+      "bytes": 1375153,
+      "sha256": "1099a9c75552b39afff5df25a405c0acd67193202e56d1b7ea86dfcfe8883004"
     },
     {
       "path": "js/02-brood-boss.js",
@@ -3150,8 +3216,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 4825,
-      "sha256": "f850142c5049284faa1bdd108c9dca60618c3170a79032d2ef92e066f666cd43"
+      "bytes": 4889,
+      "sha256": "49d042011c048a1292f0ada3ddff4d251cf74d7d3eddb9ec5e9096305cf2a681"
     },
     {
       "path": ".nojekyll",
@@ -3525,13 +3591,13 @@
     },
     {
       "path": "js/26-guttered-overworld.js",
-      "bytes": 19732,
-      "sha256": "b69a170b2a562ba1230204c5f2b0298175b30db5be205ba0a3e7d0cbd470a2dd"
+      "bytes": 22617,
+      "sha256": "92ac567bcd5dd4d1d30ab33b04485fcba18ec6f838552c1cd2268b4b06df9b94"
     },
     {
       "path": "assets/biomes/guttered-vaults/art.json",
-      "bytes": 2796,
-      "sha256": "4f73c949dde8e5884a967c334d0d3d6773a06f67b7ba5f2866e515ab2e047303"
+      "bytes": 3411,
+      "sha256": "89559d48905ceb4243c87461d69297b78cba81849ca62b05c7403e6a143a710d"
     },
     {
       "path": "assets/biomes/guttered-vaults/bush1.png",
@@ -3580,8 +3646,8 @@
     },
     {
       "path": "assets/biomes/guttered-vaults/README.md",
-      "bytes": 2642,
-      "sha256": "e9793bb52487ab5e03cbab0ed91ebe6146e996cb6043de5bd7e74261c6ccba22"
+      "bytes": 4721,
+      "sha256": "7438148e8259860ffb3f03ee7d0f6a609f14d780940e4b974670ba62500de41b"
     },
     {
       "path": "assets/biomes/guttered-vaults/rock1.png",
@@ -3630,8 +3696,8 @@
     },
     {
       "path": "js/27-lamplit-overworld.js",
-      "bytes": 16212,
-      "sha256": "9b8ebfbf19bdcf55d447d8f40cbe4181a4443fc44e411ab67f53fc5ef1377ae0"
+      "bytes": 16021,
+      "sha256": "ab6abdbe363d84b1c0aee56dbca2289a9e0a133db359f6b356e5997023fedbb9"
     },
     {
       "path": "assets/biomes/lamplit-vaults/terrain.png",
@@ -3840,8 +3906,8 @@
     },
     {
       "path": "js/30-guttered-structures.js",
-      "bytes": 7840,
-      "sha256": "ca5cacb33eff768837eec71ee3c86b61c8b4790e9a05b7b72f0dcbc81d28fce9"
+      "bytes": 14289,
+      "sha256": "3e29369d9cf1df180cca981c94a56a519e86f8aaf728908c16cd36f8ffa69210"
     },
     {
       "path": "assets/biomes/guttered-vaults/structures-v2/wickkeeper-cottage.png",
@@ -3922,6 +3988,91 @@
       "path": "assets/chapter-select/turtle.webp",
       "bytes": 2008,
       "sha256": "8f697a367670842a6b69503244389008fb5e75446e6621dfa1a2ba352ad5e085"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/terrain-natural-v3.png",
+      "bytes": 298490,
+      "sha256": "ed05a87fc187d2b6242f28971c3435529b97ff327f32f49a698b23563064a813"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/terrain-natural-v3.json",
+      "bytes": 3235,
+      "sha256": "d6c87e0e4a777091da1cd7fd11dd26fe3d2b96b6cf66edede910091f0a5e728d"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/terrain-natural-v4.png",
+      "bytes": 309603,
+      "sha256": "3db358c7b7aa87fc01698c77d9c62a6adcdeb12907da6e14bd4557a7cec227bd"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/terrain-natural-v4.json",
+      "bytes": 3274,
+      "sha256": "9e5178a948069164b08f4c4eb1f66f1bee844bba08f21ae5f6cd91d6f10441c4"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v3/art.json",
+      "bytes": 2082,
+      "sha256": "ba28724fb63c9975e4f5b2b9e6df5ea165ed68a421b5f1eabe8321072d1e95d9"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v3/blue-sconce-flame.png",
+      "bytes": 8990,
+      "sha256": "f124e5c0c287dcefede8b153eb7749fd405d433768fb59bb2be679df32041a8b"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v3/floodlock-citadel.png",
+      "bytes": 195494,
+      "sha256": "dbfdc99ba3bd4d2fcf60a763464a9a5871b20d7f55add39daa24812e9402d51b"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v3/tidewatch-spire.png",
+      "bytes": 57626,
+      "sha256": "1a6649f2add5173ba373251f0e8c202d196824c4ed12cbd0081340623680fd72"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/structures-v3/wickkeeper-cottage.png",
+      "bytes": 81025,
+      "sha256": "200468e43900196f9275c778c0fa821f27601717282b791ccec1399e2aa55864"
+    },
+    {
+      "path": "assets/biomes/guttered-vaults/terrain-cliff-joins.png",
+      "bytes": 259330,
+      "sha256": "d3249bdba630f129c958ff92d86ef1f257e48eddf96cabf9e148786888b65ee6"
+    },
+    {
+      "path": "assets/biomes/lamplit-vaults/moonlit-pine.png",
+      "bytes": 25883,
+      "sha256": "c346f9d728f11c7464768cc13cd70aea37074f723b6385d3a051ab74f709a408"
+    },
+    {
+      "path": "assets/bosses/threefold-wraith/teal-cast.png",
+      "bytes": 414548,
+      "sha256": "35797acddcd4dc38c15d0acc44d636b8311e1b2726da743db7703813a88e6f1a"
+    },
+    {
+      "path": "js/32-wraith-demo.js",
+      "bytes": 5411,
+      "sha256": "e9ca791cd0492456b00715f66deb29e964e767f6ef49c6de7661dc1e1845b805"
+    },
+    {
+      "path": "tools/play.ps1",
+      "bytes": 2156,
+      "sha256": "4acd0bc83fdccf9ab9d32ed7bbb0c9d58077eb21050e905fe156860a721519ba"
+    },
+    {
+      "path": "PLAY-WRAITH.cmd",
+      "bytes": 121,
+      "sha256": "58b2755946386d1c148d0dfe878d10d3d3c10fdccf1f895d4c970753ef00575c"
+    },
+    {
+      "path": "README.md",
+      "bytes": 15682,
+      "sha256": "c34f6a224f71cc869c21e56da10c4221a1920f4f757fa84f6461978f53d9f230"
+    },
+    {
+      "path": "assets/bosses/threefold-wraith/teal-float-walk.png",
+      "bytes": 436717,
+      "sha256": "1453feb113454cbdebf3c595d3629f09d3bc0795091a83541a74f0c52bed8d24"
     }
   ],
   "release": {

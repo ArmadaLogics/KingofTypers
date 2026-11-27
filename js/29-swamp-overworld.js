@@ -158,7 +158,7 @@
     it.key=sagePineKey;
    }
   }
-  if(it.key===sagePineKey)return native.blit(ctx,it,0);
+  if(it.key===sagePineKey){if(FOL_CACHE[sagePineKey]!==IMG.swampSagePine)useSagePine();return native.blit(ctx,it,0);}
   const key=plantedBuildings.get(it);
   if(!key)return native.blit(ctx,it,frame);
   const image=IMG[key], [width,height]=it.sp;
@@ -184,7 +184,15 @@
   }
   ctx.restore();return true;
  };
+ /* Chapter III stages (Keyward Environment 01) use the same swamp atlas as the overworld. Matched by
+    name so the poison fog's clean copy of a stage floor (built from the same def) matches too. */
+ const isSwampStage=def=>/^s3_\d+$/.test(def?.name||'');
+ const useSagePine=()=>{
+  const sage=IMG.swampSagePine,spec=DSPEC.tree2;
+  if(sage?.complete&&spec&&sage.naturalWidth===spec[0]&&sage.naturalHeight===spec[1])FOL_CACHE[sagePineKey]=sage;
+ };
  buildMap=function(def){
+  if(API.enabled&&FOL_CH==='III'&&!FOL_OVER&&isSwampStage(def)&&readyArt()){useSagePine();return withAtlas(def,()=>native.build(def));}
   if(!API.enabled||FOL_CH!=='III'||!FOL_OVER)return native.build(def);
   buildingBake={map:def.name,slots:getBuildingSlots(def),tiles:def.t};
   try{
