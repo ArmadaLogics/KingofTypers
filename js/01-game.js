@@ -7440,8 +7440,30 @@ function inTorch(mx,my){
    SEE - the lamps stopped drawing a circle of light in darkMask()/drawDark() for exactly this
    reason, and a mob that lit up whenever it wandered through that same invisible radius would
    contradict its own ground right under it. The beam is the only thing seeing anything in VI. */
+/* KEYWARD ENVIRONMENT 04 - CHAPTER V: AN ENEMY SHOWS ONLY WHERE THE LIGHT REACHES IT.
+   Chapter V used to draw every enemy everywhere and hide only the words. Now a body (and its
+   plaque, rings and wind-up, which all ask mobLit()) shows only inside the glow of a lit lamp.
+   It still shows when: you are typing its word, it is burning, carries a stolen lamp's light
+   or is a Lantern whose own light is pulsing on, it is the Supply, a door or a sheep, it is
+   close enough to strike the archer (so nothing ever hits you unseen), it is the Skull (the
+   chapter's last-alive boss, which carries its own light), or it is loosing its arrow (an
+   Adamant whose name you let go must not shoot from nowhere). Reading is unchanged:
+   canRead() still needs the archer in light. */
+const CH5_SEE_LAMP=LAMP_R*1.2;      /* the edge of the glow drawDark() paints around a lit lamp */
+const CH5_SEE_ARCHER=T*1.5;         /* about melee reach, so an attacker is never invisible */
+function ch5Seen(m){
+  if(m.supply||m.door||m.sheep||S.lock===m||m.lit>0||m.snuffGlow||(m.lantern&&lanternOn(m))) return true;
+  if(m.tier==='SK'||(m.shoot&&m.cast>0)) return true;
+  if(Math.hypot(m.x-P.x,m.y-P.y)<=CH5_SEE_ARCHER) return true;
+  for(const L of S.lamps){
+    if(L.out>0) continue;
+    if(Math.hypot(m.x-L.x,m.y-L.y)<=CH5_SEE_LAMP) return true;
+  }
+  return false;
+}
 function mobLit(m){if(m.tier==='LZ')return true;
-  if(!dark() || S.dim===LAMP_DIM) return true;
+  if(!dark()) return true;
+  if(S.dim===LAMP_DIM) return ch5Seen(m);   /* Keyward Environment 04: Chapter V enemies show only near light */
   /* m.snuffGlow: a Snuffer that has already stolen a lamp's light draws whether or not the
      beam - dead or alive - is anywhere near it. It is not hiding any more; it IS a light,
      same as a burning enemy already was, and hunting it down after it blinds you should not
